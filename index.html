@@ -582,10 +582,11 @@ function calPickToday(){
 
 // ========== GOOGLE CALENDAR & TASKS ==========
 const GCLIENT_ID = '950105272114-u0989ib6j3ahlq2gcrq09edleue7di4p.apps.googleusercontent.com';
-const GSCOPES = 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/tasks';
+const GSCOPES = 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/tasks https://www.googleapis.com/auth/drive.appdata';
 const GDISCOVERY_DOCS = [
   'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest',
-  'https://www.googleapis.com/discovery/v1/apis/tasks/v1/rest'
+  'https://www.googleapis.com/discovery/v1/apis/tasks/v1/rest',
+  'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
 ];
 
 let gTokenClient = null;
@@ -611,7 +612,7 @@ function gInit(){
           gapi.client.setToken(tok);
           gIsSignedIn = true;
           updateGoogleUI();
-          gLoadData().then(()=>{ renderPage(); });
+          driveLoad().then(()=>{ gLoadData().then(()=>{ renderPage(); }); });
           return;
         }
       } catch(e){}
@@ -630,10 +631,7 @@ function gInit(){
         localStorage.setItem('lexoffice_gtoken', JSON.stringify(tok));
         gIsSignedIn = true;
         updateGoogleUI();
-        gLoadData().then(()=>{
-          // Re-render current page after all GCal data loaded
-          renderPage();
-        });
+        driveLoad().then(()=>{ gLoadData().then(()=>{ renderPage(); }); });
       }
     });
   } else {
@@ -1600,11 +1598,101 @@ function renderCalEvent(item){
 
 // ========== DATA STORE ==========
 const DB_KEY='lexoffice_v2';
+const DRIVE_FILE_NAME='advokat_zlatanovic_db.json';
+let _driveFileId=null;
+let _driveSavePending=false;
+let _driveSaveTimer=null;
+
 function loadDB(){
   try{const d=localStorage.getItem(DB_KEY);return d?JSON.parse(d):initDB()}
   catch(e){return initDB()}
 }
-function saveDB(){localStorage.setItem(DB_KEY,JSON.stringify(db))}
+
+function saveDB(){
+  // Uvek sacuvaj lokalno
+  localStorage.setItem(DB_KEY,JSON.stringify(db));
+  // Debounce Drive save — sacekaj 1.5s pa posalji
+  if(_driveSaveTimer) clearTimeout(_driveSaveTimer);
+  _driveSaveTimer = setTimeout(()=>{ driveSync(); }, 1500);
+}
+
+// ---- Google Drive sync ----
+async function driveSync(){
+  if(!gIsSignedIn) return;
+  try{
+    if(!gapi.client.drive) await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest');
+    const data = JSON.stringify(db);
+    if(_driveFileId){
+      // Update postojeceg fajla
+      await gapi.client.request({
+        path: `https://www.googleapis.com/upload/drive/v3/files/${_driveFileId}`,
+        method: 'PATCH',
+        params: { uploadType: 'media' },
+        headers: { 'Content-Type': 'application/json' },
+        body: data
+      });
+    } else {
+      // Trazi fajl
+      const search = await gapi.client.drive.files.list({
+        spaces: 'appDataFolder',
+        q: `name='${DRIVE_FILE_NAME}'`,
+        fields: 'files(id)'
+      });
+      if(search.result.files && search.result.files.length > 0){
+        _driveFileId = search.result.files[0].id;
+        await gapi.client.request({
+          path: `https://www.googleapis.com/upload/drive/v3/files/${_driveFileId}`,
+          method: 'PATCH',
+          params: { uploadType: 'media' },
+          headers: { 'Content-Type': 'application/json' },
+          body: data
+        });
+      } else {
+        // Napravi novi fajl
+        const meta = await gapi.client.drive.files.create({
+          resource: { name: DRIVE_FILE_NAME, parents: ['appDataFolder'] },
+          fields: 'id'
+        });
+        _driveFileId = meta.result.id;
+        await gapi.client.request({
+          path: `https://www.googleapis.com/upload/drive/v3/files/${_driveFileId}`,
+          method: 'PATCH',
+          params: { uploadType: 'media' },
+          headers: { 'Content-Type': 'application/json' },
+          body: data
+        });
+      }
+    }
+    console.log('Drive sync OK');
+  } catch(e){ console.warn('Drive sync greška:', e); }
+}
+
+async function driveLoad(){
+  if(!gIsSignedIn) return false;
+  try{
+    if(!gapi.client.drive) await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest');
+    const search = await gapi.client.drive.files.list({
+      spaces: 'appDataFolder',
+      q: `name='${DRIVE_FILE_NAME}'`,
+      fields: 'files(id)'
+    });
+    if(!search.result.files || search.result.files.length === 0) return false;
+    _driveFileId = search.result.files[0].id;
+    const resp = await gapi.client.request({
+      path: `https://www.googleapis.com/drive/v3/files/${_driveFileId}`,
+      method: 'GET',
+      params: { alt: 'media' }
+    });
+    const driveDb = typeof resp.result === 'string' ? JSON.parse(resp.result) : resp.result;
+    if(driveDb && driveDb.klijenti){
+      db = driveDb;
+      localStorage.setItem(DB_KEY, JSON.stringify(db));
+      console.log('Drive load OK — ucitano', db.klijenti.length, 'klijenata');
+      return true;
+    }
+    return false;
+  } catch(e){ console.warn('Drive load greška:', e); return false; }
+}
 function initDB(){
   const d={
     klijenti:[
