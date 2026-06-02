@@ -3962,18 +3962,36 @@ function importData(){
           showAlert('Nevažeći backup fajl!');
           return;
         }
-        if(!confirm(`Uvesti podatke iz fajla "${file.name}"?\n\nOvo će ZAMENITI sve trenutne podatke!\n\nKlijenata: ${parsed.klijenti.length}\nPredmeta: ${parsed.predmeti.length}\nFinansija: ${(parsed.finansije||[]).length}`)){
-          return;
-        }
-        // Restore GCal links if present
-        if(parsed._gcalLinks){
-          gSaveLinks(parsed._gcalLinks);
-          delete parsed._gcalLinks;
-        }
-        db = parsed;
-        saveDB();
-        renderPage();
-        showAlert('✓ Podaci uspešno uvezeni!');
+        // Custom confirm dijalog
+        const ov=document.createElement('div');
+        ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px)';
+        ov.innerHTML=`<div style="background:var(--surface);border-radius:var(--radius-xl);padding:28px 28px 20px;max-width:380px;width:100%;box-shadow:var(--shadow-lg);font-family:var(--font)">
+          <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:10px">Uvoz podataka</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px">
+            Fajl: <b>${file.name}</b><br>
+            Klijenata: <b>${parsed.klijenti.length}</b><br>
+            Predmeta: <b>${parsed.predmeti.length}</b><br>
+            Finansija: <b>${(parsed.finansije||[]).length}</b><br><br>
+            <span style="color:var(--danger)">Ovo će zameniti sve trenutne podatke!</span>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end">
+            <button id="_imp_cancel" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:8px 18px;font-size:14px;cursor:pointer;font-family:var(--font)">Otkaži</button>
+            <button id="_imp_ok" style="background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:8px 22px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font)">Uvezi</button>
+          </div>
+        </div>`;
+        document.body.appendChild(ov);
+        document.getElementById('_imp_cancel').onclick=()=>ov.remove();
+        document.getElementById('_imp_ok').onclick=()=>{
+          ov.remove();
+          if(parsed._gcalLinks){
+            gSaveLinks(parsed._gcalLinks);
+            delete parsed._gcalLinks;
+          }
+          db = parsed;
+          saveDB();
+          renderPage();
+          showAlert('✓ Podaci uspešno uvezeni!');
+        };
       } catch(err){
         showAlert('Greška pri čitanju fajla: ' + err.message);
       }
