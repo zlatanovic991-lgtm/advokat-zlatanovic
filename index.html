@@ -1689,7 +1689,7 @@ async function driveLoad(){
       { headers: { Authorization: 'Bearer ' + accessToken } }
     );
     const searchData = await searchResp.json();
-    if(!searchData.files || searchData.files.length === 0){ showAlert('Drive: fajl nije pronađen na Drive-u. Potrebno uvesti podatke.'); return false; }
+    if(!searchData.files || searchData.files.length === 0){ console.log('Drive: nema fajla'); return false; }
     _driveFileId = searchData.files[0].id;
     const fileResp = await fetch(
       `https://www.googleapis.com/drive/v3/files/${_driveFileId}?alt=media`,
@@ -1700,11 +1700,9 @@ async function driveLoad(){
       db = driveDb;
       localStorage.setItem(DB_KEY, JSON.stringify(db));
       console.log('Drive load OK — ucitano', db.klijenti.length, 'klijenata');
-      showAlert('✓ Drive: učitano ' + db.klijenti.length + ' klijenata, ' + db.predmeti.length + ' predmeta');
       return true;
     }
     console.warn('Drive load: fajl postoji ali nema klijenti polje', driveDb);
-    showAlert('Drive: fajl nađen ali podaci nisu ispravni. Struktura: ' + Object.keys(driveDb||{}).join(', '));
     return false;
   } catch(e){ 
     console.warn('Drive load greška:', e); 
