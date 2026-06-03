@@ -1620,8 +1620,8 @@ function saveDB(){
 async function driveSync(){
   if(!gIsSignedIn) return;
   try{
-    const token = gapi.auth.getToken ? gapi.auth.getToken() : null;
-    const accessToken = token ? token.access_token : null;
+    const tokenObj = gapi.client.getToken();
+    const accessToken = tokenObj ? tokenObj.access_token : null;
     if(!accessToken){ console.warn('DriveSync: nema tokena'); return; }
     const data = JSON.stringify(db);
     if(!_driveFileId){
@@ -1680,9 +1680,9 @@ async function driveLoad(){
         gapi.client.load('drive','v3', resolve);
       });
     }
-    const token = gapi.auth.getToken ? gapi.auth.getToken() : null;
-    const accessToken = token ? token.access_token : null;
-    if(!accessToken){ console.warn('Nema access tokena'); return false; }
+    const tokenObj = gapi.client.getToken();
+    const accessToken = tokenObj ? tokenObj.access_token : null;
+    if(!accessToken){ showAlert('Drive: nema access tokena. Prijavite se ponovo.'); return false; }
     // Pretrazi fajl direktno preko fetch (zaobilazi gapi.client.drive koji moze biti nezavrsen)
     const searchResp = await fetch(
       `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D'${DRIVE_FILE_NAME}'&fields=files(id)`,
