@@ -1620,49 +1620,47 @@ function saveDB(){
 async function driveSync(){
   if(!gIsSignedIn) return;
   try{
-    if(!gapi.client.drive) await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest');
+    const token = gapi.auth.getToken ? gapi.auth.getToken() : null;
+    const accessToken = token ? token.access_token : null;
+    if(!accessToken){ console.warn('DriveSync: nema tokena'); return; }
     const data = JSON.stringify(db);
-    if(_driveFileId){
-      // Update postojeceg fajla
-      await gapi.client.request({
-        path: `https://www.googleapis.com/upload/drive/v3/files/${_driveFileId}`,
-        method: 'PATCH',
-        params: { uploadType: 'media' },
-        headers: { 'Content-Type': 'application/json' },
-        body: data
-      });
-    } else {
+    if(!_driveFileId){
       // Trazi fajl
-      const search = await gapi.client.drive.files.list({
-        spaces: 'appDataFolder',
-        q: `name='${DRIVE_FILE_NAME}'`,
-        fields: 'files(id)'
-      });
-      if(search.result.files && search.result.files.length > 0){
-        _driveFileId = search.result.files[0].id;
-        await gapi.client.request({
-          path: `https://www.googleapis.com/upload/drive/v3/files/${_driveFileId}`,
-          method: 'PATCH',
-          params: { uploadType: 'media' },
-          headers: { 'Content-Type': 'application/json' },
-          body: data
-        });
+      const searchResp = await fetch(
+        `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D'${DRIVE_FILE_NAME}'&fields=files(id)`,
+        { headers: { Authorization: 'Bearer ' + accessToken } }
+      );
+      const searchData = await searchResp.json();
+      if(searchData.files && searchData.files.length > 0){
+        _driveFileId = searchData.files[0].id;
       } else {
-        // Napravi novi fajl
-        const meta = await gapi.client.drive.files.create({
-          resource: { name: DRIVE_FILE_NAME, parents: ['appDataFolder'] },
-          fields: 'id'
-        });
-        _driveFileId = meta.result.id;
-        await gapi.client.request({
-          path: `https://www.googleapis.com/upload/drive/v3/files/${_driveFileId}`,
-          method: 'PATCH',
-          params: { uploadType: 'media' },
-          headers: { 'Content-Type': 'application/json' },
-          body: data
-        });
+        // Napravi novi fajl (multipart)
+        const boundary = 'boundary_adv_zl';
+        const meta = JSON.stringify({ name: DRIVE_FILE_NAME, parents: ['appDataFolder'] });
+        const body = `--${boundary}
+Content-Type: application/json
+
+${meta}
+--${boundary}
+Content-Type: application/json
+
+${data}
+--${boundary}--`;
+        const createResp = await fetch(
+          'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',
+          { method:'POST', headers:{ Authorization:'Bearer '+accessToken, 'Content-Type':`multipart/related; boundary=${boundary}` }, body }
+        );
+        const createData = await createResp.json();
+        _driveFileId = createData.id;
+        console.log('Drive sync OK (novi fajl kreiran)');
+        return;
       }
     }
+    // Update postojeceg fajla
+    await fetch(
+      `https://www.googleapis.com/upload/drive/v3/files/${_driveFileId}?uploadType=media`,
+      { method:'PATCH', headers:{ Authorization:'Bearer '+accessToken, 'Content-Type':'application/json' }, body: data }
+    );
     console.log('Drive sync OK');
   } catch(e){ console.warn('Drive sync greška:', e); }
 }
@@ -1670,20 +1668,34 @@ async function driveSync(){
 async function driveLoad(){
   if(!gIsSignedIn) return false;
   try{
-    if(!gapi.client.drive) await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/drive/v3/rest');
-    const search = await gapi.client.drive.files.list({
-      spaces: 'appDataFolder',
-      q: `name='${DRIVE_FILE_NAME}'`,
-      fields: 'files(id)'
-    });
-    if(!search.result.files || search.result.files.length === 0) return false;
-    _driveFileId = search.result.files[0].id;
-    const resp = await gapi.client.request({
-      path: `https://www.googleapis.com/drive/v3/files/${_driveFileId}`,
-      method: 'GET',
-      params: { alt: 'media' }
-    });
-    const driveDb = typeof resp.result === 'string' ? JSON.parse(resp.result) : resp.result;
+    // Sacekaj da gapi.client bude spreman
+    let attempts = 0;
+    while((!gapi.client || !gapi.client.request) && attempts < 20){
+      await new Promise(r=>setTimeout(r,300));
+      attempts++;
+    }
+    // Ucitaj Drive API ako nije ucitan
+    if(!gapi.client.drive){
+      await new Promise((resolve, reject)=>{
+        gapi.client.load('drive','v3', resolve);
+      });
+    }
+    const token = gapi.auth.getToken ? gapi.auth.getToken() : null;
+    const accessToken = token ? token.access_token : null;
+    if(!accessToken){ console.warn('Nema access tokena'); return false; }
+    // Pretrazi fajl direktno preko fetch (zaobilazi gapi.client.drive koji moze biti nezavrsen)
+    const searchResp = await fetch(
+      `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D'${DRIVE_FILE_NAME}'&fields=files(id)`,
+      { headers: { Authorization: 'Bearer ' + accessToken } }
+    );
+    const searchData = await searchResp.json();
+    if(!searchData.files || searchData.files.length === 0){ console.log('Drive: nema fajla'); return false; }
+    _driveFileId = searchData.files[0].id;
+    const fileResp = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${_driveFileId}?alt=media`,
+      { headers: { Authorization: 'Bearer ' + accessToken } }
+    );
+    const driveDb = await fileResp.json();
     if(driveDb && driveDb.klijenti){
       db = driveDb;
       localStorage.setItem(DB_KEY, JSON.stringify(db));
