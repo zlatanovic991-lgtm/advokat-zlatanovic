@@ -237,17 +237,23 @@ html, body { max-width: 100%; overflow-x: hidden; }
   /* Page content */
   .page-content{padding:8px 6px!important;overflow-x:hidden}
 
-  /* Tabele — BEZ horizontalnog scrolla */
+  /* Tabele — card layout na mobilnom, BEZ horizontalnog scrolla */
   .table-wrap{overflow:hidden}
-  table{width:100%!important;min-width:0!important;font-size:12px;table-layout:fixed}
-  th,td{padding:7px 6px!important;white-space:normal!important;word-break:break-word;overflow:hidden}
-  /* Sakrij manje vazne kolone na mobilnom */
-  th:nth-child(n+5):not(:last-child), td:nth-child(n+5):not(:last-child){display:none}
-  th:nth-child(3), td:nth-child(3){max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap!important}
-  th:nth-child(4), td:nth-child(4){max-width:80px}
-  /* Dugmad u zadnjoj koloni */
-  td:last-child{white-space:nowrap!important}
-  td:last-child .btn{font-size:10px!important;padding:3px 6px!important;margin:1px}
+  .table-wrap table{width:100%!important;min-width:0!important;border-collapse:collapse}
+  .table-wrap thead{display:none}
+  .table-wrap tbody tr{display:block;border-bottom:1px solid var(--border);padding:10px 12px;cursor:pointer}
+  .table-wrap tbody tr:last-child{border-bottom:none}
+  .table-wrap td{display:flex;flex-direction:column;border:none!important;padding:1px 0!important;font-size:13px;white-space:normal!important;word-break:break-word;max-width:100%}
+  .table-wrap td::before{content:attr(data-label);font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px}
+  .table-wrap td[data-label=""]::before,.table-wrap td:not([data-label])::before{display:none}
+  .table-wrap td:empty{display:none}
+  /* Akcijska dugmad — horizontalno */
+  .table-wrap td:last-child{flex-direction:row;flex-wrap:wrap;gap:4px;margin-top:6px;padding-top:4px!important;border-top:1px solid var(--border)!important}
+  .table-wrap td:last-child::before{display:none}
+  .table-wrap td:last-child .btn{font-size:11px!important;padding:4px 10px!important}
+  /* Badge unutar td — inline */
+  .table-wrap td .badge{display:inline-flex}
+  .table-wrap td .id-badge{display:inline-block}
 
   /* Dashboard inline grid 4 kolone -> 2x2 */
   .dash-top-grid{grid-template-columns:1fr 1fr!important}
@@ -1824,12 +1830,27 @@ function navigate(page,id,tab,fromHistory){
   renderPage();
 }
 
+
+// Mobilni card layout za tabele — automatski dodaje data-label
+function mobileLabelTables(){
+  if(window.innerWidth > 600) return;
+  document.querySelectorAll('.table-wrap table').forEach(table=>{
+    const headers = Array.from(table.querySelectorAll('thead th')).map(th=>th.textContent.trim());
+    table.querySelectorAll('tbody tr').forEach(tr=>{
+      Array.from(tr.querySelectorAll('td')).forEach((td,i)=>{
+        td.setAttribute('data-label', headers[i]||'');
+      });
+    });
+  });
+}
+
 function renderPage(){
   const el=document.getElementById('pageContent');
   if(detailId&&currentPage==='predmeti'){el.innerHTML=renderPredmetDetail();attachDetailTabs();return}
   if(detailId&&currentPage==='klijenti'){el.innerHTML=renderKlijentDetail();attachDetailTabs();return}
   const renders={dashboard:renderDashboard,klijenti:renderKlijenti,predmeti:renderPredmeti,finansije:renderFinansije,google:renderGoogle};
   el.innerHTML=(renders[currentPage]||renderDashboard)();
+  setTimeout(mobileLabelTables, 0);
 }
 
 // ========== DASHBOARD ==========
