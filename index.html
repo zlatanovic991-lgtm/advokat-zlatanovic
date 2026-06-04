@@ -193,7 +193,7 @@ tbody tr:hover{background:var(--surface2)}
 .upload-area svg{width:32px;height:32px;stroke:currentColor;fill:none;stroke-width:1.5;margin:0 auto 8px;display:block}
 
 /* RESPONSIVE */
-@media(max-width:768px){
+@media(max-width:768px){.mobile-hidden{display:none!important;}.mobile-compact{padding:8px 12px!important;}.mobile-compact .stat-value{font-size:18px!important;}.mobile-compact .stat-sub{font-size:11px!important;}
   #sidebar{position:fixed;left:0;top:0;height:100%;z-index:100;transform:translateX(-100%)}
   #sidebar.open{transform:translateX(0)}
   #mob-toggle{display:flex}
@@ -1497,13 +1497,14 @@ function openEditEventModal(eventId){
     else if(ev.colorId==='6') currentTip='Rok';
     else if(ev.colorId==='8') currentTip='Privatno';
   }
-  // Očisti prefiks iz naziva za prikaz u polju
-  const _editPfxs=['Ročište: ','Konsultacije: ','Rok: ','Privatno: ','Sastanak: '];
-  let cleanNazivEdit = naziv;
-  _editPfxs.forEach(p=>{if(cleanNazivEdit.startsWith(p))cleanNazivEdit=cleanNazivEdit.slice(p.length);});
   openModal('Izmeni događaj',`
-    <div class="form-group">
-      <label>Tip događaja</label>
+    <div class="form-group"><label>Naziv događaja *</label><input id="edit_ev_naziv" value="${esc(naziv)}" placeholder="Naziv događaja"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Datum</label><div class="date-input-wrap"><input id="edit_ev_datum" value="${currentDatum}" placeholder="DD/MM/YYYY" maxlength="10" oninput="autoSlashDate(this)"><button type="button" class="date-cal-btn" onclick="openCal('edit_ev_datum')">📅</button></div></div>
+      <div class="form-group"><label>Vreme</label><input id="edit_ev_vreme" value="${currentVreme}" placeholder="HH:MM" maxlength="5" oninput="formatVremeInput(this)"></div>
+    </div>
+    <div class="form-group"><label>Poveži sa predmetom</label><input type="hidden" id="edit_ev_predmet" value="${currentPredmetId}"><div class="ss-wrap" id="edit_ev_predmet_ss"></div></div>
+    <div class="form-group"><label>Tip događaja</label>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px" id="edit_tip_buttons">
         <button type="button" class="edit-tip-btn ${currentTip==='Ročište'?'etb-active':''}" data-tip="Ročište" onclick="selectEditTipBtn(this)" style="padding:10px;border-radius:var(--radius);border:${currentTip==='Ročište'?'2px solid var(--accent)':'1px solid var(--border)'};background:${currentTip==='Ročište'?'var(--accent-light)':'var(--surface)'};color:${currentTip==='Ročište'?'var(--accent)':'var(--text2)'};font-weight:${currentTip==='Ročište'?'600':'500'};font-size:13px;cursor:pointer;text-align:center">⚖ Ročište</button>
         <button type="button" class="edit-tip-btn ${currentTip==='Konsultacije'?'etb-active':''}" data-tip="Konsultacije" onclick="selectEditTipBtn(this)" style="padding:10px;border-radius:var(--radius);border:${currentTip==='Konsultacije'?'2px solid var(--accent)':'1px solid var(--border)'};background:${currentTip==='Konsultacije'?'var(--accent-light)':'var(--surface)'};color:${currentTip==='Konsultacije'?'var(--accent)':'var(--text2)'};font-weight:${currentTip==='Konsultacije'?'600':'500'};font-size:13px;cursor:pointer;text-align:center">💬 Konsultacije</button>
@@ -1512,23 +1513,6 @@ function openEditEventModal(eventId){
       </div>
       <input type="hidden" id="edit_ev_tip" value="${currentTip}">
     </div>
-
-    <div class="form-group">
-      <label>Poveži sa predmetom (opciono)</label>
-      <input type="hidden" id="edit_ev_predmet" value="${currentPredmetId}">
-      <div class="ss-wrap" id="edit_ev_predmet_ss"></div>
-    </div>
-
-    <div class="form-group">
-      <label id="edit_ev_naziv_label">Naziv (opciono)</label>
-      <input id="edit_ev_naziv" value="${esc(cleanNazivEdit)}" placeholder="Opis događaja">
-    </div>
-
-    <div class="form-row">
-      <div class="form-group"><label>Datum</label><div class="date-input-wrap"><input id="edit_ev_datum" value="${currentDatum}" placeholder="DD/MM/YYYY" maxlength="10" oninput="autoSlashDate(this)"><button type="button" class="date-cal-btn" onclick="openCal('edit_ev_datum')">📅</button></div></div>
-      <div class="form-group"><label>Vreme (opciono)</label><input id="edit_ev_vreme" value="${currentVreme}" placeholder="npr. 10:30" maxlength="5" oninput="formatVremeInput(this)"></div>
-    </div>
-
     <div style="font-size:12px;color:var(--text3);margin-top:4px">Izmena će se primeniti i u Google Calendaru.</div>
   `,'Sačuvaj izmenu');
   setTimeout(()=>{
@@ -2034,19 +2018,19 @@ function renderDashboard(){
       })()}
     </div>
 
-    <div class="stat-card">
+    <div class="stat-card mobile-compact">
       <div class="stat-label">Aktivni predmeti</div>
       <div class="stat-value">${aktivni}</div>
       <div class="stat-sub">od ${db.predmeti.length} ukupno</div>
     </div>
 
-    <div class="stat-card">
+    <div class="stat-card mobile-hidden">
       <div class="stat-label">Ukupna potraživanja</div>
       <div class="stat-value" style="color:var(--danger);font-size:20px">${fmtMoney(ukupnoDug)}</div>
       <div class="stat-sub">${dugovanja.length} neplaćenih faktura</div>
       <div class="stat-sub" style="margin-top:6px;line-height:1.5">Potraživanja prema klijentima koji su obavešteni o dugovanjima i prema državnim organima po donetim rešenjima.</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card mobile-hidden">
       <div class="stat-label">Ukupno naplaćeno</div>
       <div class="stat-value" style="color:var(--success);font-size:20px">${fmtMoney(ukupnoNapl)}</div>
       <div class="stat-sub">ove godine</div>
@@ -2711,9 +2695,17 @@ function renderFinansije(){
       <div class="stat-sub">${percPlac}% naplaćenosti</div>
       <div class="progress" style="margin-top:8px"><div class="progress-fill" style="width:${percPlac}%"></div></div>
     </div>
-    <div class="stat-card">
-      <div class="stat-label">Ukupan dug</div>
-      <div class="stat-value" style="font-size:18px;color:var(--danger)">${fmtMoney(ukupnoDug)}</div>
+    <div class="stat-card" style="grid-column:span 2">
+      <div class="stat-label" style="margin-bottom:8px">Ukupna potraživanja <span style="color:var(--danger);font-weight:700">${fmtMoney(ukupnoDug)}</span></div>
+      ${(()=>{
+        const dug=db.finansije.filter(f=>f.status!=='placeno');
+        if(dug.length===0) return '<div style="font-size:13px;color:var(--text3)">Nema neplaćenih faktura.</div>';
+        const byK={};
+        dug.forEach(f=>{const k=getKlijent(f.klijentId);const ime=k?k.ime:'?';if(!byK[ime])byK[ime]=0;byK[ime]+=(f.fakturisano-f.placeno);});
+        return Object.entries(byK).sort((a,b)=>b[1]-a[1]).map(([ime,iznos])=>
+          '<div class="finance-row" style="padding:4px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">'+esc(ime)+'</span><span class="amount-neg" style="font-size:13px">'+fmtMoney(iznos)+'</span></div>'
+        ).join('');
+      })()}
     </div>
     <div class="stat-card">
       <div class="stat-label">Neplaćenih faktura</div>
