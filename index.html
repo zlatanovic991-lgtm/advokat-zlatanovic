@@ -193,7 +193,28 @@ tbody tr:hover{background:var(--surface2)}
 .upload-area svg{width:32px;height:32px;stroke:currentColor;fill:none;stroke-width:1.5;margin:0 auto 8px;display:block}
 
 /* RESPONSIVE */
-@media(max-width:768px){.mobile-hidden{display:none!important;}.mobile-compact{padding:8px 12px!important;}.mobile-compact .stat-value{font-size:18px!important;}.mobile-compact .stat-sub{font-size:11px!important;}
+@media(max-width:768px){
+  .mobile-hidden{display:none!important;}
+  .mobile-compact{padding:8px 12px!important;}
+  .mobile-compact .stat-value{font-size:18px!important;}
+  .mobile-compact .stat-sub{font-size:11px!important;}
+  /* Dashboard mobilno - danas i sutra dominantno */
+  [id="dash-top-grid"],[style*="grid-template-columns:2fr 1fr 1fr 1fr"]{
+    grid-template-columns:1fr!important;
+  }
+  [id="dash-top-grid"] .stat-card:first-child,
+  [style*="grid-template-columns:2fr 1fr 1fr 1fr"] .stat-card:first-child{
+    order:-1;
+  }
+  .mobile-compact{
+    display:flex!important;
+    align-items:center;
+    justify-content:space-between;
+    padding:6px 12px!important;
+  }
+  .mobile-compact .stat-label{font-size:11px!important;margin-bottom:0!important;}
+  .mobile-compact .stat-value{font-size:14px!important;margin:0!important;}
+  .mobile-compact .stat-sub{font-size:11px!important;margin:0!important;}
   #sidebar{position:fixed;left:0;top:0;height:100%;z-index:100;transform:translateX(-100%)}
   #sidebar.open{transform:translateX(0)}
   #mob-toggle{display:flex}
@@ -1936,7 +1957,7 @@ function renderDashboard(){
   const danasCount=svaRocista.filter(item=>item.date===todayStr).length;
 
   return`
-  <div class="dash-top-grid" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:16px;margin-bottom:24px">
+  <div class="dash-top-grid" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:16px;margin-bottom:24px" id="dash-top-grid">
 
     <div class="stat-card" style="${(()=>{ const sutraStr=new Date(new Date().getTime()+24*60*60*1000).toISOString().slice(0,10); const d=svaRocista.filter(i=>i.date===todayStr).length; if(d>0) return 'border:2px solid var(--danger);background:var(--danger-bg);box-shadow:0 0 0 5px rgba(220,53,69,.09),var(--shadow)'; if(svaRocista.filter(i=>i.date===sutraStr).length>0) return 'border:2px solid var(--warn);background:var(--warn-bg);box-shadow:0 0 0 5px rgba(255,152,0,.09),var(--shadow)'; return 'border:2px solid var(--border)'; })()}">
       ${(()=>{
@@ -2018,7 +2039,7 @@ function renderDashboard(){
       })()}
     </div>
 
-    <div class="stat-card mobile-compact">
+    <div class="stat-card mobile-compact" style="cursor:pointer" onclick="navigate('predmeti')">
       <div class="stat-label">Aktivni predmeti</div>
       <div class="stat-value">${aktivni}</div>
       <div class="stat-sub">od ${db.predmeti.length} ukupno</div>
@@ -2684,32 +2705,40 @@ function renderFinansije(){
   const percPlac=ukupnoFakt>0?Math.round(ukupnoPlac/ukupnoFakt*100):0;
   
   return`
-  <div class="grid-4" style="margin-bottom:24px">
-    <div class="stat-card">
+  <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:24px;align-items:flex-start">
+    <div class="stat-card" style="flex:1;min-width:160px;max-width:220px">
       <div class="stat-label">Ukupno fakturisano</div>
-      <div class="stat-value" style="font-size:18px">${fmtMoney(ukupnoFakt)}</div>
+      <div class="stat-value" style="font-size:16px">${fmtMoney(ukupnoFakt)}</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" style="flex:1;min-width:160px;max-width:220px">
       <div class="stat-label">Ukupno naplaćeno</div>
-      <div class="stat-value" style="font-size:18px;color:var(--success)">${fmtMoney(ukupnoPlac)}</div>
+      <div class="stat-value" style="font-size:16px;color:var(--success)">${fmtMoney(ukupnoPlac)}</div>
       <div class="stat-sub">${percPlac}% naplaćenosti</div>
-      <div class="progress" style="margin-top:8px"><div class="progress-fill" style="width:${percPlac}%"></div></div>
+      <div class="progress" style="margin-top:6px"><div class="progress-fill" style="width:${percPlac}%"></div></div>
     </div>
-    <div class="stat-card" style="grid-column:span 2">
-      <div class="stat-label" style="margin-bottom:8px">Ukupna potraživanja <span style="color:var(--danger);font-weight:700">${fmtMoney(ukupnoDug)}</span></div>
-      ${(()=>{
-        const dug=db.finansije.filter(f=>f.status!=='placeno');
-        if(dug.length===0) return '<div style="font-size:13px;color:var(--text3)">Nema neplaćenih faktura.</div>';
-        const byK={};
-        dug.forEach(f=>{const k=getKlijent(f.klijentId);const ime=k?k.ime:'?';if(!byK[ime])byK[ime]=0;byK[ime]+=(f.fakturisano-f.placeno);});
-        return Object.entries(byK).sort((a,b)=>b[1]-a[1]).map(([ime,iznos])=>
-          '<div class="finance-row" style="padding:4px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">'+esc(ime)+'</span><span class="amount-neg" style="font-size:13px">'+fmtMoney(iznos)+'</span></div>'
-        ).join('');
-      })()}
-    </div>
-    <div class="stat-card">
+    <div class="stat-card" style="flex:1;min-width:160px;max-width:220px">
       <div class="stat-label">Neplaćenih faktura</div>
       <div class="stat-value">${db.finansije.filter(f=>f.status!=='placeno').length}</div>
+    </div>
+    <div class="stat-card" style="flex:2;min-width:260px">
+      <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="(function(){var el=document.getElementById('potr-lista');var arr=document.getElementById('potr-arrow');if(el.style.display==='none'){el.style.display='';arr.textContent='▲';}else{el.style.display='none';arr.textContent='▼';}})()">
+        <div>
+          <div class="stat-label">Ukupna potraživanja</div>
+          <div class="stat-value" style="font-size:16px;color:var(--danger)">${fmtMoney(ukupnoDug)}</div>
+        </div>
+        <span id="potr-arrow" style="font-size:12px;color:var(--text3);margin-left:8px">▼</span>
+      </div>
+      <div id="potr-lista" style="display:none;margin-top:10px">
+        ${(()=>{
+          const dug=db.finansije.filter(f=>f.status!=='placeno');
+          if(dug.length===0) return '<div style="font-size:13px;color:var(--text3)">Nema neplaćenih faktura.</div>';
+          const byK={};
+          dug.forEach(f=>{const k=getKlijent(f.klijentId);const ime=k?k.ime:'?';if(!byK[ime])byK[ime]=0;byK[ime]+=(f.fakturisano-f.placeno);});
+          return Object.entries(byK).sort((a,b)=>b[1]-a[1]).map(([ime,iznos])=>
+            '<div class="finance-row" style="padding:4px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">'+esc(ime)+'</span><span class="amount-neg" style="font-size:13px">'+fmtMoney(iznos)+'</span></div>'
+          ).join('');
+        })()}
+      </div>
     </div>
   </div>
   <div class="filter-bar">
