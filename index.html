@@ -1488,6 +1488,15 @@ function openEditEventModal(eventId){
   const currentPredmetId=gLinkPredmetId(links[eventId])||'';
   const predmetOptions=db.predmeti.filter(p=>p.status!=='arhiviran').map(p=>{const k=getKlijent(p.klijentId);return`<option value="${p.id}" ${p.id===currentPredmetId?'selected':''}>${p.interni} — ${k.ime}${p.protivna?' vs. '+p.protivna:''}</option>`;}).join('');
   currentModal='_editEvent'; editId=eventId;
+  // Odredi trenutni tip iz summary ili colorId
+  const _tipPrefixes=[['Privatno:','Privatno'],['Ročište:','Ročište'],['Konsultacije:','Konsultacije'],['Rok:','Rok']];
+  let currentTip = 'Ročište';
+  for(const [pfx,t] of _tipPrefixes){ if(naziv.startsWith(pfx)){currentTip=t;break;} }
+  if(currentTip==='Ročište'){
+    if(ev.colorId==='7') currentTip='Konsultacije';
+    else if(ev.colorId==='6') currentTip='Rok';
+    else if(ev.colorId==='8') currentTip='Privatno';
+  }
   openModal('Izmeni događaj',`
     <div class="form-group"><label>Naziv događaja *</label><input id="edit_ev_naziv" value="${esc(naziv)}" placeholder="Naziv događaja"></div>
     <div class="form-row">
@@ -1495,17 +1504,14 @@ function openEditEventModal(eventId){
       <div class="form-group"><label>Vreme</label><input id="edit_ev_vreme" value="${currentVreme}" placeholder="HH:MM" maxlength="5" oninput="formatVremeInput(this)"></div>
     </div>
     <div class="form-group"><label>Poveži sa predmetom</label><input type="hidden" id="edit_ev_predmet" value="${currentPredmetId}"><div class="ss-wrap" id="edit_ev_predmet_ss"></div></div>
-    <div class="form-group"><label>Vrsta obaveze</label>
-      <div style="display:flex;gap:10px;margin-top:6px">
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border-radius:var(--radius);border:2px solid ${isPrivatno?'var(--border)':'var(--danger)'};background:${isPrivatno?'var(--surface)':'var(--danger-bg)'};flex:1;font-size:13.5px;font-weight:500;transition:all .15s" id="tip_poslovno_label">
-          <input type="radio" name="edit_ev_tip" id="tip_poslovno" value="poslovno" ${isPrivatno?'':'checked'} style="display:none" onchange="updateTipStyle()">
-          <span style="font-size:18px">⚖</span><span>Poslovno</span>
-        </label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:10px 16px;border-radius:var(--radius);border:2px solid ${isPrivatno?'var(--border2)':'var(--border)'};background:${isPrivatno?'var(--surface3)':'var(--surface)'};flex:1;font-size:13.5px;font-weight:500;transition:all .15s" id="tip_privatno_label">
-          <input type="radio" name="edit_ev_tip" id="tip_privatno" value="privatno" ${isPrivatno?'checked':''} style="display:none" onchange="updateTipStyle()">
-          <span style="font-size:18px">🏠</span><span>Privatno</span>
-        </label>
+    <div class="form-group"><label>Tip događaja</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px" id="edit_tip_buttons">
+        <button type="button" class="edit-tip-btn ${currentTip==='Ročište'?'etb-active':''}" data-tip="Ročište" onclick="selectEditTipBtn(this)" style="padding:10px;border-radius:var(--radius);border:${currentTip==='Ročište'?'2px solid var(--accent)':'1px solid var(--border)'};background:${currentTip==='Ročište'?'var(--accent-light)':'var(--surface)'};color:${currentTip==='Ročište'?'var(--accent)':'var(--text2)'};font-weight:${currentTip==='Ročište'?'600':'500'};font-size:13px;cursor:pointer;text-align:center">⚖ Ročište</button>
+        <button type="button" class="edit-tip-btn ${currentTip==='Konsultacije'?'etb-active':''}" data-tip="Konsultacije" onclick="selectEditTipBtn(this)" style="padding:10px;border-radius:var(--radius);border:${currentTip==='Konsultacije'?'2px solid var(--accent)':'1px solid var(--border)'};background:${currentTip==='Konsultacije'?'var(--accent-light)':'var(--surface)'};color:${currentTip==='Konsultacije'?'var(--accent)':'var(--text2)'};font-weight:${currentTip==='Konsultacije'?'600':'500'};font-size:13px;cursor:pointer;text-align:center">💬 Konsultacije</button>
+        <button type="button" class="edit-tip-btn ${currentTip==='Rok'?'etb-active':''}" data-tip="Rok" onclick="selectEditTipBtn(this)" style="padding:10px;border-radius:var(--radius);border:${currentTip==='Rok'?'2px solid var(--accent)':'1px solid var(--border)'};background:${currentTip==='Rok'?'var(--accent-light)':'var(--surface)'};color:${currentTip==='Rok'?'var(--accent)':'var(--text2)'};font-weight:${currentTip==='Rok'?'600':'500'};font-size:13px;cursor:pointer;text-align:center">⏳ Rok</button>
+        <button type="button" class="edit-tip-btn ${currentTip==='Privatno'?'etb-active':''}" data-tip="Privatno" onclick="selectEditTipBtn(this)" style="padding:10px;border-radius:var(--radius);border:${currentTip==='Privatno'?'2px solid var(--accent)':'1px solid var(--border)'};background:${currentTip==='Privatno'?'var(--accent-light)':'var(--surface)'};color:${currentTip==='Privatno'?'var(--accent)':'var(--text2)'};font-weight:${currentTip==='Privatno'?'600':'500'};font-size:13px;cursor:pointer;text-align:center">🏠 Privatno</button>
       </div>
+      <input type="hidden" id="edit_ev_tip" value="${currentTip}">
     </div>
     <div style="font-size:12px;color:var(--text3);margin-top:4px">Izmena će se primeniti i u Google Calendaru.</div>
   `,'Sačuvaj izmenu');
@@ -1534,15 +1540,18 @@ async function saveEditEvent(){
   if(!ev) return;
   let naziv=(document.getElementById('edit_ev_naziv')?.value||'').trim();
   if(!naziv){alert('Unesite naziv!');return;}
-  const isPrivatno=document.getElementById('tip_privatno')?.checked;
+  const _editTip=document.getElementById('edit_ev_tip')?.value||'Ročište';
+  const isPrivatno=_editTip==='Privatno';
   const datumRaw=document.getElementById('edit_ev_datum')?.value?.trim()||'';
   const vremeRaw=document.getElementById('edit_ev_vreme')?.value?.trim()||'';
   const noviPredmetId=document.getElementById('edit_ev_predmet')?.value||'';
   const prefixes=['Privatno: ','Ročište: ','Rok: ','Konsultacije: ','Sastanak: '];
   let cleanNaziv=naziv;
   prefixes.forEach(p=>{if(cleanNaziv.startsWith(p))cleanNaziv=cleanNaziv.slice(p.length);});
-  const finalNaziv=isPrivatno?'Privatno: '+cleanNaziv:cleanNaziv;
-  const colorId=isPrivatno?'8':'11';
+  const _tipPrefix={'Ročište':'Ročište: ','Konsultacije':'Konsultacije: ','Rok':'Rok: ','Privatno':'Privatno: '};
+  const finalNaziv=(_tipPrefix[_editTip]||'')+cleanNaziv;
+  const _editColorMap={'Ročište':'11','Konsultacije':'7','Rok':'6','Privatno':'8'};
+  const colorId=_editColorMap[_editTip]||'11';
   const resource={summary:finalNaziv,colorId};
   if(datumRaw){
     const parts=datumRaw.split('/');
@@ -1943,7 +1952,7 @@ function renderDashboard(){
           const podNaziv = item.fromGCal && item.p && item.naziv ? item.naziv : '';
           const protivnaStr = item.p?.protivna ? 'vs. ' + item.p.protivna : '';
           const tipIkona = privatno ? '🏠' : (item.fromGCal
-            ? (()=>{const _ev=gCalendarEvents.find(e=>e.id===item.evId);const _s=(_ev&&_ev.summary)||item.naziv||'';const _c=_ev&&_ev.colorId;if(_s.startsWith('Konsultacije:')||_c==='7')return '💬';if(_s.startsWith('Rok:')||_c==='6')return '⏳';if(_s.startsWith('Privatno:')||_c==='8')return '🏠';return '⚖';})()
+            ? (()=>{const _ev=gCalendarEvents.find(e=>e.id===item.evId);const _s=(_ev&&_ev.summary)||item.naziv||'';return _s.startsWith('Konsultacije:')?'💬':_s.startsWith('Rok:')?'⏳':_s.startsWith('Privatno:')?'🏠':'⚖';})()
             : '⚖');
           let vremeStr = '';
           if(item.fromGCal){
@@ -3145,6 +3154,21 @@ function openGCalEventModal(){
   setTimeout(()=>{buildPredmetSearchSelect('m_ev_predmet_ss','m_ev_predmet','');},30);
 }
 
+function selectEditTipBtn(btn){
+  document.querySelectorAll('.edit-tip-btn').forEach(b=>{
+    b.classList.remove('etb-active');
+    b.style.border='1px solid var(--border)';
+    b.style.background='var(--surface)';
+    b.style.color='var(--text2)';
+    b.style.fontWeight='500';
+  });
+  btn.classList.add('etb-active');
+  btn.style.border='2px solid var(--accent)';
+  btn.style.background='var(--accent-light)';
+  btn.style.color='var(--accent)';
+  btn.style.fontWeight='600';
+  document.getElementById('edit_ev_tip').value=btn.dataset.tip;
+}
 function selectTipBtn(btn){
   // Reset all
   document.querySelectorAll('.tip-btn').forEach(b=>{
