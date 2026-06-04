@@ -4392,6 +4392,27 @@ function stampajFakturu(finId){
   if(!w){alert('Browser je blokirao otvaranje prozora. Dozvolite popup za ovu stranicu.');return;}
   setTimeout(()=>URL.revokeObjectURL(url),60000);
 }
+
+// ========== INIT ==========
+window.addEventListener('popstate', function(e){
+  if(e.state){
+    navigate(e.state.page, e.state.id, e.state.tab, true);
+  } else {
+    navigate('dashboard', null, 'info', true);
+  }
+});
+
+document.addEventListener('DOMContentLoaded', function(){
+  loadTheme();
+  const initHash = location.hash.replace('#','');
+  if(initHash){
+    const parts = initHash.split('/');
+    navigate(parts[0]||'dashboard', parts[1]||null, 'info', true);
+  } else {
+    navigate('dashboard');
+  }
+  setTimeout(gInit, 1000);
+});
 </script>
 </body>
 </html>
