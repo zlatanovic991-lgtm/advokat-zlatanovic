@@ -4084,7 +4084,7 @@ function renderGCalEvent(ev, showLinkBtn){
     <div class="gcal-dot" style="background:${ev.colorId==='11'?'var(--danger)':ev.colorId==='10'?'var(--success)':'var(--accent)'}"></div>
     <div style="flex:1;min-width:0">
       <div style="font-weight:500;font-size:13.5px">${esc(ev.summary||'(bez naslova)')}</div>
-      ${(()=>{const _sum=ev.summary||'';const _tipMap=[['Ročište:','⚖ Ročište iz aplikacije','var(--accent)'],['Konsultacije:','💬 Konsultacije iz aplikacije','var(--success)'],['Rok:','⏳ Rok iz aplikacije','var(--warn)'],['Privatno:','🏠 Privatno iz aplikacije','var(--text2)']];const _found=_tipMap.find(([pfx])=>_sum.startsWith(pfx));return _found?`<div style="font-size:11px;color:${_found[2]}">${_found[1]}</div>`:(ev.description&&ev.description.includes('Predmet:')?`<div style="font-size:11px;color:var(--accent)">⚖ Ročište iz aplikacije</div>`:'');})()}
+      ${(function(){var s=ev.summary||'';var tip='';var col='';if(s.startsWith('Ročište:')){tip='⚲ Ročište iz aplikacije';col='var(--accent)';}else if(s.startsWith('Konsultacije:')){tip='Konsultacije iz aplikacije';col='var(--success)';}else if(s.startsWith('Rok:')){tip='Rok iz aplikacije';col='var(--warn)';}else if(s.startsWith('Privatno:')){tip='Privatno iz aplikacije';col='var(--text2)';}else if(ev.description&&ev.description.includes('Predmet:')){tip='⚲ Ročište iz aplikacije';col='var(--accent)';}if(tip)return '<div style="font-size:11px;color:'+col+'">'+tip+'</div>';return '';})()}
       ${ev.location?`<div style="font-size:11px;color:var(--text3)">📍 ${esc(ev.location)}</div>`:''}
       ${linkedPredmet ? `
         <div style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
