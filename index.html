@@ -1943,7 +1943,7 @@ function renderDashboard(){
           const podNaziv = item.fromGCal && item.p && item.naziv ? item.naziv : '';
           const protivnaStr = item.p?.protivna ? 'vs. ' + item.p.protivna : '';
           const tipIkona = privatno ? '🏠' : (item.fromGCal
-            ? (item.naziv.startsWith('Konsultacije')?'💬':'⚖')
+            ? (item.naziv.startsWith('Konsultacije')?'💬':item.naziv.startsWith('Rok:')?'⏳':item.naziv.startsWith('Privatno:')?'🏠':'⚖')
             : '⚖');
           let vremeStr = '';
           if(item.fromGCal){
