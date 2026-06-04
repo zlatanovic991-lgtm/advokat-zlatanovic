@@ -1946,13 +1946,17 @@ function renderDashboard(){
         function renderAktItem(item, accent){
           const privatno = isPrivatniDogadjaj(item);
           const boja = privatno ? 'var(--text3)' : accent;
+          const _evRaw = item.fromGCal ? gCalendarEvents.find(e=>e.id===item.evId) : null;
+          const _summary = (_evRaw&&_evRaw.summary)||item.naziv||'';
+          const _colorId = _evRaw&&_evRaw.colorId;
+          const _cleanNaziv = (()=>{const pfxs=['Ročište: ','Konsultacije: ','Rok: ','Privatno: ','Sastanak: '];let n=_summary;pfxs.forEach(p=>{if(n.toLowerCase().startsWith(p.toLowerCase()))n=n.slice(p.length);});return n;})();
           const naziv = item.fromGCal
-            ? (item.p ? `${item.p.interni} — ${item.k?item.k.ime:''}` : item.naziv)
+            ? (item.p ? `${item.p.interni} — ${item.k?item.k.ime:''}` : _cleanNaziv)
             : `${item.p.interni} — ${item.k.ime}`;
-          const podNaziv = item.fromGCal && item.p && item.naziv ? item.naziv : '';
+          const podNaziv = item.fromGCal && item.p ? _cleanNaziv : '';
           const protivnaStr = item.p?.protivna ? 'vs. ' + item.p.protivna : '';
           const tipIkona = privatno ? '🏠' : (item.fromGCal
-            ? (()=>{const _ev=gCalendarEvents.find(e=>e.id===item.evId);const _s=(_ev&&_ev.summary)||item.naziv||'';return _s.startsWith('Konsultacije:')?'💬':_s.startsWith('Rok:')?'⏳':_s.startsWith('Privatno:')?'🏠':'⚖';})()
+            ? (()=>{const sl=_summary.toLowerCase();if(sl.startsWith('konsultacije')||_colorId==='7')return '💬';if(sl.startsWith('rok:')||sl.startsWith('rok ')||_colorId==='6')return '⏳';if(sl.startsWith('privatno')||_colorId==='8')return '🏠';return '⚖';})()
             : '⚖');
           let vremeStr = '';
           if(item.fromGCal){
