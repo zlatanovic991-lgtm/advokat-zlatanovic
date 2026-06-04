@@ -4153,142 +4153,46 @@ function gToggleLinkPanel(eventId){
 }
 
 function renderGCalEvent(ev, showLinkBtn){
-  const links = gGetLinks();
-  const linkedPredmetId = links[ev.id];
-  const linkedPredmet = linkedPredmetId ? getPredmet(linkedPredmetId) : null;
-  const linkedKlijent = linkedPredmet ? getKlijent(linkedPredmet.klijentId) : null;
-  const autoLinked = gGetAutoLinked();
-  const isAutoLinked = linkedPredmet && autoLinked[ev.id];
-
-  return `<div class="gcal-event" id="gcev-${ev.id}" style="flex-wrap:wrap">
-    <div class="gcal-dot" style="background:${ev.colorId==='11'?'var(--danger)':ev.colorId==='10'?'var(--success)':'var(--accent)'}"></div>
-    <div style="flex:1;min-width:0">
-      <div style="font-weight:500;font-size:13.5px">${esc(ev.summary||'(bez naslova)')}</div>
-      ${(function(){var s=ev.summary||'';var tip='';var col='';if(s.startsWith('Ročište:')){tip='⚲ Ročište iz aplikacije';col='var(--accent)';}else if(s.toLowerCase().startsWith('konsultacije')){tip='Konsultacije iz aplikacije';col='var(--success)';}else if(s.startsWith('Rok:')||s.toLowerCase().startsWith('rok ')){tip='Rok iz aplikacije';col='var(--warn)';}else if(s.startsWith('Privatno:')){tip='Privatno iz aplikacije';col='var(--text2)';}else if(ev.description&&ev.description.includes('Predmet:')){tip='⚲ Ročište iz aplikacije';col='var(--accent)';}if(tip)return '<div style="font-size:11px;color:'+col+'">'+tip+'</div>';return '';})()
-      ${ev.location?`<div style="font-size:11px;color:var(--text3)">📍 ${esc(ev.location)}</div>`:''}
-      ${linkedPredmet ? `
-        <div style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-          <span class="gcal-predmet-badge" onclick="navigate('predmeti','${linkedPredmet.id}')">
-            ⚖ ${esc(linkedPredmet.interni)} — ${esc(linkedKlijent?linkedKlijent.ime:'')}
-          </span>
-          ${isAutoLinked ? `<span style="font-size:10px;color:var(--text3);font-style:italic">✦ auto-prepoznato</span>` : ''}
-          <button class="gcal-link-btn" onclick="gRenameEvent('${ev.id}','${esc(linkedKlijent?linkedKlijent.ime:'')}','${esc(linkedPredmet.interni)}')" title="Preimenuj događaj u Google Calendar">↻ Preimenuj u GCal</button>
-        </div>` : ''}
-    </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
-      <div class="gcal-time">${fmtGCalDate(ev)}</div>
-      <div style="display:flex;gap:4px">
-        <button class="gcal-link-btn" onclick="openEditEventModal('${ev.id}')" title="Izmeni naziv i tip">✏ Izmeni</button>
-        <button class="gcal-link-btn" id="link-btn-${ev.id}" onclick="gToggleLinkPanel('${ev.id}')">
-          ${linkedPredmet ? '⚖ Promeni predmet' : '+ Poveži predmet'}
-        </button>
-        <button class="gcal-link-btn" onclick="gDeleteCalEvent('${ev.id}')" style="color:var(--danger);border-color:var(--danger)" title="Obriši iz Google Calendar">✕</button>
-      </div>
-    </div>
-  </div>`;
-}
-
-
-// ========== GCAL <-> PREDMET SINHRONIZACIJA ==========
-
-// Smer 1: Predmet ročište -> Google Calendar
-async function syncRocisteToGCal(predmetId, oldRociste){
-  if(!gIsSignedIn) return;
-  const p = getPredmet(predmetId);
-  if(!p || !p.rociste) return;
-  const k = getKlijent(p.klijentId);
-
-  // Check if there's already a linked event
-  const links = gGetLinks();
-  const existingEventId = Object.keys(links).find(eid => links[eid] === predmetId);
-
-  try{
-    if(existingEventId){
-      // Update existing GCal event
-      await gapi.client.calendar.events.patch({
-        calendarId: 'primary',
-        eventId: existingEventId,
-        resource: {
-          summary: k.ime + ' — ' + p.interni,
-          start: { dateTime: `${p.rociste}T09:00:00`, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
-          end: { dateTime: `${p.rociste}T09:30:00`, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
-          location: p.sud || '',
-          description: 'Predmet: ' + p.interni + '\nKlijent: ' + k.ime + '\nSud: ' + (p.sud||'') + '\nProtivna strana: ' + (p.protivna||'—')
-        }
-      });
-    } else {
-      // Create new GCal event and link it
-      const resp = await gapi.client.calendar.events.insert({
-        calendarId: 'primary',
-        resource: {
-          summary: k.ime + ' — ' + p.interni,
-          start: { dateTime: `${p.rociste}T09:00:00`, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
-          end: { dateTime: `${p.rociste}T09:30:00`, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
-          location: p.sud || '',
-          colorId: '11',
-          description: 'Predmet: ' + p.interni + '\nKlijent: ' + k.ime + '\nSud: ' + (p.sud||'') + '\nProtivna strana: ' + (p.protivna||'—'),
-          reminders: {
-            useDefault: false,
-            overrides: [
-              { method: 'email', minutes: 24*60 },
-              { method: 'popup', minutes: 60 }
-            ]
-          }
-        }
-      });
-      // Auto-link new event to predmet
-      const newEventId = resp.result.id;
-      const newLinks = gGetLinks();
-      newLinks[newEventId] = predmetId;
-      gSaveLinks(newLinks);
-    }
-    await gLoadCalendarEvents();
-  } catch(e){
-    console.warn('GCal sync error:', e);
+  var links = gGetLinks();
+  var linkedPredmetId = links[ev.id];
+  var linkedPredmet = linkedPredmetId ? getPredmet(linkedPredmetId) : null;
+  var linkedKlijent = linkedPredmet ? getKlijent(linkedPredmet.klijentId) : null;
+  var autoLinked = gGetAutoLinked();
+  var isAutoLinked = linkedPredmet && autoLinked[ev.id];
+  var dotColor = ev.colorId==='11'?'var(--danger)':ev.colorId==='10'?'var(--success)':'var(--accent)';
+  var sl = (ev.summary||'').toLowerCase();
+  var tipHtml = '';
+  if(sl.startsWith('ro\u010di\u0161te:')||sl.startsWith('ro\u010di\u0161te ')){tipHtml='<div style="font-size:11px;color:var(--accent)">\u26b2 Ro\u010di\u0161te iz aplikacije</div>';}
+  else if(sl.startsWith('konsultacije')){tipHtml='<div style="font-size:11px;color:var(--success)">Konsultacije iz aplikacije</div>';}
+  else if(sl.startsWith('rok:')||sl.startsWith('rok ')){tipHtml='<div style="font-size:11px;color:var(--warn)">Rok iz aplikacije</div>';}
+  else if(sl.startsWith('privatno')){tipHtml='<div style="font-size:11px;color:var(--text2)">Privatno iz aplikacije</div>';}
+  else if(ev.description&&ev.description.includes('Predmet:')){tipHtml='<div style="font-size:11px;color:var(--accent)">\u26b2 Ro\u010di\u0161te iz aplikacije</div>';}
+  var locHtml = ev.location ? '<div style="font-size:11px;color:var(--text3)">\ud83d\udccd '+esc(ev.location)+'</div>' : '';
+  var predmetHtml = '';
+  if(linkedPredmet){
+    var autoTag = isAutoLinked ? '<span style="font-size:10px;color:var(--text3);font-style:italic">\u2736 auto-prepoznato</span>' : '';
+    var renBtn = '<button class="gcal-link-btn" onclick="gRenameEvent(\''+ev.id+'\',\''+esc(linkedKlijent?linkedKlijent.ime:'')+'\',\''+esc(linkedPredmet.interni)+'\')" title="Preimenuj">&#8635; Preimenuj u GCal</button>';
+    predmetHtml = '<div style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
+      +'<span class="gcal-predmet-badge" onclick="navigate(\'predmeti\',\''+linkedPredmet.id+'\')">\u2696 '+esc(linkedPredmet.interni)+' \u2014 '+esc(linkedKlijent?linkedKlijent.ime:'')+'</span>'
+      +autoTag+renBtn+'</div>';
   }
+  var linkLabel = linkedPredmet ? '\u2696 Promeni predmet' : '+ Pove\u017ei predmet';
+  return '<div class="gcal-event" id="gcev-'+ev.id+'" style="flex-wrap:wrap">'
+    +'<div class="gcal-dot" style="background:'+dotColor+'"></div>'
+    +'<div style="flex:1;min-width:0">'
+      +'<div style="font-weight:500;font-size:13.5px">'+esc(ev.summary||'(bez naslova)')+'</div>'
+      +tipHtml+locHtml+predmetHtml
+    +'</div>'
+    +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">'
+      +'<div class="gcal-time">'+fmtGCalDate(ev)+'</div>'
+      +'<div style="display:flex;gap:4px">'
+        +'<button class="gcal-link-btn" onclick="openEditEventModal(\''+ev.id+'\')" title="Izmeni">&#9998; Izmeni</button>'
+        +'<button class="gcal-link-btn" id="link-btn-'+ev.id+'" onclick="gToggleLinkPanel(\''+ev.id+'\')">'+linkLabel+'</button>'
+        +'<button class="gcal-link-btn" onclick="gDeleteCalEvent(\''+ev.id+'\')" style="color:var(--danger);border-color:var(--danger)" title="Obri\u0161i">\u2715</button>'
+      +'</div>'
+    +'</div>'
+  +'</div>';
 }
-
-// Smer 2: GCal event link -> update predmet rociste
-async function syncGCalToPredmet(eventId, predmetId){
-  if(!predmetId) return;
-  const ev = gCalendarEvents.find(e => e.id === eventId);
-  if(!ev) return;
-  const p = getPredmet(predmetId);
-  if(!p) return;
-
-  const evDate = (ev.start?.dateTime || ev.start?.date || '').slice(0,10);
-  if(!evDate) return;
-
-  // Update predmet rociste
-  p.rociste = evDate;
-  saveDB();
-  renderPage();
-}
-
-
-
-// ========== NOVI GCAL DOGADJAJ ==========
-
-// ========== INIT ==========
-// Browser back/forward support
-window.addEventListener('popstate', function(e){
-  if(e.state){
-    navigate(e.state.page, e.state.id, e.state.tab, true);
-  } else {
-    navigate('dashboard', null, 'info', true);
-  }
-});
-
-loadTheme();
-// Init with URL hash if present
-const initHash = location.hash.replace('#','');
-if(initHash){
-  const parts = initHash.split('/');
-  navigate(parts[0]||'dashboard', parts[1]||null, 'info', true);
-} else {
-  navigate('dashboard');
-}
-setTimeout(gInit, 1000);
 
 function formatVremeInput(el){
   let v = el.value.replace(/[^0-9:.]/g,'').replace(/\./g,':');
