@@ -195,7 +195,6 @@ tbody tr:hover{background:var(--surface2)}
 /* RESPONSIVE */
 @media(max-width:768px){
   .mobile-hidden{display:none!important;}
-  .mobile-compact.mobile-hidden{display:none!important;}
   .mobile-pred-stat{display:flex!important;}
   .mobile-compact{padding:8px 12px!important;}
   .mobile-compact .stat-value{font-size:18px!important;}
@@ -4165,7 +4164,7 @@ function renderGCalEvent(ev, showLinkBtn){
     <div class="gcal-dot" style="background:${ev.colorId==='11'?'var(--danger)':ev.colorId==='10'?'var(--success)':'var(--accent)'}"></div>
     <div style="flex:1;min-width:0">
       <div style="font-weight:500;font-size:13.5px">${esc(ev.summary||'(bez naslova)')}</div>
-      ${(function(){var s=ev.summary||'';var tip='';var col='';if(s.startsWith('Ročište:')){tip='⚲ Ročište iz aplikacije';col='var(--accent)';}else if(s.startsWith('Konsultacije:')){tip='Konsultacije iz aplikacije';col='var(--success)';}else if(s.startsWith('Rok:')){tip='Rok iz aplikacije';col='var(--warn)';}else if(s.startsWith('Privatno:')){tip='Privatno iz aplikacije';col='var(--text2)';}else if(ev.description&&ev.description.includes('Predmet:')){tip='⚲ Ročište iz aplikacije';col='var(--accent)';}if(tip)return '<div style="font-size:11px;color:'+col+'">'+tip+'</div>';return '';})()}
+      ${(function(){var s=(ev.summary||'').toLowerCase();var tip='';var col='';if(s.startsWith('ročište:')||s.startsWith('ročište ')){tip='⚲ Ročište iz aplikacije';col='var(--accent)';}else if(s.startsWith('konsultacije')){tip='Konsultacije iz aplikacije';col='var(--success)';}else if(s.startsWith('rok:')||s.startsWith('rok ')){tip='Rok iz aplikacije';col='var(--warn)';}else if(s.startsWith('privatno')){tip='Privatno iz aplikacije';col='var(--text2)';}else if(ev.description&&ev.description.includes('Predmet:')){tip='⚲ Ročište iz aplikacije';col='var(--accent)';}if(tip)return '<div style="font-size:11px;color:'+col+'">'+tip+'</div>';return '';})()
       ${ev.location?`<div style="font-size:11px;color:var(--text3)">📍 ${esc(ev.location)}</div>`:''}
       ${linkedPredmet ? `
         <div style="margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
