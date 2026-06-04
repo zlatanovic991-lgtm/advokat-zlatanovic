@@ -3670,6 +3670,7 @@ function saveModal(){
   if(currentModal==='gcal'){
     const _activeTipBtn = document.querySelector('#tip_buttons .tip-btn.active') || document.querySelector('#tip_buttons .tip-btn[style*="var(--accent-light)"]');
     const tip = (_activeTipBtn && _activeTipBtn.dataset.tip) || document.getElementById('m_ev_tip')?.value || 'Ročište';
+    alert('DEBUG TIP: ' + tip + ' | active btn: ' + (_activeTipBtn ? _activeTipBtn.textContent.trim() : 'NEMA') + ' | hidden input: ' + (document.getElementById('m_ev_tip')?.value || 'NEMA'));
     const naziv = document.getElementById('m_ev_naziv').value.trim();
     const datum = document.getElementById('m_ev_datum').value;
     const vreme = document.getElementById('m_ev_vreme').value.trim();
