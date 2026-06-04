@@ -1088,7 +1088,7 @@ function deleteRocisteFromPredmet(predmetId){
 // Kreiranje novog događaja u Google Calendar
 async function gCreateCustomEvent(){
   if(!gIsSignedIn){ alert('Povežite Google nalog prvo.'); return; }
-  const tip = document.getElementById('new_ev_tip')?.value || 'Ročište';
+  const tip = document.getElementById('m_ev_tip')?.value || 'Ročište';
   const naziv = document.getElementById('new_ev_naziv')?.value?.trim();
   const datum = document.getElementById('new_ev_datum')?.value;
   const vreme = document.getElementById('new_ev_vreme')?.value?.trim();
@@ -3093,7 +3093,7 @@ function openGCalEventModal(){
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px" id="tip_buttons">
         <button type="button" class="tip-btn active" data-tip="Ročište" onclick="selectTipBtn(this)" style="padding:10px;border-radius:var(--radius);border:2px solid var(--accent);background:var(--accent-light);color:var(--accent);font-weight:600;font-size:13px;cursor:pointer;text-align:center">⚖ Ročište</button>
         <button type="button" class="tip-btn" data-tip="Konsultacije" onclick="selectTipBtn(this)" style="padding:10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text2);font-weight:500;font-size:13px;cursor:pointer;text-align:center">💬 Konsultacije</button>
-        <button type="button" class="tip-btn" data-tip="Rok" onclick="selectTipBtn(this)" style="padding:10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text2);font-weight:500;font-size:13px;cursor:pointer;text-align:center">⏳ Rok za podnesak</button>
+        <button type="button" class="tip-btn" data-tip="Rok" onclick="selectTipBtn(this)" style="padding:10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text2);font-weight:500;font-size:13px;cursor:pointer;text-align:center">⏳ Rok</button>
         <button type="button" class="tip-btn" data-tip="Privatno" onclick="selectTipBtn(this)" style="padding:10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text2);font-weight:500;font-size:13px;cursor:pointer;text-align:center">🏠 Privatno</button>
       </div>
       <input type="hidden" id="m_ev_tip" value="Ročište">
