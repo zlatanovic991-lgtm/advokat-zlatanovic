@@ -3148,12 +3148,14 @@ function openGCalEventModal(){
 function selectTipBtn(btn){
   // Reset all
   document.querySelectorAll('.tip-btn').forEach(b=>{
+    b.classList.remove('active');
     b.style.border='1px solid var(--border)';
     b.style.background='var(--surface)';
     b.style.color='var(--text2)';
     b.style.fontWeight='500';
   });
   // Activate selected
+  btn.classList.add('active');
   btn.style.border='2px solid var(--accent)';
   btn.style.background='var(--accent-light)';
   btn.style.color='var(--accent)';
@@ -3666,7 +3668,8 @@ function updateFinStatus(){
 function saveModal(){
   if(currentModal==='_editEvent'){ saveEditEvent(); return; }
   if(currentModal==='gcal'){
-    const tip = document.getElementById('m_ev_tip').value;
+    const _activeTipBtn = document.querySelector('#tip_buttons .tip-btn.active') || document.querySelector('#tip_buttons .tip-btn[style*="var(--accent-light)"]');
+    const tip = (_activeTipBtn && _activeTipBtn.dataset.tip) || document.getElementById('m_ev_tip')?.value || 'Ročište';
     const naziv = document.getElementById('m_ev_naziv').value.trim();
     const datum = document.getElementById('m_ev_datum').value;
     const vreme = document.getElementById('m_ev_vreme').value.trim();
