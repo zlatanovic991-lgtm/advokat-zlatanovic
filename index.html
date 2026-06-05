@@ -947,9 +947,18 @@ async function driveRestore(){
     }
 
     const data = await fetchResp.json();
-    if(!data.db){ alert('Backup fajl je neispravan.'); return; }
+    
+    // Podrška za oba formata: {version,db:{klijenti,...}} ili direktno {klijenti,...}
+    let dbData = null;
+    if(data.db && data.db.klijenti) dbData = data.db;
+    else if(data.klijenti) dbData = data;
+    
+    if(!dbData || !dbData.klijenti){
+      alert('Backup fajl je neispravan ili prazan.\nKljučevi: ' + Object.keys(data).join(', '));
+      return;
+    }
 
-    localStorage.setItem('lexoffice_v2', JSON.stringify(data.db));
+    localStorage.setItem('lexoffice_v2', JSON.stringify(dbData));
     if(data.glinks) localStorage.setItem('lexoffice_gcal_links', JSON.stringify(data.glinks));
     if(data.stamp) localStorage.setItem('lexoffice_stamp', JSON.stringify(data.stamp));
 
