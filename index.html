@@ -836,29 +836,35 @@ async function driveGetFileId(){
   return files.length > 0 ? files[0] : null;
 }
 
+function driveEnsureAuth(callback){
+  // If not signed in, or token missing Drive scope — force re-login with consent
+  if(!gTokenClient){ alert('Google API se učitava, pokušajte za trenutak.'); return; }
+  // Store pending callback so it can be called after auth
+  window._drivePendingCallback = callback;
+  // Override the token client callback temporarily
+  const origCallback = gTokenClient.callback;
+  gTokenClient.callback = async (resp)=>{
+    gTokenClient.callback = origCallback;
+    if(resp.error){ console.error('Drive auth error:', resp); alert('Prijava nije uspela: ' + (resp.error_description||resp.error)); return; }
+    const tok = { ...gapi.client.getToken(), expiry: Date.now() + (resp.expires_in||3600)*1000 };
+    localStorage.setItem('lexoffice_gtoken', JSON.stringify(tok));
+    gIsSignedIn = true; updateGoogleUI();
+    if(window._drivePendingCallback){ window._drivePendingCallback(); window._drivePendingCallback=null; }
+  };
+  gTokenClient.requestAccessToken({prompt: gIsSignedIn ? '' : 'consent'});
+}
+
 async function driveBackup(){
-  if(!gIsSignedIn){
-    if(!gTokenClient){ alert('Google API se učitava, pokušajte za trenutak.'); return; }
-    gTokenClient.requestAccessToken({prompt: 'consent', callback_override: async (resp)=>{
-      if(resp.error) return;
-      const tok = { ...gapi.client.getToken(), expiry: Date.now() + (resp.expires_in||3600)*1000 };
-      localStorage.setItem('lexoffice_gtoken', JSON.stringify(tok));
-      gIsSignedIn = true; updateGoogleUI();
-      await gLoadData();
-      driveBackup();
-    }});
-    return;
-  }
+  if(!gIsSignedIn){ driveEnsureAuth(driveBackup); return; }
   try{
     const data = {
       version: 1,
       exportedAt: new Date().toISOString(),
-      db: JSON.parse(localStorage.getItem('lexoffice_db')||'{}'),
+      db: JSON.parse(localStorage.getItem('lexoffice_v2')||'{}'),
       glinks: JSON.parse(localStorage.getItem('lexoffice_gcal_links')||'{}'),
       stamp: JSON.parse(localStorage.getItem('lexoffice_stamp')||'null')
     };
     const json = JSON.stringify(data, null, 2);
-    const blob = new Blob([json], {type:'application/json'});
 
     const existing = await driveGetFileId();
     let url, method;
@@ -881,12 +887,13 @@ async function driveBackup(){
       close_delim;
 
     const token = gapi.client.getToken();
+    if(!token || !token.access_token){ driveEnsureAuth(driveBackup); return; }
+
     const fetchResp = await fetch(url, {
       method,
       headers: {
         'Authorization': 'Bearer ' + token.access_token,
-        'Content-Type': `multipart/related; boundary="${boundary}"`,
-        'Content-Length': multipartBody.length
+        'Content-Type': `multipart/related; boundary="${boundary}"`
       },
       body: multipartBody
     });
@@ -894,28 +901,25 @@ async function driveBackup(){
       const ts = new Date().toLocaleString('sr-RS');
       alert(`✅ Backup uspešno sačuvan na Google Drive.\n${ts}`);
     } else {
-      const err = await fetchResp.text();
-      alert('Greška pri čuvanju: ' + err);
+      const errText = await fetchResp.text();
+      // 403 = Drive scope not granted — force re-auth
+      if(fetchResp.status === 401 || fetchResp.status === 403){
+        localStorage.removeItem('lexoffice_gtoken');
+        gIsSignedIn = false; updateGoogleUI();
+        alert('Potrebna je ponovna prijava da bi se odobrio pristup Google Drive-u.\nKliknite OK pa se prijavite.');
+        driveEnsureAuth(driveBackup);
+      } else {
+        alert('Greška pri čuvanju (' + fetchResp.status + '): ' + errText.slice(0,200));
+      }
     }
   } catch(e){
     console.error('driveBackup error:', e);
-    alert('Greška: ' + e.message);
+    alert('Greška: ' + String(e));
   }
 }
 
 async function driveRestore(){
-  if(!gIsSignedIn){
-    if(!gTokenClient){ alert('Google API se učitava, pokušajte za trenutak.'); return; }
-    gTokenClient.requestAccessToken({prompt: 'consent', callback_override: async (resp)=>{
-      if(resp.error) return;
-      const tok = { ...gapi.client.getToken(), expiry: Date.now() + (resp.expires_in||3600)*1000 };
-      localStorage.setItem('lexoffice_gtoken', JSON.stringify(tok));
-      gIsSignedIn = true; updateGoogleUI();
-      await gLoadData();
-      driveRestore();
-    }});
-    return;
-  }
+  if(!gIsSignedIn){ driveEnsureAuth(driveRestore); return; }
   try{
     const existing = await driveGetFileId();
     if(!existing){ alert('Nema backup fajla na Google Drive-u.'); return; }
@@ -924,26 +928,37 @@ async function driveRestore(){
     if(!confirm(`Pronađen backup od: ${ts}\n\nOvo će ZAMENITI sve lokalne podatke.\nDa li ste sigurni?`)) return;
 
     const token = gapi.client.getToken();
+    if(!token || !token.access_token){ driveEnsureAuth(driveRestore); return; }
+
     const fetchResp = await fetch(
       `https://www.googleapis.com/drive/v3/files/${existing.id}?alt=media`,
       { headers: { 'Authorization': 'Bearer ' + token.access_token } }
     );
-    if(!fetchResp.ok){ alert('Greška pri preuzimanju: ' + fetchResp.status); return; }
+    if(!fetchResp.ok){
+      if(fetchResp.status === 401 || fetchResp.status === 403){
+        localStorage.removeItem('lexoffice_gtoken');
+        gIsSignedIn = false; updateGoogleUI();
+        alert('Potrebna je ponovna prijava da bi se odobrio pristup Google Drive-u.\nKliknite OK pa se prijavite.');
+        driveEnsureAuth(driveRestore);
+      } else {
+        alert('Greška pri preuzimanju: ' + fetchResp.status);
+      }
+      return;
+    }
 
     const data = await fetchResp.json();
     if(!data.db){ alert('Backup fajl je neispravan.'); return; }
 
-    localStorage.setItem('lexoffice_db', JSON.stringify(data.db));
+    localStorage.setItem('lexoffice_v2', JSON.stringify(data.db));
     if(data.glinks) localStorage.setItem('lexoffice_gcal_links', JSON.stringify(data.glinks));
     if(data.stamp) localStorage.setItem('lexoffice_stamp', JSON.stringify(data.stamp));
 
-    // Reload db in memory
-    try{ db = JSON.parse(localStorage.getItem('lexoffice_db')||'{}'); } catch(e){}
+    db = loadDB();
     alert(`✅ Podaci su uspešno vraćeni sa Google Drive.\nBackup od: ${ts}`);
     renderPage();
   } catch(e){
     console.error('driveRestore error:', e);
-    alert('Greška: ' + e.message);
+    alert('Greška: ' + String(e));
   }
 }
 
