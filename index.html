@@ -954,7 +954,7 @@ async function driveRestore(){
     else if(data.klijenti) dbData = data;
     
     if(!dbData || !dbData.klijenti){
-      alert('Backup fajl je neispravan ili prazan.\nKljučevi: ' + Object.keys(data).join(', '));
+      alert('Backup fajl je prazan. Napravite novi backup sa PC-a pa pokušajte ponovo.');
       return;
     }
 
