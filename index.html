@@ -2003,7 +2003,7 @@ function initials(name){return(name||'?').split(' ').map(w=>w[0]).slice(0,2).joi
 
 // ========== NAVIGATE ==========
 function navigate(page,id,tab,fromHistory){
-  if(page !== currentPage){ klijentFilter=''; predmetFilter='svi'; predmetSearch=''; }
+  if(page !== currentPage){ klijentFilter=''; predmetFilter='svi'; predmetSearch=''; finSearch=''; finFilter='svi'; }
   currentPage=page;detailId=id||null;detailTab=tab||'info';
   // Push to browser history unless called from popstate
   if(!fromHistory){
