@@ -2880,7 +2880,7 @@ function finSearchInput(val){
   if(!q){dd.style.display='none';return;}
   const names=[...new Set(db.finansije.map(f=>{const k=getKlijent(f.klijentId);return k?k.ime:'';}).filter(n=>n&&n.toLowerCase().includes(q)))].slice(0,8);
   if(names.length===0){dd.style.display='none';return;}
-  dd.innerHTML=names.map(n=>'<div style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border)" onmousedown="finPickName(''+n.replace(/'/g,"\'")+'')" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">'+esc(n)+'</div>').join('');
+  dd.innerHTML=names.map(n=>{var s=n.replace(/'/g,"&#39;");return '<div style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border)" onmousedown="finPickName(\"'+s+'\")" onmouseover="this.style.background=\'var(--surface2)\'" onmouseout="this.style.background=\'\'">'+esc(n)+'</div>';}).join('');
   dd.style.display='block';
 }
 function finPickName(name){
