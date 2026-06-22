@@ -2862,11 +2862,19 @@ function renderAktivnosti(){
 
 // ========== FINANSIJE ==========
 let finFilter='svi';
+let finSearch='';
 function renderFinansije(){
+  const _finQ=finSearch.toLowerCase().trim();
   const filtered=db.finansije.filter(f=>{
-    if(finFilter==='nije_placeno')return f.status==='nije_placeno';
-    if(finFilter==='delim_placeno')return f.status==='delim_placeno';
-    if(finFilter==='placeno')return f.status==='placeno';
+    if(finFilter==='nije_placeno'&&f.status!=='nije_placeno')return false;
+    if(finFilter==='delim_placeno'&&f.status!=='delim_placeno')return false;
+    if(finFilter==='placeno'&&f.status!=='placeno')return false;
+    if(_finQ){
+      const k=getKlijent(f.klijentId);
+      const p=getPredmet(f.predmetId);
+      const haystack=((k?k.ime:'')+'|'+(f.opis||'')+'|'+(p?p.interni:'')).toLowerCase();
+      if(!haystack.includes(_finQ))return false;
+    }
     return true;
   });
   const ukupnoFakt=db.finansije.reduce((a,f)=>a+f.fakturisano,0);
@@ -2915,6 +2923,7 @@ function renderFinansije(){
       </div>
     </div>
   </div>
+  <div style="margin-bottom:10px"><input type="text" placeholder="Pretraži po klijentu, opisu..." value="${finSearch}" oninput="finSearch=this.value;renderPage()" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;background:var(--surface);color:var(--text)"></div>
   <div class="filter-bar">
     <div class="filter-chip ${finFilter==='svi'?'active':''}" onclick="finFilter='svi';renderPage()">Sve</div>
     <div class="filter-chip ${finFilter==='nije_placeno'?'active':''}" onclick="finFilter='nije_placeno';renderPage()">Neplaćeno</div>
