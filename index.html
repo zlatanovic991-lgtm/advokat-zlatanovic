@@ -2863,6 +2863,34 @@ function renderAktivnosti(){
 // ========== FINANSIJE ==========
 let finFilter='svi';
 let finSearch='';
+function finSearchInput(val){
+  finSearch=val;
+  // Filter the table rows live without re-rendering
+  const q=val.toLowerCase().trim();
+  const rows=document.querySelectorAll('#fin-tbody tr');
+  rows.forEach(tr=>{
+    const klijent=(tr.dataset.klijent||'').toLowerCase();
+    const opis=(tr.dataset.opis||'').toLowerCase();
+    const interni=(tr.dataset.interni||'').toLowerCase();
+    tr.style.display=(!q||klijent.includes(q)||opis.includes(q)||interni.includes(q))?'':'none';
+  });
+  // Dropdown suggestions
+  const dd=document.getElementById('fin-search-dd');
+  if(!dd)return;
+  if(!q){dd.style.display='none';return;}
+  const names=[...new Set(db.finansije.map(f=>{const k=getKlijent(f.klijentId);return k?k.ime:'';}).filter(n=>n&&n.toLowerCase().includes(q)))].slice(0,8);
+  if(names.length===0){dd.style.display='none';return;}
+  dd.innerHTML=names.map(n=>'<div style="padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border)" onmousedown="finPickName(''+n.replace(/'/g,"\'")+'')" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">'+esc(n)+'</div>').join('');
+  dd.style.display='block';
+}
+function finPickName(name){
+  const inp=document.getElementById('fin-search-input');
+  if(inp)inp.value=name;
+  finSearch=name;
+  const dd=document.getElementById('fin-search-dd');
+  if(dd)dd.style.display='none';
+  finSearchInput(name);
+}
 function renderFinansije(){
   const _finQ=finSearch.toLowerCase().trim();
   const filtered=db.finansije.filter(f=>{
@@ -2923,7 +2951,7 @@ function renderFinansije(){
       </div>
     </div>
   </div>
-  <div style="margin-bottom:10px"><input type="text" placeholder="Pretraži po klijentu, opisu..." value="${finSearch}" oninput="finSearch=this.value;renderPage()" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;background:var(--surface);color:var(--text)"></div>
+  <div style="margin-bottom:10px;position:relative" id="fin-search-wrap"><input id="fin-search-input" type="text" placeholder="Pretraži po klijentu..." autocomplete="off" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;background:var(--surface);color:var(--text);box-sizing:border-box" oninput="finSearchInput(this.value)" onfocus="finSearchInput(this.value)" onblur="setTimeout(()=>document.getElementById('fin-search-dd')&&(document.getElementById('fin-search-dd').style.display='none'),200)"><div id="fin-search-dd" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:100;max-height:220px;overflow-y:auto"></div></div>
   <div class="filter-bar">
     <div class="filter-chip ${finFilter==='svi'?'active':''}" onclick="finFilter='svi';renderPage()">Sve</div>
     <div class="filter-chip ${finFilter==='nije_placeno'?'active':''}" onclick="finFilter='nije_placeno';renderPage()">Neplaćeno</div>
@@ -2933,11 +2961,12 @@ function renderFinansije(){
   <div class="table-wrap">
     <table>
       <thead><tr><th>Predmet</th><th>Klijent</th><th>Opis</th><th>Fakturisano</th><th>Plaćeno</th><th>Dug</th><th>Status</th><th>Datum fakture</th><th></th></tr></thead>
-      <tbody>
+      <tbody id="fin-tbody">
         ${filtered.length===0?`<tr><td colspan="9"><div class="empty"><h3>Nema zapisa</h3></div></td></tr>`:
           filtered.map(f=>{
             const p=getPredmet(f.predmetId);const k=getKlijent(f.klijentId);const dug=f.fakturisano-f.placeno;
-            return`<tr>
+            const _kIme=k?k.ime:'';const _fOpis=f.opis||'';const _fInt=p?String(p.interni):'';
+            return`<tr data-klijent="${_kIme}" data-opis="${_fOpis}" data-interni="${_fInt}">
               <td>${p?`<span class="id-badge" onclick="navigate('predmeti','${p.id}')" style="cursor:pointer">${esc(p.interni)}</span>`:'—'}</td>
               <td>${esc(k.ime)}</td>
               <td style="font-size:12.5px">${esc(f.opis)}</td>
