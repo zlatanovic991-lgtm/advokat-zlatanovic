@@ -2535,7 +2535,7 @@ function renderKlijentDetail(){
     ${finanse.length===0?`<div class="empty"><h3>Nema finansijskih zapisa</h3></div>`:
       `<div class="table-wrap"><table>
         <thead><tr><th>Opis</th><th>Fakturisano</th><th>Plaćeno</th><th>Dug</th><th>Status</th><th>Datum fakture</th></tr></thead>
-        <tbody>${finanse.map(f=>`<tr>
+        <tbody>${finanse.map(f=>`<tr style="cursor:pointer" onclick="stampajFakturu('${f.id}')">
           <td>${esc(f.opis)}</td>
           <td>${fmtMoney(f.fakturisano)}</td>
           <td class="amount-pos">${fmtMoney(f.placeno)}</td>
@@ -2765,14 +2765,14 @@ function renderPredmetDetail(){
     ${finanse.length===0?`<div class="empty"><h3>Nema finansijskih zapisa</h3></div>`:
       `<div class="table-wrap"><table>
         <thead><tr><th>Opis</th><th>Fakturisano</th><th>Plaćeno</th><th>Dug</th><th>Status</th><th>Datum fakture</th><th></th></tr></thead>
-        <tbody>${finanse.map(f=>`<tr>
+        <tbody>${finanse.map(f=>`<tr style="cursor:pointer" onclick="stampajFakturu('${f.id}')">
           <td>${esc(f.opis)}</td>
           <td>${fmtMoney(f.fakturisano)}</td>
           <td class="amount-pos">${fmtMoney(f.placeno)}</td>
           <td class="amount-neg">${fmtMoney(f.fakturisano-f.placeno)}</td>
           <td>${finStatusBadge(f.status)}</td>
           <td>${fmtDate(f.datum_fakture)}</td>
-          <td style="white-space:nowrap"><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();stampajFakturu('${f.id}')" title="Štampaj">🖨</button> <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();editFinansije('${f.id}')">Uredi</button> <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteFinansije('${f.id}')">Obriši</button></td>
+          <td style="white-space:nowrap"><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();editFinansije('${f.id}')">Uredi</button> <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteFinansije('${f.id}')">Obriši</button></td>
         </tr>`).join('')}</tbody>
       </table></div>`
     }
@@ -2966,7 +2966,7 @@ function renderFinansije(){
           filtered.map(f=>{
             const p=getPredmet(f.predmetId);const k=getKlijent(f.klijentId);const dug=f.fakturisano-f.placeno;
             const _kIme=k?k.ime:'';const _fOpis=f.opis||'';const _fInt=p?String(p.interni):'';
-            return`<tr data-klijent="${_kIme}" data-opis="${_fOpis}" data-interni="${_fInt}">
+            return`<tr data-klijent="${_kIme}" data-opis="${_fOpis}" data-interni="${_fInt}" style="cursor:pointer" onclick="stampajFakturu('${f.id}')">
               <td>${p?`<span class="id-badge" onclick="navigate('predmeti','${p.id}')" style="cursor:pointer">${esc(p.interni)}</span>`:'—'}</td>
               <td>${esc(k.ime)}</td>
               <td style="font-size:12.5px">${esc(f.opis)}</td>
@@ -2975,7 +2975,7 @@ function renderFinansije(){
               <td class="amount-neg">${dug>0?fmtMoney(dug):'—'}</td>
               <td>${finStatusBadge(f.status)}</td>
               <td>${fmtDate(f.datum_fakture)}</td>
-              <td style="white-space:nowrap"><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();stampajFakturu('${f.id}')" title="Štampaj">🖨</button> <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();editFinansije('${f.id}')">Uredi</button> <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteFinansije('${f.id}')">Obriši</button></td>
+              <td style="white-space:nowrap"><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();editFinansije('${f.id}')">Uredi</button> <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteFinansije('${f.id}')">Obriši</button></td>
             </tr>`;
           }).join('')
         }
