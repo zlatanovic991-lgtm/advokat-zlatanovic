@@ -1879,7 +1879,8 @@ function renderCalEvent(item){
   const privatno = isPrivatniDogadjaj(item);
   const bg     = privatno ? 'var(--surface3)'  : 'var(--danger-bg)';
   const border  = privatno ? 'var(--border2)'   : 'var(--danger)';
-  const ikona   = privatno ? '🏠' : '⚖';
+  const _ikonaSummary=(item.naziv||'').toLowerCase();
+  const ikona   = privatno ? '🏠' : (_ikonaSummary.startsWith('konsultacije')||item.colorId==='7') ? '💬' : (_ikonaSummary.startsWith('rok:')||_ikonaSummary.startsWith('rok ')||item.colorId==='6') ? '⏳' : '⚖';
 
   if(item.fromGCal){
     const p=item.p, k=item.k;
@@ -2365,7 +2366,7 @@ function renderDashboard(){
           const privatno=n.startsWith('privatno')||ev.colorId==='8';
           const bg=privatno?'var(--surface3)':'var(--danger-bg)';
           const border=privatno?'var(--border2)':'var(--danger)';
-          const ikona=privatno?'🏠':'⚖';
+          const ikona=privatno?'🏠':(n.startsWith('konsultacije')||ev.colorId==='7')?'💬':(n.startsWith('rok')||ev.colorId==='6')?'⏳':'⚖';
           const vremeStr=ev.start?.dateTime?String(new Date(ev.start.dateTime).getHours()).padStart(2,'0')+':'+String(new Date(ev.start.dateTime).getMinutes()).padStart(2,'0'):'';
           const links=gGetLinks();
           const pid=gLinkPredmetId(links[ev.id]);
