@@ -754,12 +754,19 @@ let gTaskListId = null;
 let _gRefreshTimer = null;
 function gScheduleTokenRefresh(expiresInSecs){
   if(_gRefreshTimer) clearTimeout(_gRefreshTimer);
-  // Refresh 5 minutes before expiry, minimum 10 seconds
-  const delay = Math.max((expiresInSecs - 300) * 1000, 10000);
+  const delay = Math.max((expiresInSecs - 300) * 1000, 30000);
   _gRefreshTimer = setTimeout(()=>{
-    if(gIsSignedIn && gTokenClient){
-      gTokenClient.requestAccessToken({prompt:''});
-    }
+    if(!gIsSignedIn || !gTokenClient) return;
+    // Silent refresh - use a temporary callback that won't show UI
+    const prevCallback = gTokenClient.callback;
+    gTokenClient.callback = (resp)=>{
+      gTokenClient.callback = prevCallback;
+      if(resp.error){ gIsSignedIn=false; updateGoogleUI(); return; }
+      const tok = { ...gapi.client.getToken(), expiry: Date.now() + (resp.expires_in||3600)*1000 };
+      localStorage.setItem('lexoffice_gtoken', JSON.stringify(tok));
+      gScheduleTokenRefresh(resp.expires_in||3600);
+    };
+    gTokenClient.requestAccessToken({prompt:''});
   }, delay);
 }
 function gInit(){
