@@ -2025,7 +2025,7 @@ function navigate(page,id,tab,fromHistory){
   const titles={dashboard:'Početna strana',klijenti:'Klijenti',predmeti:'Predmeti',google:'Aktivnosti',finansije:'Finansije'};
   document.getElementById('topbarTitle').textContent=titles[page]||page;
   closeSidebar();
-  const addLabels={dashboard:'+ Predmet',klijenti:'+ Klijenta',predmeti:'+ Predmet',finansije:'+ Fakturu',google:'+ Aktivnost'};
+  const addLabels={dashboard:'Predmet',klijenti:'Klijenta',predmeti:'Predmet',finansije:'Fakturu',google:'Aktivnost'};
   const ab=document.getElementById('aktivnostBtn');if(ab)ab.style.display=page==='dashboard'?'':'none';
   const lbl=document.getElementById('addBtnLabel');
   if(lbl) lbl.textContent=addLabels[page]||'Dodaj';
