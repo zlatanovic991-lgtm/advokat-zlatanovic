@@ -751,6 +751,17 @@ let gTasksNeedReauth = false;
 let gTasks = [];
 let gTaskListId = null;
 
+let _gRefreshTimer = null;
+function gScheduleTokenRefresh(expiresInSecs){
+  if(_gRefreshTimer) clearTimeout(_gRefreshTimer);
+  // Refresh 5 minutes before expiry, minimum 10 seconds
+  const delay = Math.max((expiresInSecs - 300) * 1000, 10000);
+  _gRefreshTimer = setTimeout(()=>{
+    if(gIsSignedIn && gTokenClient){
+      gTokenClient.requestAccessToken({prompt:''});
+    }
+  }, delay);
+}
 function gInit(){
   // Load gapi
   if(typeof gapi === 'undefined'){ setTimeout(gInit, 500); return; }
@@ -767,6 +778,8 @@ function gInit(){
           gapi.client.setToken(tok);
           gIsSignedIn = true;
           updateGoogleUI();
+          const secsLeft = Math.floor((tok.expiry - Date.now()) / 1000);
+          gScheduleTokenRefresh(secsLeft);
           gLoadData().then(()=>{ renderPage(); });
           return;
         }
@@ -786,6 +799,7 @@ function gInit(){
         localStorage.setItem('lexoffice_gtoken', JSON.stringify(tok));
         gIsSignedIn = true;
         updateGoogleUI();
+        gScheduleTokenRefresh(resp.expires_in||3600);
         gLoadData().then(()=>{
           // Re-render current page after all GCal data loaded
           renderPage();
@@ -855,6 +869,7 @@ function driveEnsureAuth(callback){
     const tok = { ...gapi.client.getToken(), expiry: Date.now() + (resp.expires_in||3600)*1000 };
     localStorage.setItem('lexoffice_gtoken', JSON.stringify(tok));
     gIsSignedIn = true; updateGoogleUI();
+    gScheduleTokenRefresh(resp.expires_in||3600);
     if(window._drivePendingCallback){ window._drivePendingCallback(); window._drivePendingCallback=null; }
   };
   gTokenClient.requestAccessToken({prompt: gIsSignedIn ? '' : 'consent'});
