@@ -531,6 +531,10 @@ input.date-invalid{border-color:var(--danger)!important;box-shadow:0 0 0 3px var
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
         <span id="topbarGoogleLabel">Prijavi se</span>
       </button>
+      <button class="btn btn-secondary btn-sm" id="aktivnostBtn" onclick="openGCalEventModal()" style="display:none">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <span>+ Aktivnost</span>
+      </button>
       <button class="btn btn-primary btn-sm" id="addBtn" onclick="openAddModal()">
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         <span id="addBtnLabel">Dodaj predmet</span>
@@ -2019,6 +2023,7 @@ function navigate(page,id,tab,fromHistory){
   document.getElementById('topbarTitle').textContent=titles[page]||page;
   closeSidebar();
   const addLabels={dashboard:'Dodaj predmet',klijenti:'Dodaj klijenta',predmeti:'Dodaj predmet',finansije:'Dodaj fakturu',google:'Dodaj aktivnost'};
+  const ab=document.getElementById('aktivnostBtn');if(ab)ab.style.display=page==='dashboard'?'':'none';
   const lbl=document.getElementById('addBtnLabel');
   if(lbl) lbl.textContent=addLabels[page]||'Dodaj';
   renderPage();
@@ -2183,7 +2188,6 @@ function renderDashboard(){
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
             <div class="stat-label" style="margin:0">Danas i sutra</div>
             <div style="display:flex;gap:8px;align-items:center">
-              <button onclick="openGCalEventModal()" style="background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer">+ Aktivnost</button>
               ${danasItems.length>0?`<span style="background:var(--danger-bg);color:var(--danger);font-size:12px;font-weight:700;padding:2px 10px;border-radius:20px">● danas: ${danasItems.length}</span>`:''}
               ${sutraItems.length>0?`<span style="background:var(--warn-bg);color:var(--warn);font-size:12px;font-weight:700;padding:2px 10px;border-radius:20px">sutra: ${sutraItems.length}</span>`:''}
             </div>
