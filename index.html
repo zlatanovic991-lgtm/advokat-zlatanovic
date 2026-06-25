@@ -1020,7 +1020,7 @@ async function driveRestore(){
     currentModal = 'driveRestore';
     const rows = backups.map((f,i) => {
       const ts = new Date(f.modifiedTime).toLocaleString('sr-RS');
-      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;cursor:pointer;background:var(--surface)" onclick="driveRestoreFromFile('' + f.id + '','' + f.modifiedTime + '')">'
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;cursor:pointer;background:var(--surface)" onclick="driveRestoreFromFile(\''+ f.id +'\',\''+ f.modifiedTime +'\')">'
         + '<div><div style="font-weight:600;font-size:13px">' + f.name.replace('advokat_zlatanovic_backup_','').replace('.json','') + '</div>'
         + '<div style="font-size:11px;color:var(--text3)">' + ts + '</div></div>'
         + '<div style="color:var(--accent);font-size:12px;font-weight:600">Uvezi →</div>'
