@@ -1983,7 +1983,41 @@ function loadDB(){
   try{const d=localStorage.getItem(DB_KEY);return d?JSON.parse(d):initDB()}
   catch(e){return initDB()}
 }
-function saveDB(){localStorage.setItem(DB_KEY,JSON.stringify(db))}
+function saveDB(){
+  localStorage.setItem(DB_KEY,JSON.stringify(db));
+  if(gIsSignedIn) driveSilentBackupDebounced();
+}
+let _silentBackupTimer = null;
+function driveSilentBackupDebounced(){
+  if(_silentBackupTimer) clearTimeout(_silentBackupTimer);
+  _silentBackupTimer = setTimeout(driveSilentBackup, 3000);
+}
+async function driveSilentBackup(){
+  if(!gIsSignedIn) return;
+  try{
+    const data = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      db: JSON.parse(localStorage.getItem('lexoffice_v2')||'{}'),
+      glinks: JSON.parse(localStorage.getItem('lexoffice_gcal_links')||'{}'),
+      stamp: JSON.parse(localStorage.getItem('lexoffice_stamp')||'null')
+    };
+    const json = JSON.stringify(data, null, 2);
+    const now = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    const datePart = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate());
+    const timePart = pad(now.getHours()) + pad(now.getMinutes());
+    const filename = 'advokat_zlatanovic_backup_' + datePart + '_' + timePart + '.json';
+    const fetchResp = await driveUploadFile(filename, json);
+    if(fetchResp && fetchResp.ok){
+      // Keep only last 5
+      const allBackups = await driveListBackups();
+      if(allBackups.length > 5){
+        for(const f of allBackups.slice(5)) await driveDeleteFile(f.id);
+      }
+    }
+  } catch(e){ console.warn('Silent backup failed:', e); }
+}
 function initDB(){
   const d={
     klijenti:[
