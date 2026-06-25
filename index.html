@@ -1633,6 +1633,7 @@ function dashCalNav(dir){
 }
 
 function dashCalSelect(iso){
+  window._dashCalSelectedDay = iso;
   // Highlight selected day
   document.querySelectorAll('[onclick^="dashCalSelect"]').forEach(el=>{
     el.dataset.sel='';
@@ -3393,7 +3394,17 @@ function openGCalEventModal(){
       </div>
     </div>
   `, 'Dodaj događaj');
-  setTimeout(()=>{buildPredmetSearchSelect('m_ev_predmet_ss','m_ev_predmet','');},30);
+  setTimeout(()=>{
+    buildPredmetSearchSelect('m_ev_predmet_ss','m_ev_predmet','');
+    if(window._dashCalSelectedDay){
+      const d=new Date(window._dashCalSelectedDay+'T12:00:00');
+      const dd=String(d.getDate()).padStart(2,'0');
+      const mm=String(d.getMonth()+1).padStart(2,'0');
+      const yyyy=d.getFullYear();
+      const inp=document.getElementById('m_ev_datum');
+      if(inp)inp.value=dd+'/'+mm+'/'+yyyy;
+    }
+  },30);
 }
 
 function selectEditTipBtn(btn){
