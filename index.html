@@ -2574,15 +2574,13 @@ function renderPredmeti(){
   }).sort((a,b)=>new Date(b.datum)-new Date(a.datum));
   
   return`
-  <div class="mobile-pred-stat" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 14px;margin-bottom:12px;font-size:13px;color:var(--text2);display:flex;justify-content:space-between;align-items:center">
+  <div class="mobile-pred-stat" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 14px;margin-bottom:12px;font-size:13px;color:var(--text2);display:flex;justify-content:space-between;align-items:center">
     <span>Aktivni predmeti</span>
-    <span style="font-weight:700;color:var(--text);font-size:15px">${db.predmeti.filter(p=>p.status==='aktivan').length} <span style="font-weight:400;color:var(--text3);font-size:12px">/ ${db.predmeti.length} ukupno</span></span>
-  </div>
-  <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
-    <div class="search-box" style="max-width:300px">
+    <div class="search-box" style="flex:1;max-width:280px;margin:0 16px">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input type="text" placeholder="Pretraži predmete..." value="${esc(predmetSearch)}" id="predmetSearchInput" oninput="predmetSearch=this.value;renderPage();const el=document.getElementById('predmetSearchInput');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length)}">
     </div>
+    <span style="font-weight:700;color:var(--text);font-size:15px">${db.predmeti.filter(p=>p.status==='aktivan').length} <span style="font-weight:400;color:var(--text3);font-size:12px">/ ${db.predmeti.length} ukupno</span></span>
   </div>
   <div class="filter-bar">
     ${statusi.map(s=>`<div class="filter-chip ${predmetFilter===s?'active':''}" onclick="predmetFilter='${s}';renderPage()">${labels[s]}</div>`).join('')}
