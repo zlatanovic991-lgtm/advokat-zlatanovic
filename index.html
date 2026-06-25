@@ -752,6 +752,43 @@ let gTasks = [];
 let gTaskListId = null;
 
 let _gRefreshTimer = null;
+function showAlert(msg){
+  const d=document.createElement('div');
+  d.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center';
+  const btn=document.createElement('button');
+  btn.textContent='OK';
+  btn.style.cssText='background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:8px 22px;font-size:13px;font-weight:600;cursor:pointer';
+  btn.onclick=()=>d.remove();
+  const txt=document.createElement('div');
+  txt.style.cssText='margin-bottom:18px;white-space:pre-line';
+  txt.textContent=msg;
+  const box=document.createElement('div');
+  box.style.cssText='background:var(--surface);border-radius:var(--radius);padding:28px 32px;max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18);font-size:14px;line-height:1.6;color:var(--text)';
+  box.appendChild(txt); box.appendChild(btn);
+  d.appendChild(box); document.body.appendChild(d);
+}
+function showConfirm(msg, onYes){
+  const d=document.createElement('div');
+  d.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center';
+  const txt=document.createElement('div');
+  txt.style.cssText='margin-bottom:18px;white-space:pre-line';
+  txt.textContent=msg;
+  const btnYes=document.createElement('button');
+  btnYes.textContent='Da';
+  btnYes.style.cssText='background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:8px 22px;font-size:13px;font-weight:600;cursor:pointer';
+  const btnNo=document.createElement('button');
+  btnNo.textContent='Ne';
+  btnNo.style.cssText='background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:8px 22px;font-size:13px;cursor:pointer';
+  btnNo.onclick=()=>d.remove();
+  btnYes.onclick=()=>{ d.remove(); onYes(); };
+  const btns=document.createElement('div');
+  btns.style.cssText='display:flex;gap:10px';
+  btns.appendChild(btnYes); btns.appendChild(btnNo);
+  const box=document.createElement('div');
+  box.style.cssText='background:var(--surface);border-radius:var(--radius);padding:28px 32px;max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18);font-size:14px;line-height:1.6;color:var(--text)';
+  box.appendChild(txt); box.appendChild(btns);
+  d.appendChild(box); document.body.appendChild(d);
+}
 function gScheduleTokenRefresh(expiresInSecs){
   if(_gRefreshTimer) clearTimeout(_gRefreshTimer);
   const delay = Math.max((expiresInSecs - 300) * 1000, 30000);
@@ -808,8 +845,8 @@ function gInit(){
         updateGoogleUI();
         gScheduleTokenRefresh(resp.expires_in||3600);
         gLoadData().then(()=>{
-          // Re-render current page after all GCal data loaded
           renderPage();
+          driveCheckAndSync();
         });
       }
     });
@@ -1020,6 +1057,27 @@ async function driveRestore(){
   }
 }
 
+async function driveCheckAndSync(){
+  if(!gIsSignedIn) return;
+  try{
+    const backups = await driveListBackups();
+    if(!backups.length) return;
+    const latest = backups[0];
+    const driveTime = new Date(latest.modifiedTime).getTime();
+    const localStamp = parseInt(localStorage.getItem('lexoffice_sync_stamp')||'0');
+    // If Drive backup is newer than last sync — offer to load
+    if(driveTime > localStamp){
+      const ts = new Date(latest.modifiedTime).toLocaleString('sr-RS');
+      showConfirm('Na Google Drive postoji noviji backup od: ' + ts + '\nUčitati podatke sa Drive-a?', async ()=>{
+        await driveRestoreFromFile(latest.id, latest.modifiedTime);
+        localStorage.setItem('lexoffice_sync_stamp', driveTime.toString());
+      });
+    } else {
+      // Local is up to date — just update stamp
+      localStorage.setItem('lexoffice_sync_stamp', driveTime.toString());
+    }
+  } catch(e){ console.warn('driveCheckAndSync failed:', e); }
+}
 function updateGoogleUI(){
   // Update nav item indicator if exists
   const ind = document.getElementById('google-nav-indicator');
