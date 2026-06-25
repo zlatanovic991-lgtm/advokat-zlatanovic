@@ -882,6 +882,57 @@ function driveEnsureAuth(callback){
   gTokenClient.requestAccessToken({prompt: gIsSignedIn ? '' : 'consent'});
 }
 
+async function driveUploadFile(filename, jsonStr){
+  const existing = await driveGetFileByName(filename);
+  const url = existing
+    ? 'https://www.googleapis.com/upload/drive/v3/files/' + existing.id + '?uploadType=multipart'
+    : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+  const method = existing ? 'PATCH' : 'POST';
+  const boundary = '-------akzboundary';
+  const delimiter = '\r\n--' + boundary + '\r\n';
+  const close_delim = '\r\n--' + boundary + '--';
+  const metadata = JSON.stringify({ name: filename, mimeType: 'application/json' });
+  const multipartBody = delimiter +
+    'Content-Type: application/json\r\n\r\n' + metadata +
+    delimiter + 'Content-Type: application/json\r\n\r\n' + jsonStr +
+    close_delim;
+  const token = gapi.client.getToken();
+  if(!token || !token.access_token){ driveEnsureAuth(driveBackup); return false; }
+  const fetchResp = await fetch(url, {
+    method,
+    headers: { 'Authorization': 'Bearer ' + token.access_token, 'Content-Type': 'multipart/related; boundary="' + boundary + '"' },
+    body: multipartBody
+  });
+  return fetchResp;
+}
+
+async function driveGetFileByName(filename){
+  const resp = await gapi.client.request({
+    path: 'https://www.googleapis.com/drive/v3/files',
+    method: 'GET',
+    params: { q: "name='" + filename + "' and trashed=false", spaces: 'drive', fields: 'files(id,name,modifiedTime)' }
+  });
+  const files = resp.result.files || [];
+  return files.length > 0 ? files[0] : null;
+}
+
+async function driveListBackups(){
+  const resp = await gapi.client.request({
+    path: 'https://www.googleapis.com/drive/v3/files',
+    method: 'GET',
+    params: { q: "name contains 'advokat_zlatanovic_backup_' and trashed=false", spaces: 'drive', fields: 'files(id,name,modifiedTime)', orderBy: 'name desc' }
+  });
+  return resp.result.files || [];
+}
+
+async function driveDeleteFile(fileId){
+  const token = gapi.client.getToken();
+  await fetch('https://www.googleapis.com/drive/v3/files/' + fileId, {
+    method: 'DELETE',
+    headers: { 'Authorization': 'Bearer ' + token.access_token }
+  });
+}
+
 async function driveBackup(){
   if(!gIsSignedIn){ driveEnsureAuth(driveBackup); return; }
   try{
@@ -893,109 +944,95 @@ async function driveBackup(){
       stamp: JSON.parse(localStorage.getItem('lexoffice_stamp')||'null')
     };
     const json = JSON.stringify(data, null, 2);
-
-    const existing = await driveGetFileId();
-    let url, method;
-    if(existing){
-      url = `https://www.googleapis.com/upload/drive/v3/files/${existing.id}?uploadType=multipart`;
-      method = 'PATCH';
-    } else {
-      url = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
-      method = 'POST';
-    }
-
-    const boundary = '-------akzboundary';
-    const delimiter = `\r\n--${boundary}\r\n`;
-    const close_delim = `\r\n--${boundary}--`;
-    const metadata = JSON.stringify({ name: DRIVE_BACKUP_FILENAME, mimeType: 'application/json' });
-
-    const multipartBody = delimiter +
-      'Content-Type: application/json\r\n\r\n' + metadata +
-      delimiter + 'Content-Type: application/json\r\n\r\n' + json +
-      close_delim;
-
-    const token = gapi.client.getToken();
-    if(!token || !token.access_token){ driveEnsureAuth(driveBackup); return; }
-
-    const fetchResp = await fetch(url, {
-      method,
-      headers: {
-        'Authorization': 'Bearer ' + token.access_token,
-        'Content-Type': `multipart/related; boundary="${boundary}"`
-      },
-      body: multipartBody
-    });
+    // Filename with timestamp: advokat_zlatanovic_backup_2026-06-25_1430.json
+    const now = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    const datePart = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate());
+    const timePart = pad(now.getHours()) + pad(now.getMinutes());
+    const filename = 'advokat_zlatanovic_backup_' + datePart + '_' + timePart + '.json';
+    const fetchResp = await driveUploadFile(filename, json);
+    if(!fetchResp){ return; }
     if(fetchResp.ok){
-      const ts = new Date().toLocaleString('sr-RS');
-      alert(`✅ Backup uspešno sačuvan na Google Drive.\n${ts}`);
+      // Keep only last 5 backups — delete older ones
+      const allBackups = await driveListBackups();
+      if(allBackups.length > 5){
+        const toDelete = allBackups.slice(5);
+        for(const f of toDelete){ await driveDeleteFile(f.id); }
+      }
+      const ts = now.toLocaleString('sr-RS');
+      showAlert('✅ Backup sačuvan: ' + filename + '\n' + ts);
     } else {
       const errText = await fetchResp.text();
-      // 403 = Drive scope not granted — force re-auth
       if(fetchResp.status === 401 || fetchResp.status === 403){
         localStorage.removeItem('lexoffice_gtoken');
         gIsSignedIn = false; updateGoogleUI();
-        alert('Potrebna je ponovna prijava da bi se odobrio pristup Google Drive-u.\nKliknite OK pa se prijavite.');
+        showAlert('Potrebna je ponovna prijava za pristup Google Drive-u.');
         driveEnsureAuth(driveBackup);
       } else {
-        alert('Greška pri čuvanju (' + fetchResp.status + '): ' + errText.slice(0,200));
+        showAlert('Greška pri čuvanju (' + fetchResp.status + '): ' + errText.slice(0,200));
       }
     }
   } catch(e){
     console.error('driveBackup error:', e);
-    alert('Greška: ' + String(e));
+    showAlert('Greška: ' + String(e));
   }
+}
+
+async function driveRestoreFromFile(fileId, modifiedTime){
+  const token = gapi.client.getToken();
+  if(!token || !token.access_token){ driveEnsureAuth(driveRestore); return; }
+  const fetchResp = await fetch(
+    'https://www.googleapis.com/drive/v3/files/' + fileId + '?alt=media',
+    { headers: { 'Authorization': 'Bearer ' + token.access_token } }
+  );
+  if(!fetchResp.ok){
+    if(fetchResp.status === 401 || fetchResp.status === 403){
+      localStorage.removeItem('lexoffice_gtoken');
+      gIsSignedIn = false; updateGoogleUI();
+      showAlert('Potrebna je ponovna prijava za pristup Google Drive-u.');
+      driveEnsureAuth(driveRestore);
+    } else {
+      showAlert('Greška pri preuzimanju: ' + fetchResp.status);
+    }
+    return;
+  }
+  const data = await fetchResp.json();
+  let dbData = null;
+  if(data.db && data.db.klijenti) dbData = data.db;
+  else if(data.klijenti) dbData = data;
+  if(!dbData || !dbData.klijenti){ showAlert('Backup fajl je prazan ili neispravan.'); return; }
+  localStorage.setItem('lexoffice_v2', JSON.stringify(dbData));
+  if(data.glinks) localStorage.setItem('lexoffice_gcal_links', JSON.stringify(data.glinks));
+  if(data.stamp) localStorage.setItem('lexoffice_stamp', JSON.stringify(data.stamp));
+  db = loadDB();
+  const ts = new Date(modifiedTime).toLocaleString('sr-RS');
+  showAlert('✅ Podaci vraćeni sa backup-a od: ' + ts);
+  closeModal();
+  renderPage();
 }
 
 async function driveRestore(){
   if(!gIsSignedIn){ driveEnsureAuth(driveRestore); return; }
   try{
-    const existing = await driveGetFileId();
-    if(!existing){ alert('Nema backup fajla na Google Drive-u.'); return; }
-
-    const ts = new Date(existing.modifiedTime).toLocaleString('sr-RS');
-    if(!confirm(`Pronađen backup od: ${ts}\n\nOvo će ZAMENITI sve lokalne podatke.\nDa li ste sigurni?`)) return;
-
-    const token = gapi.client.getToken();
-    if(!token || !token.access_token){ driveEnsureAuth(driveRestore); return; }
-
-    const fetchResp = await fetch(
-      `https://www.googleapis.com/drive/v3/files/${existing.id}?alt=media`,
-      { headers: { 'Authorization': 'Bearer ' + token.access_token } }
+    const backups = await driveListBackups();
+    if(!backups.length){ showAlert('Nema backup fajlova na Google Drive-u.'); return; }
+    // Show selection modal
+    currentModal = 'driveRestore';
+    const rows = backups.map((f,i) => {
+      const ts = new Date(f.modifiedTime).toLocaleString('sr-RS');
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;cursor:pointer;background:var(--surface)" onclick="driveRestoreFromFile('' + f.id + '','' + f.modifiedTime + '')">'
+        + '<div><div style="font-weight:600;font-size:13px">' + f.name.replace('advokat_zlatanovic_backup_','').replace('.json','') + '</div>'
+        + '<div style="font-size:11px;color:var(--text3)">' + ts + '</div></div>'
+        + '<div style="color:var(--accent);font-size:12px;font-weight:600">Uvezi →</div>'
+        + '</div>';
+    }).join('');
+    openModal('Izaberi backup za uvoz',
+      '<div style="font-size:12px;color:var(--text2);margin-bottom:12px">Poslednjih ' + backups.length + ' backup-ova. Kliknite na željeni:</div>' + rows,
+      null
     );
-    if(!fetchResp.ok){
-      if(fetchResp.status === 401 || fetchResp.status === 403){
-        localStorage.removeItem('lexoffice_gtoken');
-        gIsSignedIn = false; updateGoogleUI();
-        alert('Potrebna je ponovna prijava da bi se odobrio pristup Google Drive-u.\nKliknite OK pa se prijavite.');
-        driveEnsureAuth(driveRestore);
-      } else {
-        alert('Greška pri preuzimanju: ' + fetchResp.status);
-      }
-      return;
-    }
-
-    const data = await fetchResp.json();
-    
-    // Podrška za oba formata: {version,db:{klijenti,...}} ili direktno {klijenti,...}
-    let dbData = null;
-    if(data.db && data.db.klijenti) dbData = data.db;
-    else if(data.klijenti) dbData = data;
-    
-    if(!dbData || !dbData.klijenti){
-      alert('Backup fajl je prazan. Napravite novi backup sa PC-a pa pokušajte ponovo.');
-      return;
-    }
-
-    localStorage.setItem('lexoffice_v2', JSON.stringify(dbData));
-    if(data.glinks) localStorage.setItem('lexoffice_gcal_links', JSON.stringify(data.glinks));
-    if(data.stamp) localStorage.setItem('lexoffice_stamp', JSON.stringify(data.stamp));
-
-    db = loadDB();
-    alert(`✅ Podaci su uspešno vraćeni sa Google Drive.\nBackup od: ${ts}`);
-    renderPage();
   } catch(e){
     console.error('driveRestore error:', e);
-    alert('Greška: ' + String(e));
+    showAlert('Greška: ' + String(e));
   }
 }
 
