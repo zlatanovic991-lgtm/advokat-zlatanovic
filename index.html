@@ -260,7 +260,6 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .topbar-title{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;flex-shrink:1}
   .topbar-actions{gap:4px;flex-shrink:0;flex-wrap:nowrap}
   .topbar-actions .btn{font-size:11px!important;padding:5px 7px!important;white-space:nowrap}
-  #addBtnLabel{display:none}
   .google-btn{font-size:11px!important;padding:5px 7px!important;gap:3px}
   .google-btn svg{width:14px;height:14px;flex-shrink:0}
   #topbarGoogleLabel{display:none}
@@ -2026,7 +2025,7 @@ function navigate(page,id,tab,fromHistory){
   const titles={dashboard:'Početna strana',klijenti:'Klijenti',predmeti:'Predmeti',google:'Aktivnosti',finansije:'Finansije'};
   document.getElementById('topbarTitle').textContent=titles[page]||page;
   closeSidebar();
-  const addLabels={dashboard:'Dodaj predmet',klijenti:'Dodaj klijenta',predmeti:'Dodaj predmet',finansije:'Dodaj fakturu',google:'Dodaj aktivnost'};
+  const addLabels={dashboard:'+ Predmet',klijenti:'+ Klijenta',predmeti:'+ Predmet',finansije:'+ Fakturu',google:'+ Aktivnost'};
   const ab=document.getElementById('aktivnostBtn');if(ab)ab.style.display=page==='dashboard'?'':'none';
   const lbl=document.getElementById('addBtnLabel');
   if(lbl) lbl.textContent=addLabels[page]||'Dodaj';
