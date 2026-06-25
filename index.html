@@ -819,7 +819,7 @@ function gInit(){
 }
 
 function gSignIn(){
-  if(!gTokenClient){ alert('Google API se učitava, pokušajte za trenutak.'); gInit(); return; }
+  if(!gTokenClient){ showAlert('Google API se učitava, pokušajte za trenutak.'); gInit(); return; }
   gTokenClient.requestAccessToken({prompt: gIsSignedIn ? '' : 'consent'});
 }
 
@@ -847,32 +847,16 @@ function gSignOut(){
 }
 
 // ========== GOOGLE DRIVE BACKUP / RESTORE ==========
-const DRIVE_BACKUP_FILENAME = 'advokat_zlatanovic_backup.json';
-
-async function driveGetFileId(){
-  const resp = await gapi.client.request({
-    path: 'https://www.googleapis.com/drive/v3/files',
-    method: 'GET',
-    params: {
-      q: `name='${DRIVE_BACKUP_FILENAME}' and trashed=false`,
-      spaces: 'drive',
-      fields: 'files(id,name,modifiedTime)'
-    }
-  });
-  const files = resp.result.files || [];
-  return files.length > 0 ? files[0] : null;
-}
-
 function driveEnsureAuth(callback){
   // If not signed in, or token missing Drive scope — force re-login with consent
-  if(!gTokenClient){ alert('Google API se učitava, pokušajte za trenutak.'); return; }
+  if(!gTokenClient){ showAlert('Google API se učitava, pokušajte za trenutak.'); return; }
   // Store pending callback so it can be called after auth
   window._drivePendingCallback = callback;
   // Override the token client callback temporarily
   const origCallback = gTokenClient.callback;
   gTokenClient.callback = async (resp)=>{
     gTokenClient.callback = origCallback;
-    if(resp.error){ console.error('Drive auth error:', resp); alert('Prijava nije uspela: ' + (resp.error_description||resp.error)); return; }
+    if(resp.error){ console.error('Drive auth error:', resp); showAlert('Prijava nije uspela: ' + (resp.error_description||resp.error)); return; }
     const tok = { ...gapi.client.getToken(), expiry: Date.now() + (resp.expires_in||3600)*1000 };
     localStorage.setItem('lexoffice_gtoken', JSON.stringify(tok));
     gIsSignedIn = true; updateGoogleUI();
@@ -1312,7 +1296,7 @@ async function gDeleteEventById(eventId){
     }
     gCalendarEvents=gCalendarEvents.filter(e=>e.id!==eventId);
     renderPage();
-  }catch(e){ alert('Greška: '+(e.result?.error?.message||e.message)); }
+  }catch(e){ showAlert('Greška: '+(e.result?.error?.message||e.message)); }
 }
 
 function deleteRocisteFromPredmet(predmetId){
@@ -1336,17 +1320,17 @@ function deleteRocisteFromPredmet(predmetId){
 
 // Kreiranje novog događaja u Google Calendar
 async function gCreateCustomEvent(){
-  if(!gIsSignedIn){ alert('Povežite Google nalog prvo.'); return; }
+  if(!gIsSignedIn){ showAlert('Povežite Google nalog prvo.'); return; }
   const tip = document.getElementById('m_ev_tip')?.value || 'Ročište';
   const naziv = document.getElementById('new_ev_naziv')?.value?.trim();
   const datum = document.getElementById('new_ev_datum')?.value;
   const vreme = document.getElementById('new_ev_vreme')?.value?.trim();
   const predmetId = document.getElementById('new_ev_predmet')?.value;
-  if(!naziv){ alert('Unesite naziv događaja.'); return; }
-  if(!datum){ alert('Unesite datum.'); return; }
+  if(!naziv){ showAlert('Unesite naziv događaja.'); return; }
+  if(!datum){ showAlert('Unesite datum.'); return; }
   // Konvertuj datum iz DD/MM/YYYY u YYYY-MM-DD
   const parts = datum.split('/');
-  if(parts.length !== 3){ alert('Format datuma: DD/MM/YYYY'); return; }
+  if(parts.length !== 3){ showAlert('Format datuma: DD/MM/YYYY'); return; }
   const iso = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
   const p = predmetId ? getPredmet(predmetId) : null;
   const k = p ? getKlijent(p.klijentId) : null;
@@ -1386,13 +1370,13 @@ async function gCreateCustomEvent(){
     document.getElementById('new_ev_predmet').value='';
     renderPage();
   } catch(e){
-    alert('Greška: ' + (e.result?.error?.message || e.message));
+    showAlert('Greška: ' + (e.result?.error?.message || e.message));
   }
 }
 
 async function gAddRocisteEvent(predmet){
-  if(!gIsSignedIn){ alert('Povežite Google nalog prvo.'); return; }
-  if(!predmet.rociste){ alert('Predmet nema zakazano ročište.'); return; }
+  if(!gIsSignedIn){ showAlert('Povežite Google nalog prvo.'); return; }
+  if(!predmet.rociste){ showAlert('Predmet nema zakazano ročište.'); return; }
   const k = getKlijent(predmet.klijentId);
   const startDate = predmet.rociste; // YYYY-MM-DD
   try{
@@ -1413,10 +1397,10 @@ async function gAddRocisteEvent(predmet){
     };
     await gapi.client.calendar.events.insert({ calendarId: 'primary', resource: event });
     await gLoadCalendarEvents();
-    alert('✓ Ročište dodato u Google Calendar!');
+    showAlert('✓ Ročište dodato u Google Calendar!');
     if(currentPage==='google') renderPage();
   } catch(e){
-    alert('Greška: ' + (e.result?.error?.message || e.message));
+    showAlert('Greška: ' + (e.result?.error?.message || e.message));
   }
 }
 
@@ -1450,7 +1434,7 @@ async function gToggleTask(taskId, isDone){
 
 
 async function gDeleteCalEvent(eventId){
-  if(!gIsSignedIn){ alert('Niste prijavljeni na Google.'); return; }
+  if(!gIsSignedIn){ showAlert('Niste prijavljeni na Google.'); return; }
   // Custom confirm dialog
   const confirmed = await new Promise(resolve => {
     const el = document.createElement('div');
@@ -1487,10 +1471,10 @@ async function gDeleteCalEvent(eventId){
     renderPage();
   } catch(e){
     if(e.status===401){
-      alert('Sesija je istekla. Odjavite se i prijavite ponovo.');
+      showAlert('Sesija je istekla. Odjavite se i prijavite ponovo.');
       gSignOut();
     } else {
-      alert('Greška: ' + (e.result?.error?.message || e.message));
+      showAlert('Greška: ' + (e.result?.error?.message || e.message));
     }
   }
 }
@@ -1724,7 +1708,7 @@ function dashCalSelect(iso){
 }// ========== IZMENA GCAL DOGADJAJA ==========
 function openEditEventModal(eventId){
   const ev=gCalendarEvents.find(e=>e.id===eventId);
-  if(!ev){alert('Događaj nije pronađen.');return;}
+  if(!ev){showAlert('Događaj nije pronađen.');return;}
   const naziv=ev.summary||'';
   const isPrivatno=naziv.toLowerCase().startsWith('privatno');
   const evDt=ev.start?.dateTime||ev.start?.date||'';
@@ -1789,7 +1773,7 @@ async function saveEditEvent(){
   const ev=gCalendarEvents.find(e=>e.id===eventId);
   if(!ev) return;
   let naziv=(document.getElementById('edit_ev_naziv')?.value||'').trim();
-  if(!naziv){alert('Unesite naziv!');return;}
+  if(!naziv){showAlert('Unesite naziv!');return;}
   const _editTip=document.getElementById('edit_ev_tip')?.value||'Ročište';
   const isPrivatno=_editTip==='Privatno';
   const datumRaw=document.getElementById('edit_ev_datum')?.value?.trim()||'';
@@ -1835,7 +1819,7 @@ async function saveEditEvent(){
     }
     gSaveLinks(links); saveDB();
     await gLoadCalendarEvents(); closeModal(); renderPage();
-  }catch(e){alert('Greška: '+(e.result?.error?.message||e.message));}
+  }catch(e){showAlert('Greška: '+(e.result?.error?.message||e.message));}
 }
 
 // ========== PRIKAZ DOGADJAJA NA KALENDARU ==========
@@ -1935,7 +1919,7 @@ function stampajKalendar(tip){
   const _blob=new Blob([_blobHtml],{type:'text/html;charset=utf-8'});
   const _blobUrl=URL.createObjectURL(_blob);
   const w=window.open(_blobUrl,'_blank','width=780,height=800');
-  if(!w){alert('Browser je blokirao popup. Dozvolite popups za ovu stranicu.');return;}
+  if(!w){showAlert('Browser je blokirao popup. Dozvolite popups za ovu stranicu.');return;}
   setTimeout(()=>URL.revokeObjectURL(_blobUrl),60000);
   _setStamp();
   renderPage();
@@ -2651,6 +2635,16 @@ function renderKlijentDetail(){
 // ========== PREDMETI ==========
 let predmetFilter='svi';
 let predmetSearch='';
+function predmetSearchLive(val){
+  predmetSearch = val;
+  const norm = s => s.toLowerCase().replace(/[čć]/g,'c').replace(/š/g,'s').replace(/ž/g,'z').replace(/đ/g,'dj');
+  const q = norm(val);
+  document.querySelectorAll('#predmetiTable tbody tr').forEach(tr => {
+    if(!q){ tr.style.display=''; return; }
+    const txt = norm(tr.dataset.search||'');
+    tr.style.display = txt.includes(q) ? '' : 'none';
+  });
+}
 function renderPredmeti(){
   const statusi=['svi','aktivan','ceka_rociste','ceka_uplatu','zavrsen','arhiviran'];
   const labels={svi:'Svi',aktivan:'Aktivni',ceka_rociste:'Čeka ročište',ceka_uplatu:'Čeka uplatu',zavrsen:'Završeni',arhiviran:'Arhivirani'};
@@ -2669,7 +2663,7 @@ function renderPredmeti(){
   <div class="mobile-pred-stat" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 14px;margin-bottom:12px;font-size:13px;color:var(--text2);display:flex;justify-content:space-between;align-items:center">
     <div class="search-box" style="flex:1;max-width:280px">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" placeholder="Pretraži predmete..." value="${esc(predmetSearch)}" id="predmetSearchInput" oninput="predmetSearch=this.value;renderPage();const el=document.getElementById('predmetSearchInput');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length)}">
+      <input type="text" placeholder="Pretraži predmete..." value="${esc(predmetSearch)}" id="predmetSearchInput" oninput="predmetSearchLive(this.value)">
     </div>
     <span style="font-size:13px;color:var(--text2)">Aktivni predmeti &nbsp;<span style="font-weight:700;color:var(--text);font-size:15px">${db.predmeti.filter(p=>p.status==='aktivan').length}</span> <span style="font-weight:400;color:var(--text3);font-size:12px">/ ${db.predmeti.length} ukupno</span></span>
   </div>
@@ -2677,7 +2671,7 @@ function renderPredmeti(){
     ${statusi.map(s=>`<div class="filter-chip ${predmetFilter===s?'active':''}" onclick="predmetFilter='${s}';renderPage()">${labels[s]}</div>`).join('')}
   </div>
   <div class="table-wrap">
-    <table>
+    <table id="predmetiTable">
       <thead><tr>
         <th>Interni br.</th><th>Klijent</th><th>Vrsta</th><th>Državni organ</th><th>Protivna strana</th><th>Status</th><th>Ročište</th><th>Vrednost spora</th>
       </tr></thead>
@@ -2687,7 +2681,8 @@ function renderPredmeti(){
             const k=getKlijent(p.klijentId);
             const d=daysUntil(p.rociste);
             const rocisteCls=d!==null&&d<=3?'color:var(--danger);font-weight:600':d!==null&&d<=7?'color:var(--warn);font-weight:600':'';
-            return`<tr onclick="navigate('predmeti','${p.id}')">
+            const _search=(p.interni+' '+k.ime+' '+( p.sudski||'')+' '+(p.sud||'')).toLowerCase();
+            return`<tr onclick="navigate('predmeti','${p.id}')" data-search="${_search}">
               <td><span class="id-badge">${esc(p.interni)}</span></td>
               <td><div style="display:flex;align-items:center;gap:6px">
                 <div class="quick-avatar" style="width:26px;height:26px;font-size:10px">${initials(k.ime)}</div>
@@ -3132,7 +3127,7 @@ function kartStampajAktuelni(predmetId){
   const _blob=new Blob([_blobHtml],{type:'text/html;charset=utf-8'});
   const _blobUrl=URL.createObjectURL(_blob);
   const w=window.open(_blobUrl,'_blank','width=760,height=650');
-  if(!w){alert('Browser je blokirao popup. Dozvolite popups za ovu stranicu.');return;}
+  if(!w){showAlert('Browser je blokirao popup. Dozvolite popups za ovu stranicu.');return;}
   setTimeout(()=>URL.revokeObjectURL(_blobUrl),60000);
 }
 
@@ -3150,7 +3145,7 @@ function kartStampajCeo(predmetId){
   const _blob=new Blob([_blobHtml],{type:'text/html;charset=utf-8'});
   const _blobUrl=URL.createObjectURL(_blob);
   const w=window.open(_blobUrl,'_blank','width=760,height=750');
-  if(!w){alert('Browser je blokirao popup. Dozvolite popups za ovu stranicu.');return;}
+  if(!w){showAlert('Browser je blokirao popup. Dozvolite popups za ovu stranicu.');return;}
   setTimeout(()=>URL.revokeObjectURL(_blobUrl),60000);
 }
 
@@ -3187,7 +3182,7 @@ function brziUnosOpisa(predmetId){
   if(!p) return;
   const datum = document.getElementById('brziOpisDatum_'+predmetId)?.value || new Date().toISOString().slice(0,10);
   const tekst = document.getElementById('brziOpisTekst_'+predmetId)?.value?.trim();
-  if(!tekst){ alert('Unesite tekst.'); return; }
+  if(!tekst){ showAlert('Unesite tekst.'); return; }
   if(!p.opisDnevnik) p.opisDnevnik = [];
   if(p.opisDnevnik.length===0 && p.opis) p.opisDnevnik.push({datum:'(raniji)', tekst:p.opis});
   p.opisDnevnik.push({datum, tekst});
@@ -3260,7 +3255,7 @@ function _ponudiZakazivanje(predmetId, datumi, tekst){
         gSaveLinks(links);
       }
       await gLoadData();
-    } catch(e){ console.error(e); alert('Greška pri dodavanju u kalendar.'); }
+    } catch(e){ console.error(e); showAlert('Greška pri dodavanju u kalendar.'); }
     renderPage();
   };
 }
@@ -3341,7 +3336,7 @@ function stampajOpisSamo(){
   const _blob=new Blob([_blobHtml],{type:'text/html;charset=utf-8'});
   const _blobUrl=URL.createObjectURL(_blob);
   const w = window.open(_blobUrl,'_blank','width=760,height=700');
-  if(!w){alert('Browser je blokirao popup. Dozvolite popups za ovu stranicu.');return;}
+  if(!w){showAlert('Browser je blokirao popup. Dozvolite popups za ovu stranicu.');return;}
   setTimeout(()=>URL.revokeObjectURL(_blobUrl),60000);
 }
 function stampajOpisCeo(){
@@ -3386,7 +3381,7 @@ function stampajOpisCeo(){
   const _blob=new Blob([_blobHtml],{type:'text/html;charset=utf-8'});
   const _blobUrl=URL.createObjectURL(_blob);
   const w = window.open(_blobUrl,'_blank','width=760,height=750');
-  if(!w){alert('Browser je blokirao popup. Dozvolite popups za ovu stranicu.');return;}
+  if(!w){showAlert('Browser je blokirao popup. Dozvolite popups za ovu stranicu.');return;}
   setTimeout(()=>URL.revokeObjectURL(_blobUrl),60000);
 }
 
@@ -3414,31 +3409,12 @@ function openAddModal(){
   (modals[currentPage]||modals.predmeti)();
 }
 
-function toggleNoviKlijentForm(){
-  const f = document.getElementById('novi_klijent_form');
-  if(f) f.style.display = f.style.display==='none' ? '' : 'none';
-}
 
-function dodajNovogKlijenta(){
-  const ime = (document.getElementById('nk_ime')?.value||'').trim();
-  if(!ime){ alert('Unesite ime klijenta!'); return; }
-  const tel = (document.getElementById('nk_tel')?.value||'').trim();
-  const email = (document.getElementById('nk_email')?.value||'').trim();
-  const id = genId('K');
-  db.klijenti.push({id, ime, telefon:tel, email, tip:'fizicko', datum:new Date().toISOString().slice(0,10), jmbg:'', pib:'', adresa:'', napomena:''});
-  saveDB();
-  const sel = document.getElementById('m_ev_klijent');
-  if(sel){
-    const opt = document.createElement('option');
-    opt.value = id; opt.textContent = ime;
-    sel.appendChild(opt); sel.value = id;
-  }
-  document.getElementById('novi_klijent_form').style.display='none';
-  ['nk_ime','nk_tel','nk_email'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-}
+
+
 
 function openGCalEventModal(){
-  if(!gIsSignedIn){ alert('Povežite Google nalog prvo.'); return; }
+  if(!gIsSignedIn){ showAlert('Povežite Google nalog prvo.'); return; }
   const predmetiOptions = db.predmeti
     .filter(p=>p.status!=='arhiviran'&&p.status!=='zavrsen')
     .map(p=>{ const k=getKlijent(p.klijentId); return`<option value="${p.id}">${esc(p.interni)} — ${esc(k.ime)}${p.protivna?' vs. '+esc(p.protivna):''}</option>`; })
@@ -4046,14 +4022,14 @@ function saveModal(){
     const vreme = document.getElementById('m_ev_vreme').value.trim();
     const predmetId = document.getElementById('m_ev_predmet')?.value || '';
     const klijentId = document.getElementById('m_ev_klijent')?.value || '';
-    if(!datum){ alert('Unesite datum.'); return; }
+    if(!datum){ showAlert('Unesite datum.'); return; }
     const parts = datum.split('/');
-    if(parts.length!==3||parts[2].length!==4){ alert('Format datuma: DD/MM/YYYY'); return; }
+    if(parts.length!==3||parts[2].length!==4){ showAlert('Format datuma: DD/MM/YYYY'); return; }
     const iso = `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
     const p = predmetId ? getPredmet(predmetId) : null;
     const k = p ? getKlijent(p.klijentId) : (klijentId ? getKlijent(klijentId) : null);
     // Privatno: naziv obavezan, nema predmeta
-    if(tip==='Privatno' && !naziv){ alert('Unesite naziv privatnog događaja.'); return; }
+    if(tip==='Privatno' && !naziv){ showAlert('Unesite naziv privatnog događaja.'); return; }
     const finalNaziv = naziv || (p ? `${tip}: ${p.interni} — ${k?k.ime:''}` : (k ? `${tip}: ${k.ime}` : tip));
     (async()=>{
       try{
@@ -4085,20 +4061,20 @@ function saveModal(){
         await gLoadCalendarEvents();
         closeModal();
         renderPage();
-      } catch(e){ alert('Greška: '+(e.result?.error?.message||e.message)); }
+      } catch(e){ showAlert('Greška: '+(e.result?.error?.message||e.message)); }
     })();
     return;
   }
   if(currentModal==='klijent'){
     const ime=document.getElementById('f_ime').value.trim();
     const noviKid=(document.getElementById('f_kid')?.value||'').trim();
-    if(!ime){alert('Unesite ime/naziv!');return}
+    if(!ime){showAlert('Unesite ime/naziv!');return}
     if(editId){
       const k=db.klijenti.find(c=>c.id===editId);
       // Handle ID change
       if(noviKid && noviKid !== editId){
         const duplikat=db.klijenti.find(c=>c.id===noviKid);
-        if(duplikat){alert('ID "'+noviKid+'" već postoji! Izaberite drugi.');return}
+        if(duplikat){showAlert('ID "'+noviKid+'" već postoji! Izaberite drugi.');return}
         // Update all references
         db.predmeti.forEach(p=>{ if(p.klijentId===editId) p.klijentId=noviKid; });
         db.finansije.forEach(f=>{ if(f.klijentId===editId) f.klijentId=noviKid; });
@@ -4107,24 +4083,24 @@ function saveModal(){
       Object.assign(k,{ime,tip:v('f_tip'),jmbg:v('f_jmbg'),pib:v('f_pib'),mb:v('f_mb'),racun:v('f_racun'),telefon:v('f_tel'),email:v('f_email'),adresa:v('f_adresa'),napomena:v('f_napomena'),datum:getDateVal('f_datum')});
     } else {
       const newId=noviKid||genId('K');
-      if(noviKid&&db.klijenti.find(c=>c.id===noviKid)){alert('ID "'+noviKid+'" već postoji!');return}
+      if(noviKid&&db.klijenti.find(c=>c.id===noviKid)){showAlert('ID "'+noviKid+'" već postoji!');return}
       db.klijenti.push({id:newId,ime,tip:v('f_tip'),jmbg:v('f_jmbg'),pib:v('f_pib'),mb:v('f_mb'),racun:v('f_racun'),telefon:v('f_tel'),email:v('f_email'),adresa:v('f_adresa'),napomena:v('f_napomena'),datum:getDateVal('f_datum')});
     }
   } else if(currentModal==='predmet'){
     const vrsta=v('f_vrsta');
     const interni=v('f_interni').trim();
-    if(!interni){alert('Unesite interni broj predmeta!');return}
+    if(!interni){showAlert('Unesite interni broj predmeta!');return}
     const duplikat=db.predmeti.find(x=>x.interni===interni&&x.id!==editId);
-    if(duplikat){alert('Interni broj "'+interni+'" već postoji! Izaberite drugi broj.');return}
+    if(duplikat){showAlert('Interni broj "'+interni+'" već postoji! Izaberite drugi broj.');return}
     // Resolve klijentId: existing or create new
     let klijentId='';
     if(_klijentMode==='postojeci'){
       klijentId=document.getElementById('f_klijent_id')?.value||'';
-      if(!klijentId){alert('Izaberite klijenta ili odaberite "Novi klijent"!');return}
+      if(!klijentId){showAlert('Izaberite klijenta ili odaberite "Novi klijent"!');return}
     } else {
       // New klijent
       const kIme=(document.getElementById('f_k_ime')?.value||'').trim();
-      if(!kIme){alert('Unesite ime klijenta!');return}
+      if(!kIme){showAlert('Unesite ime klijenta!');return}
       const newK={
         id:genId('K'),ime:kIme,
         tip:document.getElementById('f_k_tip')?.value||'fizicko',
@@ -4163,14 +4139,14 @@ function saveModal(){
     }
   } else if(currentModal==='aktivnost'){
     const predmetId=v('f_predmet');const opis=v('f_opis');
-    if(!predmetId){alert('Izaberite predmet!');return}
-    if(!opis){alert('Unesite opis!');return}
+    if(!predmetId){showAlert('Izaberite predmet!');return}
+    if(!opis){showAlert('Unesite opis!');return}
     db.aktivnosti.push({id:genId('A'),predmetId,datum:getDateVal('f_datum'),vrsta:v('f_vrsta'),opis,sledeci:v('f_sledeci'),rok:getDateVal('f_rok'),zavrseno:false});
   } else if(currentModal==='finansije'){
     const stavkeVal=collectStavke()||[];
     const fakt=stavkeVal.reduce((s,x)=>s+(parseFloat(x.cena)||0),0);
     const opis=stavkeVal.map(x=>x.vrsta).filter(Boolean).join(', ');
-    if(!fakt||!opis){alert('Dodajte bar jednu stavku sa opisom i cenom!');return;}
+    if(!fakt||!opis){showAlert('Dodajte bar jednu stavku sa opisom i cenom!');return;}
     const predmetId=v('f_predmet');
     const klijentId=predmetId?(db.predmeti.find(p=>p.id===predmetId)?.klijentId||addFinKlId):addFinKlId;
     const plac=parseFloat(v('f_plac'))||0;
@@ -4307,7 +4283,7 @@ function importData(){
         const parsed = JSON.parse(ev.target.result);
         // Basic validation
         if(!parsed.klijenti || !parsed.predmeti){
-          alert('Nevažeći backup fajl!');
+          showAlert('Nevažeći backup fajl!');
           return;
         }
         if(!confirm(`Uvesti podatke iz fajla "${file.name}"?\n\nOvo će ZAMENITI sve trenutne podatke!\n\nKlijenata: ${parsed.klijenti.length}\nPredmeta: ${parsed.predmeti.length}\nFinansija: ${(parsed.finansije||[]).length}`)){
@@ -4321,9 +4297,9 @@ function importData(){
         db = parsed;
         saveDB();
         renderPage();
-        alert('✓ Podaci uspešno uvezeni!');
+        showAlert('✓ Podaci uspešno uvezeni!');
       } catch(err){
-        alert('Greška pri čitanju fajla: ' + err.message);
+        showAlert('Greška pri čitanju fajla: ' + err.message);
       }
     };
     reader.readAsText(file);
@@ -4613,7 +4589,7 @@ function fmtDatePrint(iso){
 }
 function stampajFakturu(finId){
   const f=db.finansije.find(x=>x.id===finId);
-  if(!f){alert('Faktura nije pronađena.');return;}
+  if(!f){showAlert('Faktura nije pronađena.');return;}
   const k=getKlijent(f.klijentId);
   const yr2=new Date(f.datum_fakture||new Date()).getFullYear().toString().slice(-2);
   const autoNum=f.id.replace('F','').replace(/^0+/,'');
@@ -4685,7 +4661,7 @@ function stampajFakturu(finId){
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const w=window.open(url,'_blank','width=860,height=960');
-  if(!w){alert('Browser je blokirao otvaranje prozora. Dozvolite popup za ovu stranicu.');return;}
+  if(!w){showAlert('Browser je blokirao otvaranje prozora. Dozvolite popup za ovu stranicu.');return;}
   setTimeout(()=>URL.revokeObjectURL(url),60000);
 }
 
