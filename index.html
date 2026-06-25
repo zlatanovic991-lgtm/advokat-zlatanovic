@@ -3348,7 +3348,6 @@ function openGCalEventModal(){
     .join('');
   currentModal='gcal';
   editId=null;
-  const klijentiOptions = db.klijenti.map(k=>`<option value="${k.id}">${esc(k.ime)}</option>`).join('');
   openModal('Novi događaj u Google Calendar', `
     <div class="form-group">
       <label>Tip događaja</label>
@@ -3369,22 +3368,8 @@ function openGCalEventModal(){
 
     <div class="form-group" id="m_ev_klijent_row" style="display:none">
       <label>Klijent (opciono)</label>
-      <div style="display:flex;gap:8px;align-items:center">
-        <select id="m_ev_klijent" style="flex:1">
-          <option value="">— Bez klijenta —</option>
-          ${klijentiOptions}
-        </select>
-        <button type="button" onclick="toggleNoviKlijentForm()" style="flex-shrink:0;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:7px 12px;font-size:13px;cursor:pointer;font-weight:600">+ Novi</button>
-      </div>
-      <div id="novi_klijent_form" style="display:none;margin-top:10px;padding:12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border)">
-        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">Novi klijent</div>
-        <div class="form-row">
-          <div class="form-group" style="margin-bottom:8px"><label>Ime i prezime *</label><input id="nk_ime" placeholder="Marko Petrović"></div>
-          <div class="form-group" style="margin-bottom:8px"><label>Telefon</label><input id="nk_tel" placeholder="064-123-4567"></div>
-        </div>
-        <div class="form-group" style="margin-bottom:8px"><label>Email</label><input id="nk_email" placeholder="email@primer.com"></div>
-        <button type="button" onclick="dodajNovogKlijenta()" style="background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:7px 14px;font-size:13px;cursor:pointer;font-weight:600">✓ Dodaj klijenta</button>
-      </div>
+      <input type="hidden" id="m_ev_klijent" value="">
+      <div class="ss-wrap" id="m_ev_klijent_ss"></div>
     </div>
 
     <div class="form-group" id="m_ev_naziv_row">
@@ -3451,6 +3436,7 @@ function selectTipBtn(btn){
     predmetRow.style.display='none';
     klijentRow.style.display='';
     nazivLabel.textContent='Naziv (opciono)';
+    setTimeout(()=>{buildKlijentSearchSelect('m_ev_klijent_ss','m_ev_klijent','');},10);
   } else {
     predmetRow.style.display='';
     klijentRow.style.display='none';
@@ -4470,6 +4456,11 @@ function buildPredmetSearchSelect(wrapperId,hiddenId,currentVal){
   const hidden=document.getElementById(hiddenId);if(hidden&&currentVal)hidden.value=currentVal;
   const options=[{value:'',label:'— Bez predmeta —'}].concat(db.predmeti.filter(p=>p.status!=='arhiviran').map(p=>{const k=getKlijent(p.klijentId);return{value:p.id,label:p.interni+' — '+k.ime+(p.protivna?' vs. '+p.protivna:'')};}));
   buildSearchSelect(wrapperId,hiddenId,options,'Ukucajte ime ili broj predmeta...');
+}
+function buildKlijentSearchSelect(wrapperId,hiddenId,currentVal){
+  const hidden=document.getElementById(hiddenId);if(hidden&&currentVal!==undefined)hidden.value=currentVal;
+  const options=[{value:'',label:'— Bez klijenta —'}].concat(db.klijenti.map(k=>{const extra=k.jmbg?(' · '+k.jmbg):k.pib?(' · PIB:'+k.pib):'';return{value:k.id,label:k.ime+extra};}));
+  buildSearchSelect(wrapperId,hiddenId,options,'Ukucajte ime klijenta...');
 }
 
 function dodajStavku(){
