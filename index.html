@@ -3396,6 +3396,7 @@ function openGCalEventModal(){
   `, 'Dodaj događaj');
   setTimeout(()=>{
     buildPredmetSearchSelect('m_ev_predmet_ss','m_ev_predmet','');
+    if(!window._dashCalSelectedDay) window._dashCalSelectedDay = new Date().toISOString().slice(0,10);
     if(window._dashCalSelectedDay){
       const d=new Date(window._dashCalSelectedDay+'T12:00:00');
       const dd=String(d.getDate()).padStart(2,'0');
