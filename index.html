@@ -789,6 +789,36 @@ function showConfirm(msg, onYes){
   box.appendChild(txt); box.appendChild(btns);
   d.appendChild(box); document.body.appendChild(d);
 }
+function showEditText(title, defaultValue, onSave){
+  const d=document.createElement('div');
+  d.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center';
+  const lbl=document.createElement('div');
+  lbl.style.cssText='margin-bottom:10px;font-weight:600;color:var(--text)';
+  lbl.textContent=title;
+  const ta=document.createElement('textarea');
+  ta.value=defaultValue||'';
+  ta.style.cssText='width:100%;min-height:220px;resize:vertical;font-size:14px;line-height:1.5;padding:10px;box-sizing:border-box;font-family:inherit;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:18px;color:var(--text);background:var(--surface2)';
+  const btnOk=document.createElement('button');
+  btnOk.textContent='Sačuvaj';
+  btnOk.style.cssText='background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:8px 22px;font-size:13px;font-weight:600;cursor:pointer';
+  const btnCancel=document.createElement('button');
+  btnCancel.textContent='Otkaži';
+  btnCancel.style.cssText='background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);padding:8px 22px;font-size:13px;cursor:pointer';
+  btnCancel.onclick=()=>d.remove();
+  btnOk.onclick=()=>{ const v=ta.value; d.remove(); onSave(v); };
+  const btns=document.createElement('div');
+  btns.style.cssText='display:flex;gap:10px;justify-content:flex-end';
+  btns.appendChild(btnOk); btns.appendChild(btnCancel);
+  const box=document.createElement('div');
+  box.style.cssText='background:var(--surface);border-radius:var(--radius);padding:28px 32px;max-width:560px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18);font-size:14px;line-height:1.6;color:var(--text)';
+  box.appendChild(lbl); box.appendChild(ta); box.appendChild(btns);
+  d.appendChild(box); document.body.appendChild(d);
+  const _keyHandler=(e)=>{
+    if(e.key==='Escape'){ d.remove(); document.removeEventListener('keydown',_keyHandler); }
+  };
+  document.addEventListener('keydown',_keyHandler);
+  setTimeout(()=>{ ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length); },50);
+}
 function gScheduleTokenRefresh(expiresInSecs){
   if(_gRefreshTimer) clearTimeout(_gRefreshTimer);
   const delay = Math.max((expiresInSecs - 300) * 1000, 30000);
@@ -1555,9 +1585,10 @@ async function gUpdateTask(taskId, noviNaziv){
 }
 
 function gEditTask(taskId, trenutni){
-  const novi = prompt('Izmeni zadatak:', trenutni);
-  if(novi === null || novi.trim() === '') return;
-  gUpdateTask(taskId, novi.trim());
+  showEditText('Izmeni zadatak', trenutni, (novi)=>{
+    if(novi.trim() === '') return;
+    gUpdateTask(taskId, novi.trim());
+  });
 }
 
 function fmtGCalDate(ev){
@@ -3343,22 +3374,22 @@ function opisUredi(idx){
   const p = editId ? db.predmeti.find(x=>x.id===editId) : null;
   if(!p || !p.opisDnevnik || !p.opisDnevnik[idx]) return;
   const u = p.opisDnevnik[idx];
-  const fmtD = s => { if(!s||s==='(raniji)') return s||''; const pp=s.split('-'); return pp.length===3?pp[2]+'/'+pp[1]+'/'+pp[0]:s; };
-  const noviTekst = prompt('Uredi tekst unosa:', u.tekst);
-  if(noviTekst === null) return; // otkazano
-  p.opisDnevnik[idx].tekst = noviTekst.trim();
-  saveDB();
-  // Osvezi modal in-place
-  openPredmetModal(editId);
+  showEditText('Uredi tekst unosa', u.tekst, (noviTekst)=>{
+    p.opisDnevnik[idx].tekst = noviTekst.trim();
+    saveDB();
+    // Osvezi modal in-place
+    openPredmetModal(editId);
+  });
 }
 function opisObrisi(idx){
   const p = editId ? db.predmeti.find(x=>x.id===editId) : null;
   if(!p || !p.opisDnevnik || !p.opisDnevnik[idx]) return;
-  if(!confirm('Obrisati ovaj unos opisa?')) return;
-  p.opisDnevnik.splice(idx, 1);
-  p.opis = p.opisDnevnik.length>0 ? p.opisDnevnik[p.opisDnevnik.length-1].tekst : '';
-  saveDB();
-  openPredmetModal(editId);
+  showConfirm('Obrisati ovaj unos opisa?', ()=>{
+    p.opisDnevnik.splice(idx, 1);
+    p.opis = p.opisDnevnik.length>0 ? p.opisDnevnik[p.opisDnevnik.length-1].tekst : '';
+    saveDB();
+    openPredmetModal(editId);
+  });
 }
 
 function _getPredmetInfoHTML(){
