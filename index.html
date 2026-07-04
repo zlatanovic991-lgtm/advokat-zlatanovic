@@ -2125,6 +2125,7 @@ function initDB(){
 let db=loadDB();
 let currentPage='dashboard';
 let currentModal='';
+let _modalSaving=false;
 let editId=null;
 let detailId=null;
 let detailTab='info';
@@ -3171,9 +3172,13 @@ function renderFinansije(){
 function _modalKeyHandler(e){
   if(e.key==='Escape'){e.preventDefault();if(_calActive){closeCal();}else{closeModal();}return}
   if(e.key==='Enter'){
-    // Only trigger on Enter if focus is NOT on textarea or select (allow normal newline/select behavior)
-    const tag=document.activeElement?.tagName;
-    if(tag==='TEXTAREA'||tag==='SELECT')return;
+    // Only trigger on Enter if focus is NOT on textarea, select, or a search-select autocomplete input
+    // (Enter in a search-select picks the highlighted option — it must NOT also submit the whole modal,
+    // otherwise selecting a klijent/predmet via Enter creates the calendar event a 2nd time on the next Enter/click)
+    const active=document.activeElement;
+    const tag=active?.tagName;
+    if(tag==='TEXTAREA'||tag==='SELECT'||active?.classList?.contains('ss-input'))return;
+    if(_modalSaving)return;
     e.preventDefault();
     saveModal();
   }
@@ -3495,13 +3500,17 @@ function stampajOpisCeo(){
 }
 
 function openModal(title,body,saveLabel){
+  _modalSaving=false;
   document.getElementById('modalTitle').textContent=title;
   document.getElementById('modalBody').innerHTML=body;
   document.getElementById('modalSaveBtn').textContent=saveLabel||'Sačuvaj';
+  document.getElementById('modalSaveBtn').disabled=false;
+  document.getElementById('modalSaveBtn').style.opacity='';
+  document.getElementById('modalSaveBtn').style.cursor='';
   document.getElementById('modalOverlay').style.display='flex';
   document.addEventListener('keydown',_modalKeyHandler);
 }
-function closeModal(){document.getElementById('modalOverlay').style.display='none';editId=null;document.removeEventListener('keydown',_modalKeyHandler)}
+function closeModal(){document.getElementById('modalOverlay').style.display='none';editId=null;_modalSaving=false;const _sb=document.getElementById('modalSaveBtn');if(_sb){_sb.disabled=false;_sb.style.opacity='';_sb.style.cursor='';}document.removeEventListener('keydown',_modalKeyHandler)}
 let _modalMousedownTarget=null;
 function modalOverlayMousedown(e){_modalMousedownTarget=e.target}
 function modalOverlayMouseup(e){if(e.target===document.getElementById('modalOverlay')&&_modalMousedownTarget===document.getElementById('modalOverlay'))closeModal();_modalMousedownTarget=null}
@@ -4122,6 +4131,7 @@ function updateFinStatus(){
   }
 }
 function saveModal(){
+  if(_modalSaving)return;
   if(currentModal==='_editEvent'){ saveEditEvent(); return; }
   if(currentModal==='kartUredi'){ _saveKartUredi(); return; }
   if(currentModal==='gcal'){
@@ -4141,6 +4151,9 @@ function saveModal(){
     // Privatno: naziv obavezan, nema predmeta
     if(tip==='Privatno' && !naziv){ showAlert('Unesite naziv privatnog događaja.'); return; }
     const finalNaziv = naziv || (p ? `${tip}: ${p.interni} — ${k?k.ime:''}` : (k ? `${tip}: ${k.ime}` : tip));
+    _modalSaving=true;
+    const _saveBtn=document.getElementById('modalSaveBtn');
+    if(_saveBtn){_saveBtn.disabled=true;_saveBtn.style.opacity='0.6';_saveBtn.style.cursor='default';}
     (async()=>{
       try{
         const _vt3=parseVreme(vreme);const hh=_vt3?_vt3.hh:'09';const mm=_vt3?_vt3.mm:'00';
@@ -4169,9 +4182,10 @@ function saveModal(){
           gSaveLinks(links);
         }
         await gLoadCalendarEvents();
+        _modalSaving=false;
         closeModal();
         renderPage();
-      } catch(e){ showAlert('Greška: '+(e.result?.error?.message||e.message)); }
+      } catch(e){ _modalSaving=false; if(_saveBtn){_saveBtn.disabled=false;_saveBtn.style.opacity='';_saveBtn.style.cursor='';} showAlert('Greška: '+(e.result?.error?.message||e.message)); }
     })();
     return;
   }
