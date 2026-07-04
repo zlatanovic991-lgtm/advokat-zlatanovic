@@ -1371,8 +1371,8 @@ async function gLoadTasks(){
 
 // Add event to Google Calendar from predmet rociste
 // Brisanje ročišta iz predmeta
-async function gDeleteEventById(eventId){
-  if(!confirm('Obrisati događaj iz Google Calendara?')) return;
+function gDeleteEventById(eventId){
+  showConfirm('Obrisati događaj iz Google Calendara?', async ()=>{
   try{
     await gapi.client.calendar.events.delete({calendarId:'primary', eventId});
     const links=gGetLinks();
@@ -1385,10 +1385,11 @@ async function gDeleteEventById(eventId){
     gCalendarEvents=gCalendarEvents.filter(e=>e.id!==eventId);
     renderPage();
   }catch(e){ showAlert('Greška: '+(e.result?.error?.message||e.message)); }
+  });
 }
 
 function deleteRocisteFromPredmet(predmetId){
-  if(!confirm('Obrisati ročište iz predmeta?')) return;
+  showConfirm('Obrisati ročište iz predmeta?', ()=>{
   const p = getPredmet(predmetId);
   if(!p) return;
   p.rociste = '';
@@ -1404,6 +1405,7 @@ function deleteRocisteFromPredmet(predmetId){
     }
   }
   renderPage();
+  });
 }
 
 // Kreiranje novog događaja u Google Calendar
@@ -3685,14 +3687,14 @@ function deleteKlijent(id){
   const k=db.klijenti.find(x=>x.id===id);
   if(!k)return;
   const brPredmeta=db.predmeti.filter(p=>p.klijentId===id).length;
-  if(brPredmeta>0){
-    if(!confirm('Klijent "'+k.ime+'" ima '+brPredmeta+' predmeta. Da li ste sigurni?\nPredmeti klijenta neće biti obrisani.'))return;
-  } else {
-    if(!confirm('Obrisati klijenta "'+k.ime+'"?'))return;
-  }
-  db.klijenti=db.klijenti.filter(x=>x.id!==id);
-  saveDB();
-  if(detailId===id){detailId=null;navigate('klijenti');}else{renderPage();}
+  const msg = brPredmeta>0
+    ? 'Klijent "'+k.ime+'" ima '+brPredmeta+' predmeta. Da li ste sigurni?\nPredmeti klijenta neće biti obrisani.'
+    : 'Obrisati klijenta "'+k.ime+'"?';
+  showConfirm(msg, ()=>{
+    db.klijenti=db.klijenti.filter(x=>x.id!==id);
+    saveDB();
+    if(detailId===id){detailId=null;navigate('klijenti');}else{renderPage();}
+  });
 }
 function editKlijent(id){openKlijentModal(id)}
 
@@ -3942,12 +3944,13 @@ function deletePredmet(id){
   const brDok=db.dokumenti.filter(d=>d.predmetId===id).length;
   let msg='Obrisati predmet "'+p.interni+'" — '+k.ime+'?';
   if(brAkt||brFin||brDok) msg+='\n\nBiće obrisano i: '+[brAkt?brAkt+' aktivnosti':'',brFin?brFin+' fin. zapisa':'',brDok?brDok+' dokumenata':''].filter(Boolean).join(', ');
-  if(!confirm(msg))return;
-  db.predmeti=db.predmeti.filter(x=>x.id!==id);
-  db.aktivnosti=db.aktivnosti.filter(a=>a.predmetId!==id);
-  db.finansije=db.finansije.filter(f=>f.predmetId!==id);
-  saveDB();
-  detailId=null;navigate('predmeti');
+  showConfirm(msg, ()=>{
+    db.predmeti=db.predmeti.filter(x=>x.id!==id);
+    db.aktivnosti=db.aktivnosti.filter(a=>a.predmetId!==id);
+    db.finansije=db.finansije.filter(f=>f.predmetId!==id);
+    saveDB();
+    detailId=null;navigate('predmeti');
+  });
 }
 function editPredmet(id){openPredmetModal(id)}
 
@@ -4089,10 +4092,10 @@ function openFinansijeModal(){
 function deleteFinansije(id){
   const f=db.finansije.find(x=>x.id===id);
   if(!f)return;
-  if(confirm('Obrisati finansijski zapis "'+f.opis+'"?')){
+  showConfirm('Obrisati finansijski zapis "'+f.opis+'"?', ()=>{
     db.finansije=db.finansije.filter(x=>x.id!==id);
     saveDB();renderPage();
-  }
+  });
 }
 function editFinansije(id){
   currentModal='finansije';editId=id;
@@ -4108,7 +4111,7 @@ function handleFileSelect(input){
   el.style.display='block';
   el.textContent=`✓ Fajl: ${f.name} (${(f.size/1024/1024).toFixed(2)} MB)`;
 }
-function deleteDoc(id){if(confirm('Obrisati dokument?')){db.dokumenti=db.dokumenti.filter(d=>d.id!==id);saveDB();renderPage()}}
+function deleteDoc(id){showConfirm('Obrisati dokument?', ()=>{db.dokumenti=db.dokumenti.filter(d=>d.id!==id);saveDB();renderPage()})}
 
 // ========== SAVE MODAL ==========
 function updateFinStatus(){
@@ -4298,7 +4301,7 @@ function toggleAktivnost(id){
   saveDB();renderPage();
 }
 function deleteAktivnost(id){
-  if(!confirm('Obrisati aktivnost?')) return;
+  showConfirm('Obrisati aktivnost?', ()=>{
   const a = db.aktivnosti.find(x=>x.id===id);
   if(a && a.vrsta==='rociste' && a.predmetId){
     const p = getPredmet(a.predmetId);
@@ -4307,6 +4310,7 @@ function deleteAktivnost(id){
   db.aktivnosti = db.aktivnosti.filter(a=>a.id!==id);
   saveDB();
   renderPage();
+  });
 }
 
 // ========== DETAIL TABS ==========
@@ -4410,18 +4414,17 @@ function importData(){
           showAlert('Nevažeći backup fajl!');
           return;
         }
-        if(!confirm(`Uvesti podatke iz fajla "${file.name}"?\n\nOvo će ZAMENITI sve trenutne podatke!\n\nKlijenata: ${parsed.klijenti.length}\nPredmeta: ${parsed.predmeti.length}\nFinansija: ${(parsed.finansije||[]).length}`)){
-          return;
-        }
-        // Restore GCal links if present
-        if(parsed._gcalLinks){
-          gSaveLinks(parsed._gcalLinks);
-          delete parsed._gcalLinks;
-        }
-        db = parsed;
-        saveDB();
-        renderPage();
-        showAlert('✓ Podaci uspešno uvezeni!');
+        showConfirm('Uvesti podatke iz fajla "'+file.name+'"?\n\nOvo će ZAMENITI sve trenutne podatke!\n\nKlijenata: '+parsed.klijenti.length+'\nPredmeta: '+parsed.predmeti.length+'\nFinansija: '+(parsed.finansije||[]).length, ()=>{
+          // Restore GCal links if present
+          if(parsed._gcalLinks){
+            gSaveLinks(parsed._gcalLinks);
+            delete parsed._gcalLinks;
+          }
+          db = parsed;
+          saveDB();
+          renderPage();
+          showAlert('✓ Podaci uspešno uvezeni!');
+        });
       } catch(err){
         showAlert('Greška pri čitanju fajla: ' + err.message);
       }
