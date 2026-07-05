@@ -172,6 +172,8 @@ tbody tr:hover{background:var(--surface2)}
 /* MOBILE TOGGLE */
 #mob-toggle{display:none;width:40px;height:40px;align-items:center;justify-content:center;cursor:pointer;border-radius:var(--radius);background:var(--surface2);border:1px solid var(--border)}
 #mob-toggle svg{width:20px;height:20px;stroke:var(--text);fill:none;stroke-width:2;stroke-linecap:round}
+#gsMobileBtn{display:none;width:40px;height:40px;align-items:center;justify-content:center;cursor:pointer;border-radius:var(--radius);background:var(--surface2);border:1px solid var(--border);flex-shrink:0}
+#gsMobileBtn svg{width:18px;height:18px;stroke:var(--text);fill:none;stroke-width:2;stroke-linecap:round}
 .mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
 
 /* EMPTY STATE */
@@ -198,6 +200,7 @@ tbody tr:hover{background:var(--surface2)}
 /* RESPONSIVE */
 @media(max-width:768px){
   #globalSearchBox{display:none}
+  #gsMobileBtn{display:flex}
   .mobile-hidden{display:none!important;}
   .mobile-pred-stat{display:flex!important;}
   .mobile-compact{padding:8px 12px!important;}
@@ -535,6 +538,9 @@ input.date-invalid{border-color:var(--danger)!important;box-shadow:0 0 0 3px var
       <div id="globalSearchResults" style="display:none;position:absolute;top:calc(100% + 8px);left:0;right:0;min-width:300px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:60vh;overflow-y:auto;z-index:300"></div>
     </div>
     <div class="topbar-actions">
+      <button id="gsMobileBtn" onclick="gsOpenMobile()" title="Pretraga">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
       <button class="google-btn" id="topbarGoogleBtn" onclick="topbarGoogleClick()" style="opacity:0.7">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
         <span id="topbarGoogleLabel">Prijavi se</span>
@@ -550,6 +556,20 @@ input.date-invalid{border-color:var(--danger)!important;box-shadow:0 0 0 3px var
     </div>
   </div>
   <div class="page-content" id="pageContent"></div>
+</div>
+
+<!-- GLOBALNA PRETRAGA - MOBILNI -->
+<div id="gsMobileOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:400;flex-direction:column">
+  <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);background:var(--surface)">
+    <div class="search-box" style="flex:1;min-width:0">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="gsMobileInput" placeholder="Pretraga svega..." autocomplete="off" oninput="gsMobileSearch(this.value)">
+    </div>
+    <button onclick="gsCloseMobile()" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:var(--radius);background:var(--surface2);border:1px solid var(--border);flex-shrink:0">
+      <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:var(--text);fill:none;stroke-width:2;stroke-linecap:round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div id="gsMobileResults" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch"></div>
 </div>
 
 <!-- MODAL -->
@@ -4341,15 +4361,37 @@ function globalSearchFn(q){
   if(!box) return;
   q=(q||'').trim();
   if(q.length<2){ box.style.display='none'; box.innerHTML=''; return; }
+  box.innerHTML=gsBuildResults(q);
+  box.style.display='block';
+}
+function gsMobileSearch(q){
+  const box=document.getElementById('gsMobileResults');
+  if(!box) return;
+  q=(q||'').trim();
+  if(q.length<2){ box.innerHTML=''; return; }
+  box.innerHTML=gsBuildResults(q);
+}
+function gsOpenMobile(){
+  const ov=document.getElementById('gsMobileOverlay');
+  const inp=document.getElementById('gsMobileInput');
+  const res=document.getElementById('gsMobileResults');
+  if(!ov) return;
+  ov.style.display='flex';
+  if(res) res.innerHTML='';
+  if(inp){ inp.value=''; setTimeout(function(){ inp.focus(); },50); }
+}
+function gsCloseMobile(){
+  const ov=document.getElementById('gsMobileOverlay');
+  if(ov) ov.style.display='none';
+}
+function gsBuildResults(q){
   const LIM=5;
   const kli=db.klijenti.filter(k=>searchMatch(k.ime,q)||(k.jmbg&&k.jmbg.includes(q))||(k.pib&&k.pib.includes(q))||(k.telefon&&k.telefon.includes(q))||searchMatch(k.email||'',q)).slice(0,LIM);
   const pre=db.predmeti.filter(p=>searchMatch([p.interni,p.sudski,p.protivna,p.sud,p.opis,getKlijent(p.klijentId).ime].filter(Boolean).join(' '),q)).slice(0,LIM);
   const akt=db.aktivnosti.filter(a=>searchMatch([a.opis,a.sledeci].filter(Boolean).join(' '),q)).slice(0,LIM);
   const fin=db.finansije.filter(f=>searchMatch([f.opis,f.brFakture,getKlijent(f.klijentId).ime].filter(Boolean).join(' '),q)).slice(0,LIM);
   if(!kli.length&&!pre.length&&!akt.length&&!fin.length){
-    box.innerHTML='<div style="padding:14px;font-size:13px;color:var(--text3)">Nema rezultata za \u201e'+esc(q)+'\u201c</div>';
-    box.style.display='block';
-    return;
+    return '<div style="padding:14px;font-size:13px;color:var(--text3)">Nema rezultata za \u201e'+esc(q)+'\u201c</div>';
   }
   const H=function(t){return '<div style="padding:10px 14px 4px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)">'+t+'</div>';};
   const item=function(onclick,main,sub){
@@ -4385,14 +4427,14 @@ function globalSearchFn(q){
       html+=item("gsGo('finansije')",esc(f.opis||'')+(f.brFakture?' \u00b7 '+esc(f.brFakture):''),esc(getKlijent(f.klijentId).ime));
     });
   }
-  box.innerHTML=html;
-  box.style.display='block';
+  return html;
 }
 function gsGo(page,id){
   const inp=document.getElementById('globalSearchInput');
   const box=document.getElementById('globalSearchResults');
   if(inp){ inp.value=''; inp.blur(); }
   if(box){ box.style.display='none'; box.innerHTML=''; }
+  gsCloseMobile();
   navigate(page,id||null);
 }
 document.addEventListener('mousedown',function(e){
@@ -4403,6 +4445,7 @@ document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){
     const box=document.getElementById('globalSearchResults');
     if(box&&box.style.display!=='none'){ box.style.display='none'; }
+    gsCloseMobile();
   }
 });
 
