@@ -197,6 +197,7 @@ tbody tr:hover{background:var(--surface2)}
 
 /* RESPONSIVE */
 @media(max-width:768px){
+  #globalSearchBox{display:none}
   .mobile-hidden{display:none!important;}
   .mobile-pred-stat{display:flex!important;}
   .mobile-compact{padding:8px 12px!important;}
@@ -527,6 +528,11 @@ input.date-invalid{border-color:var(--danger)!important;box-shadow:0 0 0 3px var
         <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
       <div class="topbar-title" id="topbarTitle">Početna strana</div>
+    </div>
+    <div class="search-box" id="globalSearchBox" style="position:relative;flex:1;max-width:320px">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="globalSearchInput" placeholder="Pretraga: klijenti, predmeti, aktivnosti..." autocomplete="off" oninput="globalSearchFn(this.value)" onfocus="globalSearchFn(this.value)">
+      <div id="globalSearchResults" style="display:none;position:absolute;top:calc(100% + 8px);left:0;right:0;min-width:300px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:60vh;overflow-y:auto;z-index:300"></div>
     </div>
     <div class="topbar-actions">
       <button class="google-btn" id="topbarGoogleBtn" onclick="topbarGoogleClick()" style="opacity:0.7">
@@ -4331,9 +4337,74 @@ function switchDetailTab(tab){
 
 // ========== GLOBAL SEARCH ==========
 function globalSearchFn(q){
-  if(!q||q.length<2)return;
-  // Quick open from search
+  const box=document.getElementById('globalSearchResults');
+  if(!box) return;
+  q=(q||'').trim();
+  if(q.length<2){ box.style.display='none'; box.innerHTML=''; return; }
+  const LIM=5;
+  const kli=db.klijenti.filter(k=>searchMatch(k.ime,q)||(k.jmbg&&k.jmbg.includes(q))||(k.pib&&k.pib.includes(q))||(k.telefon&&k.telefon.includes(q))||searchMatch(k.email||'',q)).slice(0,LIM);
+  const pre=db.predmeti.filter(p=>searchMatch([p.interni,p.sudski,p.protivna,p.sud,p.opis,getKlijent(p.klijentId).ime].filter(Boolean).join(' '),q)).slice(0,LIM);
+  const akt=db.aktivnosti.filter(a=>searchMatch([a.opis,a.sledeci].filter(Boolean).join(' '),q)).slice(0,LIM);
+  const fin=db.finansije.filter(f=>searchMatch([f.opis,f.brFakture,getKlijent(f.klijentId).ime].filter(Boolean).join(' '),q)).slice(0,LIM);
+  if(!kli.length&&!pre.length&&!akt.length&&!fin.length){
+    box.innerHTML='<div style="padding:14px;font-size:13px;color:var(--text3)">Nema rezultata za \u201e'+esc(q)+'\u201c</div>';
+    box.style.display='block';
+    return;
+  }
+  const H=function(t){return '<div style="padding:10px 14px 4px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)">'+t+'</div>';};
+  const item=function(onclick,main,sub){
+    return '<div onclick="'+onclick+'" style="padding:8px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border)" onmouseover="this.style.background=\'var(--surface2)\'" onmouseout="this.style.background=\'\'">'+
+      '<div style="color:var(--text)">'+main+'</div>'+
+      (sub?'<div style="font-size:12px;color:var(--text3);margin-top:1px">'+sub+'</div>':'')+
+    '</div>';
+  };
+  let html='';
+  if(kli.length){
+    html+=H('Klijenti');
+    kli.forEach(function(k){
+      html+=item("gsGo('klijenti','"+k.id+"')",esc(k.ime),esc([k.telefon,k.email].filter(Boolean).join(' \u00b7 ')));
+    });
+  }
+  if(pre.length){
+    html+=H('Predmeti');
+    pre.forEach(function(p){
+      html+=item("gsGo('predmeti','"+p.id+"')",esc(p.interni||'')+(p.sudski?' \u00b7 '+esc(p.sudski):''),esc(getKlijent(p.klijentId).ime)+(p.protivna?' / '+esc(p.protivna):''));
+    });
+  }
+  if(akt.length){
+    html+=H('Aktivnosti');
+    akt.forEach(function(a){
+      const p=getPredmet(a.predmetId);
+      const target=p?"gsGo('predmeti','"+a.predmetId+"')":"gsGo('google')";
+      html+=item(target,esc(a.opis||''),esc(fmtDate(a.datum)+(p?' \u00b7 '+(p.interni||''):'')));
+    });
+  }
+  if(fin.length){
+    html+=H('Finansije');
+    fin.forEach(function(f){
+      html+=item("gsGo('finansije')",esc(f.opis||'')+(f.brFakture?' \u00b7 '+esc(f.brFakture):''),esc(getKlijent(f.klijentId).ime));
+    });
+  }
+  box.innerHTML=html;
+  box.style.display='block';
 }
+function gsGo(page,id){
+  const inp=document.getElementById('globalSearchInput');
+  const box=document.getElementById('globalSearchResults');
+  if(inp){ inp.value=''; inp.blur(); }
+  if(box){ box.style.display='none'; box.innerHTML=''; }
+  navigate(page,id||null);
+}
+document.addEventListener('mousedown',function(e){
+  const box=document.getElementById('globalSearchResults');
+  if(box&&box.style.display!=='none'&&!e.target.closest('#globalSearchBox')){ box.style.display='none'; }
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    const box=document.getElementById('globalSearchResults');
+    if(box&&box.style.display!=='none'){ box.style.display='none'; }
+  }
+});
 
 // ========== THEME ==========
 function toggleTheme(){
