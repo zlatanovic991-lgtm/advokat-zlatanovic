@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Advokat Zlatanović</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://apis.google.com/js/api.js" async defer></script>
@@ -492,7 +495,7 @@ input.date-invalid{border-color:var(--danger)!important;box-shadow:0 0 0 3px var
 #app-splash{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg,#F7F5F0);transition:opacity .5s ease,visibility .5s ease}
 #app-splash.app-splash-hide{opacity:0;visibility:hidden;pointer-events:none}
 #app-splash .app-splash-logo{width:96px;height:96px;object-fit:contain;border-radius:20px;background:#fff;box-shadow:0 10px 34px rgba(0,0,0,.14);animation:appSplashPop .9s cubic-bezier(.34,1.56,.64,1) both}
-#app-splash .app-splash-title{margin-top:20px;font-family:var(--font-serif,Georgia,serif);font-size:20px;color:var(--accent,#1E3A5F);letter-spacing:.2px;opacity:0;animation:appSplashFadeUp .6s ease .32s both}
+#app-splash .app-splash-title{margin-top:20px;font-family:var(--font-serif,Georgia,serif);font-size:20px;color:var(--text,#1A1916);letter-spacing:.2px;opacity:0;animation:appSplashFadeUp .6s ease .32s both}
 .loading-row{font-size:12px;color:var(--text3,#9B978E);display:flex;align-items:center;justify-content:center;gap:8px}
 #app-splash .app-splash-loading{margin-top:16px;opacity:0;animation:appSplashFadeUp .5s ease 1.7s forwards}
 #authgateLoading{margin-top:6px}
@@ -943,7 +946,7 @@ function gInit(){
           updateGoogleUI();
           const secsLeft = Math.floor((tok.expiry - Date.now()) / 1000);
           gScheduleTokenRefresh(secsLeft);
-          gLoadData().then(()=>{ renderPage(); hideAppSplash(); });
+          gLoadData().then(()=>{ try{ renderPage(); } finally { hideAppSplash(); } });
           return;
         }
       } catch(e){}
@@ -969,12 +972,10 @@ function gInit(){
         gIsSignedIn = true;
         updateGoogleUI();
         showAuthGateLoading();
-        setTimeout(dismissAuthGate, 10000); // safety net if loading hangs
+        setTimeout(dismissAuthGate, 6000); // safety net if loading hangs
         gScheduleTokenRefresh(resp.expires_in||3600);
         gLoadData().then(()=>{
-          renderPage();
-          driveCheckAndSync();
-          dismissAuthGate();
+          try{ renderPage(); driveCheckAndSync(); } finally { dismissAuthGate(); }
         });
       }
     });
@@ -5026,7 +5027,7 @@ document.addEventListener('DOMContentLoaded', function(){
   navigate('dashboard');
   if(window.__gHasValidToken){
     gInit();
-    setTimeout(hideAppSplash, 8000); // safety net if Google never responds
+    setTimeout(hideAppSplash, 6000); // safety net if Google never responds
   } else {
     hideAppSplash();
     showAuthGate();
