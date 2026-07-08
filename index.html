@@ -4970,7 +4970,7 @@ function hideAppSplash(){
   const el=document.getElementById('app-splash');
   if(!el) return;
   const elapsed=Date.now()-(window.__splashStart||Date.now());
-  const minTime=900;
+  const minTime=1900;
   setTimeout(()=>{
     el.classList.add('app-splash-hide');
     setTimeout(()=>el.remove(),550);
@@ -4999,13 +4999,7 @@ window.addEventListener('popstate', function(e){
 
 document.addEventListener('DOMContentLoaded', function(){
   loadTheme();
-  const initHash = location.hash.replace('#','');
-  if(initHash){
-    const parts = initHash.split('/');
-    navigate(parts[0]||'dashboard', parts[1]||null, 'info', true);
-  } else {
-    navigate('dashboard');
-  }
+  navigate('dashboard');
   hideAppSplash();
   if(window.__gHasValidToken){
     setTimeout(gInit, 1000);
