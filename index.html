@@ -212,6 +212,9 @@ tbody tr:hover{background:var(--surface2)}
   }
   #dash-top-grid .stat-card:first-child {
     grid-column: 1;
+    box-shadow: var(--shadow) !important;
+    width: auto;
+    max-width: 100%;
   }
   /* Aktivni predmeti - tanka linija na mobilnom */
   .mobile-compact {
@@ -263,10 +266,13 @@ html, body { max-width: 100%; overflow-x: hidden; }
   .topbar{height:auto;min-height:52px;padding:6px 8px;gap:5px;flex-wrap:nowrap;overflow:hidden}
   .topbar-title{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px;flex-shrink:1}
   .topbar-actions{gap:4px;flex-shrink:0;flex-wrap:nowrap}
-  .topbar-actions .btn{font-size:11px!important;padding:5px 7px!important;white-space:nowrap}
-  .google-btn{font-size:11px!important;padding:5px 7px!important;gap:3px}
+  .topbar-actions .btn{font-size:11px!important;padding:5px 7px!important;white-space:nowrap;height:30px;display:inline-flex!important;align-items:center;box-sizing:border-box}
+  .google-btn{font-size:11px!important;padding:5px 7px!important;gap:3px;height:30px;display:inline-flex!important;align-items:center;box-sizing:border-box}
   .google-btn svg{width:14px;height:14px;flex-shrink:0}
   #topbarGoogleLabel{display:none}
+  #mob-toggle,#gsMobileBtn{width:30px;height:30px}
+  .topbar-actions{align-items:center!important}
+  .topbar>div:first-child{align-items:center!important}
 
   /* Page content */
   .page-content{padding:8px 6px!important;overflow-x:hidden}
