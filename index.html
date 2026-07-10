@@ -4214,7 +4214,9 @@ function deleteDoc(id){showConfirm('Obrisati dokument?', ()=>{db.dokumenti=db.do
 
 // ========== SAVE MODAL ==========
 function updateFinStatus(){
-  const fakt=parseFloat(document.getElementById('f_fakt')?.value)||0;
+  const c=document.getElementById('stavke_container');
+  let fakt=0;
+  if(c) c.querySelectorAll('.fin-stavka').forEach(row=>{const inp=row.querySelector('input[type="number"]');if(inp)fakt+=parseFloat(inp.value)||0;});
   const plac=parseFloat(document.getElementById('f_plac')?.value)||0;
   const sel=document.getElementById('f_status');
   const preview=document.getElementById('fin_status_preview');
@@ -4234,6 +4236,7 @@ function updateFinStatus(){
 }
 function saveModal(){
   if(_modalSaving)return;
+  let _printFinId=null;
   if(currentModal==='_editEvent'){ saveEditEvent(); return; }
   if(currentModal==='kartUredi'){ _saveKartUredi(); return; }
   if(currentModal==='gcal'){
@@ -4385,11 +4388,14 @@ function saveModal(){
       const f=db.finansije.find(x=>x.id===editId);
       Object.assign(f,{predmetId,klijentId,opis,brFakture:v('f_brfakture'),valuta:v('f_valuta')||'RSD',fakturisano:fakt,placeno:plac,stavke:stavkeVal,status:autoStatus,datum_fakture:getDateVal('f_dat_fakt'),datum_uplate:datUpl,napomena:v('f_napomena')});
     } else {
-      db.finansije.push({id:genId('F'),predmetId,klijentId,opis,brFakture:v('f_brfakture'),valuta:v('f_valuta')||'RSD',fakturisano:fakt,placeno:plac,stavke:stavkeVal,status:autoStatus,datum_fakture:getDateVal('f_dat_fakt'),datum_uplate:datUpl,napomena:v('f_napomena')});
+      const noviF={id:genId('F'),predmetId,klijentId,opis,brFakture:v('f_brfakture'),valuta:v('f_valuta')||'RSD',fakturisano:fakt,placeno:plac,stavke:stavkeVal,status:autoStatus,datum_fakture:getDateVal('f_dat_fakt'),datum_uplate:datUpl,napomena:v('f_napomena')};
+      db.finansije.push(noviF);
+      _printFinId=noviF.id;
     }
   }
   saveDB();
   closeModal();renderPage();
+  if(_printFinId) stampajFakturu(_printFinId);
 }
 
 function v(id){const el=document.getElementById(id);return el?el.value:''}
