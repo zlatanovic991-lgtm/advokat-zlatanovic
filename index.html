@@ -3674,6 +3674,7 @@ function openGCalEventModal(){
       <div class="form-group">
         <label>Vreme (opciono)</label>
         <input id="m_ev_vreme" placeholder="npr. 10:30" maxlength="5" oninput="formatVremeInput(this)">
+        <div id="m_ev_vreme_hint" style="font-size:11px;color:var(--text3);margin-top:3px"></div>
       </div>
     </div>
   `, 'Dodaj događaj');
@@ -3741,6 +3742,8 @@ function selectTipBtn(btn){
     klijentRow.style.display='none';
     nazivLabel.textContent='Naziv (opciono)';
   }
+  const vremeHint = document.getElementById('m_ev_vreme_hint');
+  if(vremeHint) vremeHint.textContent = (tip==='Rok'||tip==='Privatno') ? 'Ostavite prazno za događaj celog dana' : '';
 }
 
 // KLIJENT MODAL
@@ -4257,20 +4260,25 @@ function saveModal(){
     if(_saveBtn){_saveBtn.disabled=true;_saveBtn.style.opacity='0.6';_saveBtn.style.cursor='default';}
     (async()=>{
       try{
-        const _vt3=parseVreme(vreme);const hh=_vt3?_vt3.hh:'09';const mm=_vt3?_vt3.mm:'00';
-        const startStr = `${iso}T${(hh||'09').padStart(2,'0')}:${(mm||'00').padStart(2,'0')}:00`;
-        const endD = new Date(`${iso}T${(hh||'09').padStart(2,'0')}:${(mm||'00').padStart(2,'0')}:00`);
-        endD.setMinutes(endD.getMinutes() + 30);
-        const endHH = String(endD.getHours()).padStart(2,'0');
-        const endMM = String(endD.getMinutes()).padStart(2,'0');
-        const endDateStr = endD.getFullYear()+'-'+String(endD.getMonth()+1).padStart(2,'0')+'-'+String(endD.getDate()).padStart(2,'0');
-        const endStr = `${endDateStr}T${endHH}:${endMM}:00`;
-        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        // Boje i trajanje po tipu
+        const _vt3=parseVreme(vreme);
         const colorMap = {'Ročište':'11','Konsultacije':'7','Rok':'6','Privatno':'8'};
-        const trajanje = tip==='Konsultacije' ? 60 : tip==='Privatno' ? 60 : 30;
-        endD.setMinutes(endD.getMinutes() + trajanje - 30); // already added 30 above
-        let ev = { summary:finalNaziv, start:{dateTime:startStr,timeZone:tz}, end:{dateTime:endStr,timeZone:tz}, colorId:colorMap[tip]||'7' };
+        const celiDan = !_vt3 && (tip==='Rok'||tip==='Privatno');
+        let ev;
+        if(celiDan){
+          const nextD=new Date(iso+'T12:00:00'); nextD.setDate(nextD.getDate()+1);
+          const nextIso=nextD.getFullYear()+'-'+String(nextD.getMonth()+1).padStart(2,'0')+'-'+String(nextD.getDate()).padStart(2,'0');
+          ev = { summary:finalNaziv, start:{date:iso}, end:{date:nextIso}, colorId:colorMap[tip]||'7' };
+        } else {
+          const hh=_vt3?_vt3.hh:'09', mm=_vt3?_vt3.mm:'00';
+          const startStr = `${iso}T${hh.padStart(2,'0')}:${mm.padStart(2,'0')}:00`;
+          const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          const trajanje = tip==='Konsultacije' ? 60 : tip==='Privatno' ? 60 : 30;
+          const endD = new Date(startStr);
+          endD.setMinutes(endD.getMinutes() + trajanje);
+          const endDateStr = endD.getFullYear()+'-'+String(endD.getMonth()+1).padStart(2,'0')+'-'+String(endD.getDate()).padStart(2,'0');
+          const endStr = `${endDateStr}T${String(endD.getHours()).padStart(2,'0')}:${String(endD.getMinutes()).padStart(2,'0')}:00`;
+          ev = { summary:finalNaziv, start:{dateTime:startStr,timeZone:tz}, end:{dateTime:endStr,timeZone:tz}, colorId:colorMap[tip]||'7' };
+        }
         if(p) ev.description = `Predmet: ${p.interni}\nKlijent: ${k?k.ime:''}\nSud: ${p.sud||''}`;
         const resp = await gapi.client.calendar.events.insert({ calendarId:'primary', resource:ev });
         const links = gGetLinks();
