@@ -2375,16 +2375,12 @@ function renderDashboard(){
     return{fromGCal:true,evId:ev.id,naziv:ev.summary||'',p,k,date,days:daysUntil(date)};
   });
 
-  // Ročišta iz predmeta koja NISU u GCal
-  const gcalDates=new Set(Object.keys(links).map(eid=>{
-    const ev=gCalendarEvents.find(e=>e.id===eid);
-    return ev?(links[eid]+'_'+(ev.start?.dateTime||ev.start?.date||'').slice(0,10)):null;
-  }).filter(Boolean));
+  // Ročišta iz predmeta koja NISU u GCal (isti predmet + isti datum već prikazan iz gcalSvi)
   const predmetRocista=db.predmeti.filter(p=>{
     if(!p.rociste)return false;
     const d=daysUntil(p.rociste);
     if(d===null||d<0||d>7)return false;
-    return!gcalDates.has(p.id+'_'+p.rociste);
+    return!gcalSvi.some(g=>g.p&&g.p.id===p.id&&g.date===p.rociste);
   }).map(p=>{
     const k=getKlijent(p.klijentId);
     return{fromGCal:false,p,k,date:p.rociste,days:daysUntil(p.rociste)};
