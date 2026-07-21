@@ -3991,6 +3991,46 @@ function clearSelectedKlijent(){
   document.getElementById('f_klijent_search').focus();
 }
 
+// ===== Klijent picker za priznanicu (finansije modal) =====
+let _finKlijentMode = 'postojeci';
+function switchFinKlijentMode(mode){
+  _finKlijentMode = mode;
+  const ep=document.getElementById('fin_klijent_postojeci_panel');
+  const np=document.getElementById('fin_klijent_novi_panel');
+  const bp=document.getElementById('fbtn_postojeci');
+  const bn=document.getElementById('fbtn_novi');
+  if(!ep||!np||!bp||!bn)return;
+  if(mode==='postojeci'){
+    ep.style.display=''; np.style.display='none';
+    bp.className='btn btn-primary btn-sm'; bn.className='btn btn-secondary btn-sm';
+  } else {
+    ep.style.display='none'; np.style.display='';
+    bp.className='btn btn-secondary btn-sm'; bn.className='btn btn-primary btn-sm';
+    const idEl=document.getElementById('fin_k_id'); if(idEl)idEl.value='';
+  }
+}
+function filterFinKlijentDropdown(q){
+  const dd=document.getElementById('fin_k_dropdown');
+  if(!dd)return;
+  if(!q||q.length<1){dd.style.display='none';return;}
+  const matches=db.klijenti.filter(k=>searchMatch(k.ime,q)||(k.jmbg&&k.jmbg.includes(q))||(k.pib&&k.pib.includes(q))||(k.telefon&&k.telefon.includes(q))).slice(0,8);
+  if(matches.length===0){dd.style.display='none';return;}
+  dd.style.display='';
+  dd.innerHTML=matches.map(k=>`
+    <div onclick="pickFinKlijent('${k.id}')" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border);font-size:13px"
+      onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+      <div style="font-weight:500">${esc(k.ime)}</div>
+      <div style="font-size:11px;color:var(--text3)">${k.tip==='firma'?'Firma':'Fiz. lice'}${k.jmbg?(k.tip==='firma'?' · MB: '+k.jmbg:' · '+k.jmbg):''}${k.pib?' · PIB: '+k.pib:''}${k.telefon?' · '+k.telefon:''}</div>
+    </div>`).join('');
+}
+function pickFinKlijent(id){
+  const k=db.klijenti.find(x=>x.id===id);
+  if(!k)return;
+  document.getElementById('fin_k_id').value=id;
+  document.getElementById('fin_k_search').value=k.ime;
+  document.getElementById('fin_k_dropdown').style.display='none';
+}
+
 function openPredmetModal(id){
   currentModal='predmet';editId=id||null;
   const p=id?db.predmeti.find(x=>x.id===id):null;
@@ -4149,14 +4189,46 @@ function finansijeModalBody(f,predId,klId){
   const stavke=(f?.stavke&&f.stavke.length>0)?f.stavke:[{vrsta:f?.opis||'',datum:f?.datum_fakture||'',cena:f?.fakturisano||''}];
   const stavkeHTML=stavke.map((s,i)=>`<div class="fin-stavka" id="stavka_${i}" style="display:grid;grid-template-columns:1fr 100px 90px 32px;gap:6px;align-items:end;margin-bottom:6px"><div><input placeholder="Vrsta radnje" id="stav_vrsta_${i}" value="${esc(s.vrsta||'')}"></div><div><input placeholder="DD/MM/YYYY" id="stav_datum_${i}" value="${s.datum?s.datum.split('-').reverse().join('/'):''}" maxlength="10" oninput="formatDateInput(this)" autocomplete="off"></div><div><input type="number" placeholder="Cena" id="stav_cena_${i}" value="${s.cena||''}" oninput="updateStavkeTotal()"></div><div><button type="button" onclick="ukloniStavku(${i})" style="background:none;border:none;color:var(--danger);font-size:18px;cursor:pointer;padding:0;line-height:1">×</button></div></div>`).join('');
   const tipVal = f?.tip||'faktura';
+  // Za priznanicu - klijent se bira direktno (ne preko predmeta)
+  const directK = (tipVal==='priznanica' && f?.klijentId) ? getKlijent(f.klijentId) : null;
+  const directKId = directK ? directK.id : (klId||'');
+  const directKLabel = directK ? directK.ime : '';
   return`
-  <div class="form-group"><label>Tip dokumenta</label>
+  <div class="form-group"><label>Faktura/Priznanica</label>
     <select id="f_tip" onchange="updateFinTipUI()">
-      <option value="faktura" ${tipVal==='faktura'?'selected':''}>Faktura (ja naplaćujem od klijenta)</option>
-      <option value="priznanica" ${tipVal==='priznanica'?'selected':''}>Priznanica (ja isplaćujem klijentu)</option>
+      <option value="faktura" ${tipVal==='faktura'?'selected':''}>Faktura — ja naplaćujem od klijenta</option>
+      <option value="priznanica" ${tipVal==='priznanica'?'selected':''}>Priznanica — ja isplaćujem klijentu</option>
     </select>
   </div>
-  <div class="form-group"><label>Predmet</label>${predmetSearchInput('f_predmet', selP, selLabel)}</div>
+  <div id="fin_predmet_wrap" class="form-group"><label>Predmet</label>${predmetSearchInput('f_predmet', selP, selLabel)}</div>
+  <div id="fin_klijent_wrap" style="display:none">
+    <div class="form-section-title">Kome se isplaćuje</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button type="button" class="btn btn-secondary btn-sm" id="fbtn_postojeci" onclick="switchFinKlijentMode('postojeci')">Postojeći klijent</button>
+      <button type="button" class="btn btn-primary btn-sm" id="fbtn_novi" onclick="switchFinKlijentMode('novi')">Upiši novo lice</button>
+    </div>
+    <div id="fin_klijent_postojeci_panel" style="display:none">
+      <div class="form-group">
+        <label>Pretraži i izaberi klijenta</label>
+        <input id="fin_k_search" placeholder="Kucajte ime, JMBG..." oninput="filterFinKlijentDropdown(this.value)" autocomplete="off" value="${esc(directKLabel)}">
+      </div>
+      <div id="fin_k_dropdown" style="border:1px solid var(--border);border-radius:var(--radius);max-height:180px;overflow-y:auto;display:none;background:var(--surface);box-shadow:var(--shadow-lg);margin-top:-12px;margin-bottom:12px"></div>
+      <input type="hidden" id="fin_k_id" value="${esc(directKId)}">
+    </div>
+    <div id="fin_klijent_novi_panel">
+      <div class="form-row">
+        <div class="form-group"><label>Ime i prezime / Naziv *</label><input id="fin_k_ime" placeholder="Marko Petrović" value="${directK?'':esc(f?.primalacIme||'')}"></div>
+        <div class="form-group"><label>Tip</label>
+          <select id="fin_k_tip"><option value="fizicko">Fizičko lice</option><option value="firma">Firma</option></select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>JMBG/PIB</label><input id="fin_k_jmbg" placeholder="opciono"></div>
+        <div class="form-group"><label>Telefon</label><input id="fin_k_tel" placeholder="opciono"></div>
+      </div>
+      <div class="form-group"><label>Adresa</label><input id="fin_k_adresa" placeholder="opciono"></div>
+    </div>
+  </div>
   <div class="form-row">
     <div class="form-group"><label id="f_brfakture_label">Broj fakture</label><input id="f_brfakture" value="${esc(f?.brFakture||'')}" placeholder="auto"></div>
     <div class="form-group"><label>Datum fakture</label>${makeDateInput("f_dat_fakt", f?.datum_fakture||"")}</div>
@@ -4171,7 +4243,7 @@ function finansijeModalBody(f,predId,klId){
   </div>
   <div class="form-group">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-      <label>Stavke fakture *</label>
+      <label id="stavke_label">Stavke fakture *</label>
       <button type="button" onclick="dodajStavku()" class="btn btn-secondary btn-sm">+ Dodaj stavku</button>
     </div>
     <div style="display:grid;grid-template-columns:1fr 100px 90px 32px;gap:6px;margin-bottom:4px">
@@ -4187,9 +4259,9 @@ function finansijeModalBody(f,predId,klId){
   </div>
   <div class="form-row">
     <div class="form-group"><label id="f_plac_label">Plaćeno (RSD)</label><input type="number" id="f_plac" value="${f?.placeno||0}" placeholder="0" oninput="updateFinStatus()"></div>
-    <div class="form-group"><label>Datum uplate</label>${makeDateInput("f_dat_upl", f?.datum_uplate||"")}</div>
+    <div class="form-group"><label id="f_dat_upl_label">Datum uplate</label>${makeDateInput("f_dat_upl", f?.datum_uplate||"")}</div>
   </div>
-  <div class="form-group"><label>Status <span id="fin_status_preview" style="margin-left:6px;font-size:11px;font-weight:600"></span></label><select id="f_status"><option value="nije_placeno" ${f?.status==='nije_placeno'?'selected':''}>Nije plaćeno</option><option value="delim_placeno" ${f?.status==='delim_placeno'?'selected':''}>Delimično plaćeno</option><option value="placeno" ${f?.status==='placeno'?'selected':''}>Plaćeno</option></select></div>
+  <div class="form-group" id="fin_status_wrap"><label>Status <span id="fin_status_preview" style="margin-left:6px;font-size:11px;font-weight:600"></span></label><select id="f_status"><option value="nije_placeno" ${f?.status==='nije_placeno'?'selected':''}>Nije plaćeno</option><option value="delim_placeno" ${f?.status==='delim_placeno'?'selected':''}>Delimično plaćeno</option><option value="placeno" ${f?.status==='placeno'?'selected':''}>Plaćeno</option></select></div>
   <div class="form-group"><label>Napomena</label><textarea id="f_napomena">${esc(f?.napomena||'')}</textarea></div>`;
 }
 function openAddFinansije(predId,klId){
@@ -4234,9 +4306,23 @@ function updateFinTipUI(){
   const brLbl=document.getElementById('f_brfakture_label');
   const opisH=document.getElementById('opis_header');
   const placLbl=document.getElementById('f_plac_label');
+  const datUplLbl=document.getElementById('f_dat_upl_label');
+  const stavkeLbl=document.getElementById('stavke_label');
+  const predmetWrap=document.getElementById('fin_predmet_wrap');
+  const klijentWrap=document.getElementById('fin_klijent_wrap');
+  const statusWrap=document.getElementById('fin_status_wrap');
   if(brLbl)brLbl.textContent=isPrizn?'Broj priznanice':'Broj fakture';
   if(opisH)opisH.textContent=isPrizn?'OSNOV ISPLATE':'OPIS RADNJE';
-  if(placLbl)placLbl.textContent=isPrizn?'Isplaćeno (RSD)':'Plaćeno (RSD)';
+  if(placLbl)placLbl.textContent=isPrizn?'Iznos isplaćen (RSD)':'Plaćeno (RSD)';
+  if(datUplLbl)datUplLbl.textContent=isPrizn?'Datum isplate':'Datum uplate';
+  if(stavkeLbl)stavkeLbl.textContent=isPrizn?'Stavke isplate *':'Stavke fakture *';
+  if(predmetWrap)predmetWrap.style.display=isPrizn?'none':'';
+  if(klijentWrap)klijentWrap.style.display=isPrizn?'':'none';
+  if(statusWrap)statusWrap.style.display=isPrizn?'none':'';
+  if(isPrizn&&klijentWrap){
+    const hasId=document.getElementById('fin_k_id')?.value;
+    switchFinKlijentMode(hasId?'postojeci':(_finKlijentMode||'postojeci'));
+  }
   const title=document.getElementById('modalTitle');
   if(title)title.textContent=isPrizn?(editId?'Uredi priznanicu':'Nova priznanica'):(editId?'Uredi fakturu':'Nova faktura');
 }
@@ -4408,20 +4494,47 @@ function saveModal(){
     const fakt=stavkeVal.reduce((s,x)=>s+(parseFloat(x.cena)||0),0);
     const opis=stavkeVal.map(x=>x.vrsta).filter(Boolean).join(', ');
     if(!fakt||!opis){showAlert('Dodajte bar jednu stavku sa opisom i cenom!');return;}
-    const predmetId=v('f_predmet');
-    const klijentId=predmetId?(db.predmeti.find(p=>p.id===predmetId)?.klijentId||addFinKlId):addFinKlId;
+    const tip=v('f_tip')||'faktura';
+    let predmetId='', klijentId='';
+    if(tip==='priznanica'){
+      if(_finKlijentMode==='postojeci'){
+        klijentId=document.getElementById('fin_k_id')?.value||'';
+        if(!klijentId){showAlert('Izaberite klijenta ili unesite novo lice!');return;}
+      } else {
+        const kIme=(document.getElementById('fin_k_ime')?.value||'').trim();
+        if(!kIme){showAlert('Unesite ime lica kome se isplaćuje!');return;}
+        const newK={
+          id:genId('K'),ime:kIme,
+          tip:document.getElementById('fin_k_tip')?.value||'fizicko',
+          jmbg:document.getElementById('fin_k_jmbg')?.value||'',
+          pib:'',
+          telefon:document.getElementById('fin_k_tel')?.value||'',
+          email:'',
+          adresa:document.getElementById('fin_k_adresa')?.value||'',
+          napomena:'',
+          datum:new Date().toISOString().slice(0,10)
+        };
+        db.klijenti.push(newK);
+        klijentId=newK.id;
+      }
+    } else {
+      predmetId=v('f_predmet');
+      klijentId=predmetId?(db.predmeti.find(p=>p.id===predmetId)?.klijentId||addFinKlId):addFinKlId;
+    }
     const plac=parseFloat(v('f_plac'))||0;
     let autoStatus='nije_placeno';
-    if(plac>=fakt&&fakt>0)autoStatus='placeno';
+    if(tip==='priznanica'){
+      autoStatus='placeno';
+    } else if(plac>=fakt&&fakt>0)autoStatus='placeno';
     else if(plac>0)autoStatus='delim_placeno';
     let datUpl=getDateVal('f_dat_upl');
     if(autoStatus==='placeno'&&!datUpl)datUpl=new Date().toISOString().slice(0,10);
-    const tip=v('f_tip')||'faktura';
+    const placenoVal=tip==='priznanica'?fakt:plac;
     if(editId){
       const f=db.finansije.find(x=>x.id===editId);
-      Object.assign(f,{tip,predmetId,klijentId,opis,brFakture:v('f_brfakture'),valuta:v('f_valuta')||'RSD',fakturisano:fakt,placeno:plac,stavke:stavkeVal,status:autoStatus,datum_fakture:getDateVal('f_dat_fakt'),datum_uplate:datUpl,napomena:v('f_napomena')});
+      Object.assign(f,{tip,predmetId,klijentId,opis,brFakture:v('f_brfakture'),valuta:v('f_valuta')||'RSD',fakturisano:fakt,placeno:placenoVal,stavke:stavkeVal,status:autoStatus,datum_fakture:getDateVal('f_dat_fakt'),datum_uplate:datUpl,napomena:v('f_napomena')});
     } else {
-      const noviF={id:genId('F'),tip,predmetId,klijentId,opis,brFakture:v('f_brfakture'),valuta:v('f_valuta')||'RSD',fakturisano:fakt,placeno:plac,stavke:stavkeVal,status:autoStatus,datum_fakture:getDateVal('f_dat_fakt'),datum_uplate:datUpl,napomena:v('f_napomena')};
+      const noviF={id:genId('F'),tip,predmetId,klijentId,opis,brFakture:v('f_brfakture'),valuta:v('f_valuta')||'RSD',fakturisano:fakt,placeno:placenoVal,stavke:stavkeVal,status:autoStatus,datum_fakture:getDateVal('f_dat_fakt'),datum_uplate:datUpl,napomena:v('f_napomena')};
       db.finansije.push(noviF);
       _printFinId=noviF.id;
     }
@@ -4985,7 +5098,8 @@ function stampajFakturu(finId){
     +'.footer{margin-top:36px;display:flex;justify-content:space-between;align-items:flex-end;border-top:1px solid #ccc;padding-top:16px}'
     +'.sig{text-align:center;min-width:180px;font-size:12px}.sig-line{border-top:1px solid #555;padding-top:6px;margin-top:48px}'
     +'.np{margin-top:24px;text-align:center}@media print{.np{display:none}@page{margin:10mm;size:A4}body{padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}}'
-    +'</style></head><body>'
+    +'</style></head><body contenteditable="true" spellcheck="false" style="outline:none">'
+    +'<div style="background:#fffbe6;border:1px solid #f0d878;color:#7a5b00;font-size:11px;padding:6px 10px;border-radius:5px;margin-bottom:14px" class="np">✎ Kliknite bilo gde u dokument da izmenite tekst pre štampe</div>'
     +'<table style="margin-bottom:20px"><tr>'
     +'<td style="width:55%;vertical-align:middle"><div style="display:flex;align-items:center;gap:14px">'
     +'<img src="'+logoSrc+'" width="70" height="70" style="border-radius:8px;display:block">'
@@ -5014,7 +5128,7 @@ function stampajFakturu(finId){
     +'<div>MB: 57352388 &nbsp;|&nbsp; PIB: 111355904</div>'
     +'<div>Br. računa: 265-4310310001556-89 Raiffeisen banka</div>'
     +'<div>www.advokatzlatanovic.com &nbsp;|&nbsp; advokatzlatanovic@yahoo.com</div>'
-    +'</div><div class="sig"><div class="sig-line">Advokat Vladimir Zlatanović</div></div></div>'
+    +'</div><div class="sig"><div class="sig-line">'+(isPrizn?esc(k.ime):'Advokat Vladimir Zlatanović')+'</div></div></div>'
     +'<div class="np"><button onclick="window.print()" style="padding:9px 28px;font-size:14px;cursor:pointer;background:#1E3A5F;color:#fff;border:none;border-radius:6px">Štampaj / Sačuvaj PDF</button></div>'
     +'</body></html>';
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
