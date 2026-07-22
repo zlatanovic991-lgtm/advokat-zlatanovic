@@ -2439,8 +2439,8 @@ function renderDashboard(){
           return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);opacity:${privatno?'.55':'1'}">
             <span style="font-size:15px;flex-shrink:0">${tipIkona}</span>
             <span ${_klikAttr} style="flex:1;min-width:0;color:${_nazivBoja};${_nazivDecor}">
-              <div style="font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(naziv)}</div>
-              ${(podNaziv||protivnaStr)?`<div style="font-size:11px;color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px">${podNaziv?esc(podNaziv):''}${podNaziv&&protivnaStr?' · ':''}${protivnaStr?esc(protivnaStr):''}</div>`:''}
+              <div style="font-size:13.5px;font-weight:500;overflow-wrap:anywhere;white-space:normal;line-height:1.35">${esc(naziv)}</div>
+              ${(podNaziv||protivnaStr)?`<div style="font-size:11px;color:var(--text3);overflow-wrap:anywhere;white-space:normal;margin-top:1px">${podNaziv?esc(podNaziv):''}${podNaziv&&protivnaStr?' · ':''}${protivnaStr?esc(protivnaStr):''}</div>`:''}
             </span>
             ${vremeStr?`<span style="flex-shrink:0;font-size:13px;font-weight:700;color:${boja};background:${boja}22;padding:2px 8px;border-radius:20px">${vremeStr}</span>`:''}
             <div style="display:flex;gap:4px;flex-shrink:0">${editBtn}</div>
