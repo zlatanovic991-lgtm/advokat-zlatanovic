@@ -2296,7 +2296,7 @@ function navigate(page,id,tab,fromHistory){
   const titles={dashboard:'Početna strana',klijenti:'Klijenti',predmeti:'Predmeti',google:'Aktivnosti',finansije:'Finansije'};
   document.getElementById('topbarTitle').textContent=titles[page]||page;
   closeSidebar();
-  const addLabels={dashboard:'Predmet',klijenti:'Klijenta',predmeti:'Predmet',finansije:'Fakturu',google:'Aktivnost'};
+  const addLabels={dashboard:'Predmet',klijenti:'Klijenta',predmeti:'Predmet',finansije:'Račun/Priznanicu',google:'Aktivnost'};
   const ab=document.getElementById('aktivnostBtn');if(ab)ab.style.display=page==='dashboard'?'':'none';
   const lbl=document.getElementById('addBtnLabel');
   if(lbl) lbl.textContent=addLabels[page]||'Dodaj';
@@ -3041,7 +3041,7 @@ function renderPredmetDetail(){
   </div>
   
   <div class="detail-tabs-content" id="dtab-finansije">
-    <button class="btn btn-primary btn-sm" style="margin-bottom:16px" onclick="openAddFinansije('${p.id}','${p.klijentId}')">+ Dodaj fakturu</button>
+    <button class="btn btn-primary btn-sm" style="margin-bottom:16px" onclick="openAddFinansije('${p.id}','${p.klijentId}')">+ Dodaj račun</button>
     <div class="grid-3" style="margin-bottom:16px">
       <div class="stat-card"><div class="stat-label">Fakturisano</div><div class="stat-value" style="font-size:20px">${fmtMoney(ukupnoFakt)}</div></div>
       <div class="stat-card"><div class="stat-label">Naplaćeno</div><div class="stat-value" style="font-size:20px;color:var(--success)">${fmtMoney(ukupnoPlac)}</div></div>
@@ -4194,9 +4194,9 @@ function finansijeModalBody(f,predId,klId){
   const directKId = directK ? directK.id : (klId||'');
   const directKLabel = directK ? directK.ime : '';
   return`
-  <div class="form-group"><label>Faktura/Priznanica</label>
+  <div class="form-group"><label>Račun/Priznanica</label>
     <select id="f_tip" onchange="updateFinTipUI()">
-      <option value="faktura" ${tipVal==='faktura'?'selected':''}>Faktura — ja naplaćujem od klijenta</option>
+      <option value="faktura" ${tipVal==='faktura'?'selected':''}>Račun — ja naplaćujem od klijenta</option>
       <option value="priznanica" ${tipVal==='priznanica'?'selected':''}>Priznanica — ja isplaćujem klijentu</option>
     </select>
   </div>
@@ -4230,10 +4230,10 @@ function finansijeModalBody(f,predId,klId){
     </div>
   </div>
   <div class="form-row">
-    <div class="form-group"><label id="f_brfakture_label">Broj fakture</label><input id="f_brfakture" value="${esc(f?.brFakture||'')}" placeholder="auto"></div>
-    <div class="form-group"><label>Datum fakture</label>${makeDateInput("f_dat_fakt", f?.datum_fakture||"")}</div>
+    <div class="form-group"><label id="f_brfakture_label">Broj računa</label><input id="f_brfakture" value="${esc(f?.brFakture||'')}" placeholder="auto"></div>
+    <div class="form-group"><label id="f_dat_fakt_label">Datum računa</label>${makeDateInput("f_dat_fakt", f?.datum_fakture||"")}</div>
   </div>
-  <div class="form-row" style="margin-bottom:4px">
+  <div class="form-row" id="fin_valuta_wrap" style="margin-bottom:4px">
     <div class="form-group"><label>Valuta</label>
       <select id="f_valuta">
         <option value="RSD" ${(f?.valuta||'RSD')==='RSD'?'selected':''}>RSD — dinar</option>
@@ -4257,21 +4257,21 @@ function finansijeModalBody(f,predId,klId){
       Ukupno: <span id="stavke_total">${stavke.reduce((s,x)=>s+(parseFloat(x.cena)||0),0).toLocaleString('sr-RS')}</span> RSD
     </div>
   </div>
-  <div class="form-row">
+  <div class="form-row" id="fin_placeno_wrap">
     <div class="form-group"><label id="f_plac_label">Plaćeno (RSD)</label><input type="number" id="f_plac" value="${f?.placeno||0}" placeholder="0" oninput="updateFinStatus()"></div>
     <div class="form-group"><label id="f_dat_upl_label">Datum uplate</label>${makeDateInput("f_dat_upl", f?.datum_uplate||"")}</div>
   </div>
   <div class="form-group" id="fin_status_wrap"><label>Status <span id="fin_status_preview" style="margin-left:6px;font-size:11px;font-weight:600"></span></label><select id="f_status"><option value="nije_placeno" ${f?.status==='nije_placeno'?'selected':''}>Nije plaćeno</option><option value="delim_placeno" ${f?.status==='delim_placeno'?'selected':''}>Delimično plaćeno</option><option value="placeno" ${f?.status==='placeno'?'selected':''}>Plaćeno</option></select></div>
-  <div class="form-group"><label>Napomena</label><textarea id="f_napomena">${esc(f?.napomena||'')}</textarea></div>`;
+  <div class="form-group"><label id="f_napomena_label">Napomena</label><textarea id="f_napomena" placeholder="${tipVal==='priznanica'?'Napomena koja će biti odštampana na priznanici (npr. da je iznos isplaćen)...':''}">${esc(f?.napomena||'')}</textarea></div>`;
 }
 function openAddFinansije(predId,klId){
   currentModal='finansije';editId=null;addFinPredId=predId||null;addFinKlId=klId||null;
-  openModal('Nova faktura',finansijeModalBody(null,predId,klId));
+  openModal('Nov račun',finansijeModalBody(null,predId,klId));
   updateFinTipUI();
 }
 function openFinansijeModal(){
   currentModal='finansije';editId=null;addFinPredId=null;addFinKlId=null;
-  openModal('Nova faktura',finansijeModalBody(null,null,null));
+  openModal('Nov račun',finansijeModalBody(null,null,null));
   updateFinTipUI();
 }
 function deleteFinansije(id){
@@ -4304,6 +4304,7 @@ function updateFinTipUI(){
   const tip=v('f_tip');
   const isPrizn=tip==='priznanica';
   const brLbl=document.getElementById('f_brfakture_label');
+  const datFaktLbl=document.getElementById('f_dat_fakt_label');
   const opisH=document.getElementById('opis_header');
   const placLbl=document.getElementById('f_plac_label');
   const datUplLbl=document.getElementById('f_dat_upl_label');
@@ -4311,20 +4312,27 @@ function updateFinTipUI(){
   const predmetWrap=document.getElementById('fin_predmet_wrap');
   const klijentWrap=document.getElementById('fin_klijent_wrap');
   const statusWrap=document.getElementById('fin_status_wrap');
-  if(brLbl)brLbl.textContent=isPrizn?'Broj priznanice':'Broj fakture';
+  const valutaWrap=document.getElementById('fin_valuta_wrap');
+  const placenoWrap=document.getElementById('fin_placeno_wrap');
+  const napomenaField=document.getElementById('f_napomena');
+  if(brLbl)brLbl.textContent=isPrizn?'Broj priznanice':'Broj računa';
+  if(datFaktLbl)datFaktLbl.textContent=isPrizn?'Datum priznanice':'Datum računa';
   if(opisH)opisH.textContent=isPrizn?'OSNOV ISPLATE':'OPIS RADNJE';
   if(placLbl)placLbl.textContent=isPrizn?'Iznos isplaćen (RSD)':'Plaćeno (RSD)';
   if(datUplLbl)datUplLbl.textContent=isPrizn?'Datum isplate':'Datum uplate';
-  if(stavkeLbl)stavkeLbl.textContent=isPrizn?'Stavke isplate *':'Stavke fakture *';
+  if(stavkeLbl)stavkeLbl.textContent=isPrizn?'Stavke isplate *':'Stavke računa *';
   if(predmetWrap)predmetWrap.style.display=isPrizn?'none':'';
   if(klijentWrap)klijentWrap.style.display=isPrizn?'':'none';
   if(statusWrap)statusWrap.style.display=isPrizn?'none':'';
+  if(valutaWrap)valutaWrap.style.display=isPrizn?'none':'';
+  if(placenoWrap)placenoWrap.style.display=isPrizn?'none':'';
+  if(napomenaField)napomenaField.placeholder=isPrizn?'Napomena koja će biti odštampana na priznanici (npr. da je iznos isplaćen)...':'';
   if(isPrizn&&klijentWrap){
     const hasId=document.getElementById('fin_k_id')?.value;
     switchFinKlijentMode(hasId?'postojeci':(_finKlijentMode||'postojeci'));
   }
   const title=document.getElementById('modalTitle');
-  if(title)title.textContent=isPrizn?(editId?'Uredi priznanicu':'Nova priznanica'):(editId?'Uredi fakturu':'Nova faktura');
+  if(title)title.textContent=isPrizn?(editId?'Uredi priznanicu':'Nova priznanica'):(editId?'Uredi račun':'Nov račun');
 }
 function updateFinStatus(){
   const c=document.getElementById('stavke_container');
@@ -5054,7 +5062,7 @@ function fmtDatePrint(iso){
 }
 function stampajFakturu(finId){
   const f=db.finansije.find(x=>x.id===finId);
-  if(!f){showAlert('Faktura nije pronađena.');return;}
+  if(!f){showAlert('Račun nije pronađen.');return;}
   const k=getKlijent(f.klijentId);
   const isPrizn=f.tip==='priznanica';
   const docNaziv=isPrizn?'Priznanica':'Račun';
@@ -5076,9 +5084,8 @@ function stampajFakturu(finId){
     else if(f.status==='delim_placeno'){
       statusNapomena='<p style="margin:16px 0 0;font-size:12px;color:#333">Napomena: račun je delimično plaćen. Ostatak duga: '+fmtVal(f.fakturisano-f.placeno)+'</p>';
     }
-  } else {
-    const dp=f.datum_uplate?fmtDatePrint(f.datum_uplate):'';
-    statusNapomena='<p style="margin:16px 0 0;font-size:12px;color:#333">Potvrđujem da je iznos od '+fmtVal(ukupno)+' isplaćen licu '+esc(k.ime)+(dp?' dana '+dp:'')+'.</p>';
+  } else if(f.napomena){
+    statusNapomena='<p style="margin:16px 0 0;font-size:12px;color:#333">'+esc(f.napomena).replace(/\n/g,'<br>')+'</p>';
   }
   let klijentInfo='';
   if(k.adresa)klijentInfo+='<tr><td style="color:#777;padding:2px 0">Adresa:</td><td colspan="3" style="padding:2px 0">'+k.adresa+'</td></tr>';
@@ -5128,7 +5135,7 @@ function stampajFakturu(finId){
     +'<div>MB: 57352388 &nbsp;|&nbsp; PIB: 111355904</div>'
     +'<div>Br. računa: 265-4310310001556-89 Raiffeisen banka</div>'
     +'<div>www.advokatzlatanovic.com &nbsp;|&nbsp; advokatzlatanovic@yahoo.com</div>'
-    +'</div><div class="sig"><div class="sig-line">'+(isPrizn?esc(k.ime):'Advokat Vladimir Zlatanović')+'</div></div></div>'
+    +'</div><div class="sig"><div class="sig-line">'+(isPrizn?esc(k.ime)+'<div style="font-size:10px;color:#777;margin-top:2px">Potpis klijenta</div>':'Advokat Vladimir Zlatanović')+'</div></div></div>'
     +'<div class="np"><button onclick="window.print()" style="padding:9px 28px;font-size:14px;cursor:pointer;background:#1E3A5F;color:#fff;border:none;border-radius:6px">Štampaj / Sačuvaj PDF</button></div>'
     +'</body></html>';
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
