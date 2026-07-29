@@ -1,0 +1,408 @@
+"""Agent za automatsko sortiranje dokumenata sa Desktop-a u foldere klijenata.
+
+Prati Desktop folder. Cim se pojavi novi fajl (PDF, DOCX ili TXT):
+  1. izvuce tekst iz fajla,
+  2. prepozna vrstu dokumenta na osnovu kljucnih reci,
+  3. prepozna klijenta - prvo poredjenjem sa imenima postojecih foldera u
+     folderu klijenata, a ako klijent jos nema folder, pokusa da prepozna
+     ime i prezime iz teksta (npr. posle "Ime i prezime:", "Tuzilac:", ...),
+  4. preimenuje fajl (Vrsta dokumenta - Klijent - datum) i premesti ga u
+     folder klijenta (napravi folder ako ne postoji),
+  5. ako nije siguran u vrstu dokumenta ili klijenta, fajl premesta u
+     podfolder "_Za proveru" unutar foldera klijenata i pored njega ostavi
+     .razlog.txt fajl koji objasnjava sta je sporno.
+
+Sve radi lokalno, na ovom racunaru - nista se ne salje na internet niti
+trecoj strani.
+"""
+
+import configparser
+import logging
+import os
+import re
+import shutil
+import sys
+import time
+import unicodedata
+import winreg
+from pathlib import Path
+
+from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
+
+# ---------------------------------------------------------------------------
+# Podesavanje (config.ini)
+# ---------------------------------------------------------------------------
+
+BASE_DIR = Path(__file__).resolve().parent
+CONFIG_PATH = BASE_DIR / "config.ini"
+
+DEFAULT_CONFIG = """[putanje]
+klijenti_folder = C:\\Putanja\\Do\\Foldera\\Klijenata
+
+[opcije]
+cekaj_sekundi_stabilnost = 2
+"""
+
+
+def load_config():
+    if not CONFIG_PATH.exists():
+        CONFIG_PATH.write_text(DEFAULT_CONFIG, encoding="utf-8")
+        print(f"Napravljen je config.ini na: {CONFIG_PATH}")
+        print("Otvorite ga, unesite pravu putanju do foldera sa klijentima "
+              "(klijenti_folder), sacuvajte i ponovo pokrenite agenta.")
+        sys.exit(1)
+
+    cfg = configparser.ConfigParser()
+    cfg.read(CONFIG_PATH, encoding="utf-8")
+    clients_folder = cfg.get("putanje", "klijenti_folder", fallback="").strip()
+    if not clients_folder or "Putanja\\Do\\Foldera" in clients_folder:
+        print("Podesite 'klijenti_folder' u config.ini pre pokretanja.")
+        sys.exit(1)
+    stability_seconds = cfg.getint("opcije", "cekaj_sekundi_stabilnost", fallback=2)
+    return Path(clients_folder), stability_seconds
+
+
+def get_desktop_path() -> Path:
+    """Vraca pravu putanju do Desktop foldera (radi i kad je Desktop
+    preusmeren na OneDrive)."""
+    try:
+        key = winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER,
+            r"Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders",
+        )
+        value, _ = winreg.QueryValueEx(key, "Desktop")
+        return Path(os.path.expandvars(value))
+    except OSError:
+        return Path.home() / "Desktop"
+
+
+# ---------------------------------------------------------------------------
+# Citanje teksta iz fajla
+# ---------------------------------------------------------------------------
+
+SUPPORTED_EXT = {".pdf", ".docx", ".txt"}
+
+
+def extract_text(path: Path) -> str:
+    ext = path.suffix.lower()
+    try:
+        if ext == ".pdf":
+            return _extract_text_pdf(path)
+        if ext == ".docx":
+            return _extract_text_docx(path)
+        if ext == ".txt":
+            return path.read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        logging.exception("Neuspesno citanje teksta iz %s", path.name)
+    return ""
+
+
+def _extract_text_pdf(path: Path) -> str:
+    import pdfplumber
+
+    parts = []
+    with pdfplumber.open(path) as pdf:
+        for page in pdf.pages[:15]:
+            parts.append(page.extract_text() or "")
+    return "\n".join(parts)
+
+
+def _extract_text_docx(path: Path) -> str:
+    import docx
+
+    document = docx.Document(path)
+    return "\n".join(p.text for p in document.paragraphs)
+
+
+# ---------------------------------------------------------------------------
+# Prepoznavanje vrste dokumenta
+# ---------------------------------------------------------------------------
+
+def normalize(text: str) -> str:
+    text = text.lower().replace("đ", "dj")
+    text = unicodedata.normalize("NFKD", text)
+    return "".join(ch for ch in text if not unicodedata.combining(ch))
+
+
+# Redosled je bitan - specificniji izrazi idu pre opstijih.
+DOCUMENT_TYPES = [
+    ("Odgovor na tužbu", ["odgovor na tuzbu"]),
+    ("Protivtužba", ["protivtuzba"]),
+    ("Tužba", ["tuzba"]),
+    ("Žalba", ["zalba"]),
+    ("Revizija", ["revizija"]),
+    ("Presuda", ["presuda"]),
+    ("Rešenje", ["resenje"]),
+    ("Zaključak", ["zakljucak"]),
+    ("Punomoćje", ["punomocje", "punomoc"]),
+    ("Ugovor o zakupu", ["ugovor o zakupu"]),
+    ("Ugovor o radu", ["ugovor o radu"]),
+    ("Ugovor o kupoprodaji", ["ugovor o kupoprodaji", "kupoprodajni ugovor"]),
+    ("Aneks ugovora", ["aneks ugovora", "aneks broj"]),
+    ("Ugovor", ["ugovor"]),
+    ("Sporazum", ["sporazum"]),
+    ("Zapisnik", ["zapisnik"]),
+    ("Predlog za izvršenje", ["predlog za izvrsenje"]),
+    ("Nalaz veštaka", ["nalaz i misljenje", "vestacenje"]),
+    ("Opomena pred tužbu", ["opomena pred utuzenje", "opomena pred tuzbu"]),
+    ("Račun", ["faktura", "racun broj", "predracun"]),
+    ("Ponuda", ["ponuda broj", "komercijalna ponuda"]),
+    ("Ostavinski predlog", ["ostavinski postupak", "zaostavstina"]),
+    ("Krivična prijava", ["krivicna prijava"]),
+    ("Optužni predlog", ["optuzni predlog", "optuznica"]),
+    ("Zahtev", ["zahtev za", "molba"]),
+]
+
+
+def classify_document_type(text: str):
+    norm = normalize(text)
+    for name, keywords in DOCUMENT_TYPES:
+        for kw in keywords:
+            if kw in norm:
+                return name
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Prepoznavanje klijenta
+# ---------------------------------------------------------------------------
+
+NAME_WORD = r"[A-ZČĆŽŠĐ][a-zčćžšđ]+(?:-[A-ZČĆŽŠĐ][a-zčćžšđ]+)?"
+NAME_PATTERN = re.compile(rf"\b({NAME_WORD})\s+({NAME_WORD})\b")
+
+LABEL_PATTERN = re.compile(
+    r"(ime i prezime|klijent(?:kinja)?|stranka|podnosilac(?: zahteva)?|"
+    r"tu[zž]ila[cč]|tu[zž]en[ia]|punomo[cć]nik za|vlasnik|prodavac|kupac|"
+    r"zakupac|zakupodavac|poklonodavac|poklonoprimac|ostavilac|naslednik|"
+    r"osniva[cč]|zastupnik|dole potpisan\w*)",
+    re.IGNORECASE,
+)
+
+
+def find_existing_client_folders(clients_root: Path):
+    if not clients_root.exists():
+        return []
+    return [
+        p for p in clients_root.iterdir()
+        if p.is_dir() and not p.name.startswith("_")
+    ]
+
+
+def match_existing_client(text: str, folders):
+    """Poredi ime svakog postojeceg foldera (bez obzira na redosled reci u
+    folderu) sa tekstom dokumenta."""
+    norm = normalize(text)
+    matches = []
+    for folder in folders:
+        parts = [p for p in re.split(r"\s+", folder.name.strip()) if p]
+        if len(parts) < 2:
+            continue
+        norm_parts = [normalize(p) for p in parts]
+        if all(part in norm for part in norm_parts):
+            matches.append(folder)
+    return matches
+
+
+def guess_new_client_candidates(text: str):
+    """Trazi Ime Prezime obrazac odmah posle poznatih oznaka u tekstu."""
+    candidates = set()
+    for label_match in LABEL_PATTERN.finditer(text):
+        window = text[label_match.end():label_match.end() + 80]
+        name_match = NAME_PATTERN.search(window)
+        if name_match:
+            candidates.add(f"{name_match.group(1)} {name_match.group(2)}")
+    return candidates
+
+
+def decide_destination(text: str, clients_root: Path):
+    """Vraca (naziv_foldera, da_li_je_novi, razlog_ako_je_sporno)."""
+    folders = find_existing_client_folders(clients_root)
+    existing_matches = match_existing_client(text, folders)
+
+    if len(existing_matches) == 1:
+        return existing_matches[0].name, False, None
+    if len(existing_matches) > 1:
+        names = ", ".join(f.name for f in existing_matches)
+        return None, None, f"Dokument pominje vise postojecih klijenata: {names}"
+
+    candidates = guess_new_client_candidates(text)
+    if len(candidates) == 1:
+        ime_prezime = next(iter(candidates)).split()
+        folder_name = f"{ime_prezime[-1]} {' '.join(ime_prezime[:-1])}"  # Prezime Ime
+        return folder_name, True, None
+    if len(candidates) > 1:
+        return None, None, "Pronadjeno vise mogucih klijenata: " + ", ".join(sorted(candidates))
+
+    return None, None, "Nije prepoznato ime klijenta u dokumentu"
+
+
+# ---------------------------------------------------------------------------
+# Imenovanje i premestanje fajlova
+# ---------------------------------------------------------------------------
+
+ILLEGAL_CHARS = re.compile(r'[\\/:*?"<>|]')
+
+
+def build_filename(doc_type: str, client_folder_name: str, suffix: str) -> str:
+    date_str = time.strftime("%Y-%m-%d")
+    raw = f"{doc_type} - {client_folder_name} - {date_str}{suffix.lower()}"
+    return ILLEGAL_CHARS.sub("", raw)
+
+
+def unique_path(path: Path) -> Path:
+    if not path.exists():
+        return path
+    stem, suffix = path.stem, path.suffix
+    counter = 2
+    while True:
+        candidate = path.with_name(f"{stem} ({counter}){suffix}")
+        if not candidate.exists():
+            return candidate
+        counter += 1
+
+
+def wait_until_stable(path: Path, wait_seconds: int, timeout: int = 60) -> bool:
+    """Ceka da fajl prestane da raste (da se zavrsi snimanje/download) i da
+    ne bude zakljucan od strane drugog programa."""
+    start = time.time()
+    last_size = -1
+    stable_since = None
+    while time.time() - start < timeout:
+        if not path.exists():
+            return False
+        try:
+            size = path.stat().st_size
+        except OSError:
+            time.sleep(0.5)
+            continue
+        if size == last_size and size > 0:
+            if stable_since is None:
+                stable_since = time.time()
+            elif time.time() - stable_since >= wait_seconds:
+                try:
+                    with open(path, "rb"):
+                        return True
+                except PermissionError:
+                    time.sleep(0.5)
+                    continue
+        else:
+            stable_since = None
+        last_size = size
+        time.sleep(0.5)
+    return False
+
+
+# ---------------------------------------------------------------------------
+# Pracenje Desktop-a
+# ---------------------------------------------------------------------------
+
+IGNORE_SUFFIXES = {".tmp", ".crdownload", ".partial", ".download", ".part"}
+IGNORE_NAMES = {"desktop.ini", "thumbs.db"}
+
+
+class DesktopHandler(FileSystemEventHandler):
+    def __init__(self, clients_root: Path, stability_seconds: int, review_dir: Path):
+        self.clients_root = clients_root
+        self.stability_seconds = stability_seconds
+        self.review_dir = review_dir
+
+    def on_created(self, event):
+        if not event.is_directory:
+            self.handle(Path(event.src_path))
+
+    def on_moved(self, event):
+        # npr. kad browser preimenuje "fajl.crdownload" u konacno ime
+        if not event.is_directory:
+            self.handle(Path(event.dest_path))
+
+    def handle(self, path: Path):
+        if path.name in IGNORE_NAMES or path.suffix.lower() in IGNORE_SUFFIXES:
+            return
+        if path.suffix.lower() not in SUPPORTED_EXT:
+            return
+        if not wait_until_stable(path, self.stability_seconds):
+            logging.warning("Fajl '%s' nije bio dostupan za obradu (verovatno se jos snima).", path.name)
+            return
+        try:
+            self.process(path)
+        except Exception:
+            logging.exception("Greska pri obradi fajla %s", path.name)
+
+    def process(self, path: Path):
+        text = extract_text(path)
+
+        if not text.strip():
+            self.move_to_review(path, "Nije moguce procitati tekst iz fajla (mozda je skeniran bez teksta)")
+            return
+
+        doc_type = classify_document_type(text)
+        folder_name, is_new, note = decide_destination(text, self.clients_root)
+
+        if folder_name is None:
+            reason = note or "Nepoznat razlog"
+            if not doc_type:
+                reason += "; vrsta dokumenta takodje nije prepoznata"
+            self.move_to_review(path, reason)
+            return
+
+        if not doc_type:
+            self.move_to_review(path, f"Klijent prepoznat kao '{folder_name}', ali vrsta dokumenta nije jasna")
+            return
+
+        target_dir = self.clients_root / folder_name
+        target_dir.mkdir(parents=True, exist_ok=True)
+
+        new_name = build_filename(doc_type, folder_name, path.suffix)
+        destination = unique_path(target_dir / new_name)
+        shutil.move(str(path), str(destination))
+
+        status = "NOVI KLIJENT - napravljen folder" if is_new else "postojeci klijent"
+        logging.info("Premesteno: '%s' -> '%s'  [%s]", path.name, destination, status)
+        if is_new:
+            logging.info("Proverite da li je redosled ime/prezime foldera '%s' ispravan.", folder_name)
+
+    def move_to_review(self, path: Path, reason: str):
+        self.review_dir.mkdir(parents=True, exist_ok=True)
+        destination = unique_path(self.review_dir / path.name)
+        shutil.move(str(path), str(destination))
+        note_path = destination.with_name(destination.name + ".razlog.txt")
+        note_path.write_text(f"Fajl: {path.name}\nRazlog za proveru: {reason}\n", encoding="utf-8")
+        logging.info("SPORNO - premesteno u '_Za proveru': '%s' | Razlog: %s", path.name, reason)
+
+
+def main():
+    clients_root, stability_seconds = load_config()
+    desktop = get_desktop_path()
+    review_dir = clients_root / "_Za proveru"
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(message)s",
+        handlers=[
+            logging.FileHandler(BASE_DIR / "agent.log", encoding="utf-8"),
+            logging.StreamHandler(),
+        ],
+    )
+
+    logging.info("Pratim Desktop: %s", desktop)
+    logging.info("Folder klijenata: %s", clients_root)
+
+    if not desktop.exists():
+        logging.error("Desktop folder ne postoji na ovoj putanji: %s", desktop)
+        sys.exit(1)
+
+    handler = DesktopHandler(clients_root, stability_seconds, review_dir)
+    observer = Observer()
+    observer.schedule(handler, str(desktop), recursive=False)
+    observer.start()
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        observer.stop()
+    observer.join()
+
+
+if __name__ == "__main__":
+    main()
