@@ -48,11 +48,17 @@ klijenti_folder = C:\Users\VaseIme\Documents\Klijenti
 
 [opcije]
 cekaj_sekundi_stabilnost = 2
+moje_ime_prezime = Vladimir Zlatanović
 ```
 
 `cekaj_sekundi_stabilnost` — koliko sekundi program čeka da fajl prestane da se menja pre nego
 što ga obradi (korisno da ne pipa fajl dok se još snima/preuzima). 2 sekunde je dobra podrazumevana
 vrednost, ne morate je menjati.
+
+`moje_ime_prezime` — **obavezno unesite svoje ime i prezime** (advokata) ovde. Pošto se vaše ime
+pojavljuje u zaglavlju/potpisu praktično svakog dokumenta, program bi ga bez ove opcije povremeno
+pogrešno prepoznao kao klijenta. Uz ovo podešeno, vaše ime se uvek isključuje iz prepoznavanja
+klijenta.
 
 Desktop folder se prepoznaje automatski (radi i ako vam je Desktop preusmeren na OneDrive).
 

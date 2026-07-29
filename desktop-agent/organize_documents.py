@@ -42,6 +42,7 @@ klijenti_folder = C:\\Putanja\\Do\\Foldera\\Klijenata
 
 [opcije]
 cekaj_sekundi_stabilnost = 2
+moje_ime_prezime = Ime Prezime
 """
 
 
@@ -60,7 +61,10 @@ def load_config():
         print("Podesite 'klijenti_folder' u config.ini pre pokretanja.")
         sys.exit(1)
     stability_seconds = cfg.getint("opcije", "cekaj_sekundi_stabilnost", fallback=2)
-    return Path(clients_folder), stability_seconds
+    own_name = cfg.get("opcije", "moje_ime_prezime", fallback="").strip()
+    if own_name == "Ime Prezime":
+        own_name = ""
+    return Path(clients_folder), stability_seconds, own_name
 
 
 def get_desktop_path() -> Path:
@@ -212,19 +216,50 @@ def find_existing_client_folders(clients_root: Path):
     ]
 
 
+NAME_PROXIMITY_WINDOW = 60
+
+
+def _words_occur_close(norm_text: str, words, window: int = NAME_PROXIMITY_WINDOW) -> bool:
+    """Da li se sve zadate reci pojavljuju blizu jedna drugoj (kao delovi
+    istog imena), a ne bilo gde nezavisno u celom dokumentu."""
+    anchor = words[0]
+    for m in re.finditer(rf"\b{re.escape(anchor)}\b", norm_text):
+        lo, hi = max(0, m.start() - window), m.start() + window
+        segment = norm_text[lo:hi]
+        if all(re.search(rf"\b{re.escape(w)}\b", segment) for w in words[1:]):
+            return True
+    return False
+
+
 def match_existing_client(text: str, folders):
     """Poredi ime svakog postojeceg foldera (bez obzira na redosled reci u
-    folderu) sa tekstom dokumenta."""
+    folderu) sa tekstom dokumenta - ime i prezime moraju biti blizu jedno
+    drugom, ne samo negde nezavisno pomenuti u dokumentu."""
     norm = normalize(text)
     matches = []
     for folder in folders:
-        parts = [p for p in re.split(r"\s+", folder.name.strip()) if p]
+        parts = [normalize(p) for p in re.split(r"\s+", folder.name.strip()) if p]
         if len(parts) < 2:
             continue
-        norm_parts = [normalize(p) for p in parts]
-        if all(part in norm for part in norm_parts):
+        if _words_occur_close(norm, parts):
             matches.append(folder)
     return matches
+
+
+def strip_own_name(text: str, own_name: str) -> str:
+    """Uklanja pojave advokatovog sopstvenog imena i prezimena (npr. iz
+    zaglavlja/potpisa) da se ne bi pogresno prepoznalo kao klijent."""
+    if not own_name.strip():
+        return text
+    parts = [p for p in re.split(r"\s+", own_name.strip()) if p]
+    if len(parts) < 2:
+        return text
+    p1, p2 = re.escape(parts[0]), re.escape(parts[1])
+    pattern = re.compile(
+        rf"\b{p1}\b[^\n]{{0,25}}\b{p2}\b|\b{p2}\b[^\n]{{0,25}}\b{p1}\b",
+        re.IGNORECASE,
+    )
+    return pattern.sub(" ", text)
 
 
 def guess_new_client_candidates(text: str):
@@ -326,10 +361,11 @@ IMAGE_EXT = {".jpg", ".jpeg", ".png", ".tiff", ".tif", ".bmp", ".heic", ".gif"}
 
 
 class DesktopHandler(FileSystemEventHandler):
-    def __init__(self, clients_root: Path, stability_seconds: int, review_dir: Path):
+    def __init__(self, clients_root: Path, stability_seconds: int, review_dir: Path, own_name: str = ""):
         self.clients_root = clients_root
         self.stability_seconds = stability_seconds
         self.review_dir = review_dir
+        self.own_name = own_name
 
     def on_created(self, event):
         if not event.is_directory:
@@ -375,7 +411,8 @@ class DesktopHandler(FileSystemEventHandler):
             return
 
         doc_type = classify_document_type(text)
-        folder_name, is_new, note = decide_destination(text, self.clients_root)
+        matching_text = strip_own_name(text, self.own_name)
+        folder_name, is_new, note = decide_destination(matching_text, self.clients_root)
 
         if folder_name is None:
             reason = note or "Nepoznat razlog"
@@ -410,7 +447,7 @@ class DesktopHandler(FileSystemEventHandler):
 
 
 def main():
-    clients_root, stability_seconds = load_config()
+    clients_root, stability_seconds, own_name = load_config()
     desktop = get_desktop_path()
     review_dir = clients_root / "_Za proveru"
 
@@ -430,7 +467,7 @@ def main():
         logging.error("Desktop folder ne postoji na ovoj putanji: %s", desktop)
         sys.exit(1)
 
-    handler = DesktopHandler(clients_root, stability_seconds, review_dir)
+    handler = DesktopHandler(clients_root, stability_seconds, review_dir, own_name)
     observer = Observer()
     observer.schedule(handler, str(desktop), recursive=False)
     observer.start()
