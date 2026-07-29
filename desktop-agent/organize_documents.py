@@ -207,13 +207,23 @@ LABEL_PATTERN = re.compile(
 )
 
 
-def find_existing_client_folders(clients_root: Path):
+def _name_word_set(name: str):
+    return {normalize(w) for w in re.split(r"\s+", name.strip()) if w}
+
+
+def find_existing_client_folders(clients_root: Path, own_name: str = ""):
     if not clients_root.exists():
         return []
-    return [
-        p for p in clients_root.iterdir()
-        if p.is_dir() and not p.name.startswith("_")
-    ]
+    own_words = _name_word_set(own_name) if own_name else set()
+    result = []
+    for p in clients_root.iterdir():
+        if not p.is_dir() or p.name.startswith("_"):
+            continue
+        if own_words and _name_word_set(p.name) == own_words:
+            # ovo je advokatov sopstveni folder - nikad ne sme biti odredište
+            continue
+        result.append(p)
+    return result
 
 
 NAME_PROXIMITY_WINDOW = 60
@@ -273,9 +283,9 @@ def guess_new_client_candidates(text: str):
     return candidates
 
 
-def decide_destination(text: str, clients_root: Path):
+def decide_destination(text: str, clients_root: Path, own_name: str = ""):
     """Vraca (naziv_foldera, da_li_je_novi, razlog_ako_je_sporno)."""
-    folders = find_existing_client_folders(clients_root)
+    folders = find_existing_client_folders(clients_root, own_name)
     existing_matches = match_existing_client(text, folders)
 
     if len(existing_matches) == 1:
@@ -284,7 +294,11 @@ def decide_destination(text: str, clients_root: Path):
         names = ", ".join(f.name for f in existing_matches)
         return None, None, f"Dokument pominje vise postojecih klijenata: {names}"
 
-    candidates = guess_new_client_candidates(text)
+    own_words = _name_word_set(own_name) if own_name else set()
+    candidates = {
+        c for c in guess_new_client_candidates(text)
+        if not (own_words and _name_word_set(c) == own_words)
+    }
     if len(candidates) == 1:
         ime_prezime = next(iter(candidates)).split()
         folder_name = f"{ime_prezime[-1]} {' '.join(ime_prezime[:-1])}"  # Prezime Ime
@@ -412,7 +426,7 @@ class DesktopHandler(FileSystemEventHandler):
 
         doc_type = classify_document_type(text)
         matching_text = strip_own_name(text, self.own_name)
-        folder_name, is_new, note = decide_destination(matching_text, self.clients_root)
+        folder_name, is_new, note = decide_destination(matching_text, self.clients_root, self.own_name)
 
         if folder_name is None:
             reason = note or "Nepoznat razlog"

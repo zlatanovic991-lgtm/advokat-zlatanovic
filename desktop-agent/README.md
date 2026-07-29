@@ -55,10 +55,12 @@ moje_ime_prezime = Vladimir Zlatanović
 što ga obradi (korisno da ne pipa fajl dok se još snima/preuzima). 2 sekunde je dobra podrazumevana
 vrednost, ne morate je menjati.
 
-`moje_ime_prezime` — **obavezno unesite svoje ime i prezime** (advokata) ovde. Pošto se vaše ime
-pojavljuje u zaglavlju/potpisu praktično svakog dokumenta, program bi ga bez ove opcije povremeno
-pogrešno prepoznao kao klijenta. Uz ovo podešeno, vaše ime se uvek isključuje iz prepoznavanja
-klijenta.
+`moje_ime_prezime` — **obavezno unesite svoje ime i prezime** (advokata) ovde, tačno onako kako
+glasi naziv vašeg foldera (ako ga imate). Pošto se vaše ime pojavljuje u zaglavlju/potpisu/kao
+punomoćnik ili branilac u praktično svakom dokumentu, program bi ga bez ove opcije povremeno
+pogrešno prepoznao kao klijenta. Uz ovo podešeno: vaše ime se uklanja iz teksta pre prepoznavanja
+klijenta, i **vaš folder (ako postoji) je trajno isključen kao moguće odredište** — dokument nikad
+neće biti prebačen kod vas, bez obzira šta piše u tekstu.
 
 Desktop folder se prepoznaje automatski (radi i ako vam je Desktop preusmeren na OneDrive).
 
