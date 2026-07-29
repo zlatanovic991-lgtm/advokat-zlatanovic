@@ -299,6 +299,7 @@ def wait_until_stable(path: Path, wait_seconds: int, timeout: int = 60) -> bool:
 
 IGNORE_SUFFIXES = {".tmp", ".crdownload", ".partial", ".download", ".part"}
 IGNORE_NAMES = {"desktop.ini", "thumbs.db"}
+IMAGE_EXT = {".jpg", ".jpeg", ".png", ".tiff", ".tif", ".bmp", ".heic", ".gif"}
 
 
 class DesktopHandler(FileSystemEventHandler):
@@ -322,13 +323,24 @@ class DesktopHandler(FileSystemEventHandler):
         if path.name.startswith("~$") or path.name.startswith("."):
             # Word/Excel privremeni "lock" fajlovi (npr. ~$Ugovor.docx) i skriveni fajlovi
             return
-        if path.suffix.lower() not in SUPPORTED_EXT:
+
+        ext = path.suffix.lower()
+        if ext not in SUPPORTED_EXT and ext not in IMAGE_EXT:
             return
+
         if not wait_until_stable(path, self.stability_seconds):
             logging.warning("Fajl '%s' nije bio dostupan za obradu (verovatno se jos snima).", path.name)
             return
+
         try:
-            self.process(path)
+            if ext in IMAGE_EXT:
+                self.move_to_review(
+                    path,
+                    "Slika (" + ext + ") - agent trenutno ne cita tekst sa slika (nema OCR ugradjen). "
+                    "Prevucite je rucno u odgovarajuci folder klijenta.",
+                )
+            else:
+                self.process(path)
         except Exception:
             logging.exception("Greska pri obradi fajla %s", path.name)
 
