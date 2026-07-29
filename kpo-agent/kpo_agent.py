@@ -8,8 +8,6 @@ Sta radi:
   3. Parsira prilive (odobrenja) iz tih izvoda.
   4. Dodaje nove prilive u KPO knjigu, nastavljajuci numeraciju.
   5. Ako nema novih priliva - javlja da je KPO azurna.
-  6. Anomalije (iznos > 500.000 RSD, uplata bez poziva na broj od sudskih organa)
-     oznacava crvenom bojom u Excelu i ispisuje upozorenje.
 
 Upotreba:
   python kpo_agent.py
@@ -27,7 +25,6 @@ import re
 import shutil
 import sys
 import tempfile
-import unicodedata
 from datetime import date, datetime, timedelta
 from getpass import getpass
 
@@ -56,13 +53,6 @@ KPO_HEADER = {
     "sifra_delatnosti": "6910",
 }
 
-ANOMALIJA_LIMIT = 500_000.0
-
-SUDSKI_KEYWORDI = [
-    "SUD", "TUZILASTVO", "TUŽILAŠTVO", "PRAVOBRANILASTVO", "PRAVOBRANILAŠTVO",
-    "MINISTARSTVO PRAVDE", "UPRAVA ZA TREZOR",
-]
-
 
 def srpski_broj(x: float) -> str:
     """Formatira broj u srpski format: 45000.0 -> '45.000,00'"""
@@ -74,16 +64,6 @@ def log_append(log_putanja: str, linija: str) -> None:
     sada = datetime.now().strftime("%Y-%m-%d %H:%M")
     with open(log_putanja, "a", encoding="utf-8") as f:
         f.write(f"{sada} | {linija}\n")
-
-
-def bez_dijakritika(s: str) -> str:
-    s = unicodedata.normalize("NFKD", s)
-    return "".join(c for c in s if not unicodedata.combining(c))
-
-
-def je_sudski_organ(*tekstovi: str) -> bool:
-    spojeno = bez_dijakritika(" ".join(t or "" for t in tekstovi)).upper()
-    return any(bez_dijakritika(k).upper() in spojeno for k in SUDSKI_KEYWORDI)
 
 
 # ─── IMAP ────────────────────────────────────────────────────────────────────
@@ -306,11 +286,6 @@ def prikupi_prilive(svi_izvodi: list, posle_datuma) -> list:
             if posle_datuma and datum_dt and datum_dt <= posle_datuma:
                 continue
             naziv = t["naziv"].split(",")[0].strip() if "," in t["naziv"] else t["naziv"]
-            anomalije = []
-            if t["u_korist"] > ANOMALIJA_LIMIT:
-                anomalije.append(f"iznos preko {ANOMALIJA_LIMIT:,.0f} RSD")
-            if je_sudski_organ(naziv, t["naziv"], t["svrha"]) and not (t["pbz_pbo"] or "").strip():
-                anomalije.append("uplata od sudskog organa bez poziva na broj")
             prilivi.append({
                 "Datum":        datum_str,
                 "Banka":        izvod["banka"],
@@ -319,7 +294,6 @@ def prikupi_prilive(svi_izvodi: list, posle_datuma) -> list:
                 "Poziv na br.": t["pbz_pbo"],
                 "Iznos (RSD)":  t["u_korist"],
                 "_datum_dt":    datum_dt,
-                "_anomalije":   anomalije,
             })
     prilivi.sort(key=lambda x: x["_datum_dt"] or date.min)
     return prilivi
@@ -397,7 +371,7 @@ def dodaj_prilive_u_kpo(ws, novi_prilivi: list, start_row: int = 14):
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
     if not novi_prilivi:
-        return []
+        return
 
     _, poslednji_redni, ukupno_row = procitaj_poslednje_stanje(ws, start_row)
 
@@ -413,12 +387,10 @@ def dodaj_prilive_u_kpo(ws, novi_prilivi: list, start_row: int = 14):
     brd_ab = Border(left=thin, right=thin, top=thin, bottom=thin)
     fill_ab = PatternFill("solid", fgColor="FFFFCC99")
     fill_e  = PatternFill("solid", fgColor="FFC6EFCE")
-    fill_anomalija = PatternFill("solid", fgColor="FFFF0000")
 
     n = len(novi_prilivi)
     ws.insert_rows(ukupno_row, amount=n)
 
-    oznacene = []
     for i, r in enumerate(novi_prilivi):
         row = ukupno_row + i
         redni = poslednji_redni + 1 + i
@@ -426,37 +398,27 @@ def dodaj_prilive_u_kpo(ws, novi_prilivi: list, start_row: int = 14):
         if r.get("Svrha"):
             datum_opis += f" — {r['Svrha'][:50]}"
         iznos = r["Iznos (RSD)"]
-        je_anomalija = bool(r.get("_anomalije"))
-
-        fill_row = fill_anomalija if je_anomalija else fill_ab
-        fill_row_e = fill_anomalija if je_anomalija else fill_e
 
         c = ws.cell(row=row, column=1, value=redni)
         c.font = Font(size=11, name="Calibri"); c.border = brd_ab
-        c.fill = fill_row; c.alignment = Alignment(horizontal="center", vertical="center")
+        c.fill = fill_ab; c.alignment = Alignment(horizontal="center", vertical="center")
 
         c = ws.cell(row=row, column=2, value=datum_opis)
         c.font = Font(size=11, name="Calibri"); c.border = brd_ab
-        c.fill = fill_row; c.alignment = Alignment(vertical="center", wrap_text=True)
-        if je_anomalija:
-            from openpyxl.comments import Comment
-            c.comment = Comment("ANOMALIJA: " + "; ".join(r["_anomalije"]), "KPO agent")
+        c.fill = fill_ab; c.alignment = Alignment(vertical="center", wrap_text=True)
 
         c = ws.cell(row=row, column=3, value=None)
-        c.border = brd_ab; c.fill = fill_row
+        c.border = brd_ab; c.fill = fill_ab
 
         c = ws.cell(row=row, column=4, value=iznos)
-        c.font = Font(size=11, name="Calibri", bold=je_anomalija); c.border = brd_ab
-        c.fill = fill_row; c.number_format = "#,##0.00"
+        c.font = Font(size=11, name="Calibri"); c.border = brd_ab
+        c.fill = fill_ab; c.number_format = "#,##0.00"
         c.alignment = Alignment(horizontal="right", vertical="center")
 
         c = ws.cell(row=row, column=5, value=iznos)
-        c.font = Font(size=11, name="Calibri", bold=je_anomalija); c.border = brd_ab
-        c.fill = fill_row_e; c.number_format = "#,##0.00"
+        c.font = Font(size=11, name="Calibri"); c.border = brd_ab
+        c.fill = fill_e; c.number_format = "#,##0.00"
         c.alignment = Alignment(horizontal="right", vertical="center")
-
-        if je_anomalija:
-            oznacene.append({**r, "Redni broj": redni})
 
     novi_ukupno_row = ukupno_row + n
     novi_ukupno = stari_ukupno + sum(r["Iznos (RSD)"] for r in novi_prilivi)
@@ -465,8 +427,6 @@ def dodaj_prilive_u_kpo(ws, novi_prilivi: list, start_row: int = 14):
         c.font = Font(bold=True, size=11, name="Calibri")
         c.number_format = "#,##0.00"
         c.alignment = Alignment(horizontal="right")
-
-    return oznacene
 
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
@@ -548,7 +508,6 @@ def main():
         return
 
     ukupno_dodatih_redova = 0
-    svih_anomalija = []
 
     for izvod in svi_izvodi:
         prilivi = prikupi_prilive([izvod], poslednji_datum)
@@ -556,32 +515,22 @@ def main():
         oznaka_izvoda = f"{izvod['banka']} izvod br.{izvod['broj_izvoda']} ({izvod['datum_izvoda']})"
 
         if prilivi:
-            anomalije = dodaj_prilive_u_kpo(ws, prilivi)
+            dodaj_prilive_u_kpo(ws, prilivi)
             wb.save(args.kpo)
             _, poslednji_redni, _ = procitaj_poslednje_stanje(ws)
             ukupno_dodatih_redova += len(prilivi)
-            svih_anomalija.extend(anomalije)
             linija = f"{oznaka_izvoda} | +{srpski_broj(iznos_izvoda)} RSD | KPO red {poslednji_redni}"
         else:
             linija = f"{oznaka_izvoda} | bez novih priliva"
 
         log_append(args.log, linija)
         print(linija)
-        for a in anomalije if prilivi else []:
-            upozorenje = f"  [!] ANOMALIJA red {a['Redni broj']}: {a['Uplatioc']} - {a['Iznos (RSD)']:,.2f} RSD ({'; '.join(a['_anomalije'])})"
-            print(upozorenje)
-            log_append(args.log, upozorenje)
 
     print()
     if ukupno_dodatih_redova:
         print(f"KPO azurirana: {args.kpo}  (+{ukupno_dodatih_redova} redova)")
     else:
         print("Novi izvodi pronadjeni, ali bez priliva - KPO nije menjana.")
-
-    if svih_anomalija:
-        print(f"\nUPOZORENJE: {len(svih_anomalija)} anomalija oznaceno crvenom bojom u KPO.")
-    else:
-        print("Bez anomalija.")
 
 
 if __name__ == "__main__":
