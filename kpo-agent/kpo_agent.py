@@ -64,6 +64,18 @@ SUDSKI_KEYWORDI = [
 ]
 
 
+def srpski_broj(x: float) -> str:
+    """Formatira broj u srpski format: 45000.0 -> '45.000,00'"""
+    s = f"{x:,.2f}"
+    return s.replace(",", "\x00").replace(".", ",").replace("\x00", ".")
+
+
+def log_append(log_putanja: str, linija: str) -> None:
+    sada = datetime.now().strftime("%Y-%m-%d %H:%M")
+    with open(log_putanja, "a", encoding="utf-8") as f:
+        f.write(f"{sada} | {linija}\n")
+
+
 def bez_dijakritika(s: str) -> str:
     s = unicodedata.normalize("NFKD", s)
     return "".join(c for c in s if not unicodedata.combining(c))
@@ -466,6 +478,7 @@ def main():
     parser.add_argument("--lozinka", help="Yahoo app lozinka")
     parser.add_argument("--kpo", default=os.path.join(BASE_DIR, "KPO_prihodi.xlsx"), help="Putanja KPO knjige")
     parser.add_argument("--predlozak", default=os.path.join(BASE_DIR, "KPO_predlozak.xlsx"), help="Putanja praznog KPO obrasca")
+    parser.add_argument("--log", default=os.path.join(BASE_DIR, "kpo_log.txt"), help="Putanja log fajla")
     args = parser.parse_args()
 
     do = datetime.strptime(args.do, "%Y-%m-%d").date()
@@ -492,7 +505,15 @@ def main():
 
     print(f"Trazim izvode od {(od + timedelta(days=1)).strftime('%d.%m.%Y.')} do {do.strftime('%d.%m.%Y.')}\n")
 
-    lozinka = args.lozinka or os.environ.get("YAHOO_APP_PASS") or getpass("Yahoo app lozinka: ")
+    lozinka = args.lozinka or os.environ.get("YAHOO_APP_PASS")
+    if not lozinka:
+        if sys.stdin.isatty():
+            lozinka = getpass("Yahoo app lozinka: ")
+        else:
+            raise RuntimeError(
+                "YAHOO_APP_PASS nije podesena, a skripta se izvrsava bez interaktivne konzole "
+                "(npr. iz Task Scheduler-a). Podesi je kao trajnu USER environment promenljivu."
+            )
 
     print("Konektujem se na Yahoo Mail...")
     conn = connect(lozinka)
@@ -511,36 +532,54 @@ def main():
             svi_izvodi.append(izvod)
             print(f"  Izvod br. {izvod['broj_izvoda']} ({izvod['datum_izvoda']}) - {len(izvod['transakcije'])} stavki")
     conn.logout()
-
-    prilivi = prikupi_prilive(svi_izvodi, poslednji_datum)
-
     print()
-    if not prilivi:
-        print("Nema novih priliva - KPO je azurna.")
+
+    # Samo izvodi ciji je datum posle poslednjeg unetog datuma u KPO racunaju se kao "novi"
+    svi_izvodi = [
+        iz for iz in svi_izvodi
+        if not poslednji_datum or not datum_iz_stringa(iz["datum_izvoda"])
+        or datum_iz_stringa(iz["datum_izvoda"]) > poslednji_datum
+    ]
+    svi_izvodi.sort(key=lambda iz: datum_iz_stringa(iz["datum_izvoda"]) or date.min)
+
+    if not svi_izvodi:
+        log_append(args.log, "Nema novih izvoda")
+        print("Nema novih izvoda - KPO je azurna.")
         return
 
-    print(f"Novi prilivi ({len(prilivi)}):")
-    print(f"{'Datum':<12} {'Banka':<12} {'Uplatioc':<30} {'Iznos (RSD)':>14}")
-    print("-" * 72)
-    for r in prilivi:
-        oznaka = "  [!]" if r["_anomalije"] else ""
-        print(f"{r['Datum']:<12} {r['Banka']:<12} {r['Uplatioc']:<30} {r['Iznos (RSD)']:>14,.2f}{oznaka}")
-    ukupno_novo = sum(r["Iznos (RSD)"] for r in prilivi)
-    print("-" * 72)
-    print(f"{'UKUPNO NOVO':<56} {ukupno_novo:>14,.2f} RSD\n")
+    ukupno_dodatih_redova = 0
+    svih_anomalija = []
 
-    anomalije = dodaj_prilive_u_kpo(ws, prilivi)
-    wb.save(args.kpo)
-    print(f"KPO azurirana: {args.kpo}  (+{len(prilivi)} redova)")
+    for izvod in svi_izvodi:
+        prilivi = prikupi_prilive([izvod], poslednji_datum)
+        iznos_izvoda = sum(p["Iznos (RSD)"] for p in prilivi)
+        oznaka_izvoda = f"{izvod['banka']} izvod br.{izvod['broj_izvoda']} ({izvod['datum_izvoda']})"
 
-    if anomalije:
-        print("\n" + "!" * 70)
-        print(f" UPOZORENJE: {len(anomalije)} anomalija oznaceno crvenom bojom u KPO:")
-        print("!" * 70)
-        for a in anomalije:
-            print(f"  Red {a['Redni broj']}: {a['Datum']} {a['Uplatioc']} - {a['Iznos (RSD)']:,.2f} RSD")
-            for razlog in a["_anomalije"]:
-                print(f"      -> {razlog}")
+        if prilivi:
+            anomalije = dodaj_prilive_u_kpo(ws, prilivi)
+            wb.save(args.kpo)
+            _, poslednji_redni, _ = procitaj_poslednje_stanje(ws)
+            ukupno_dodatih_redova += len(prilivi)
+            svih_anomalija.extend(anomalije)
+            linija = f"{oznaka_izvoda} | +{srpski_broj(iznos_izvoda)} RSD | KPO red {poslednji_redni}"
+        else:
+            linija = f"{oznaka_izvoda} | bez novih priliva"
+
+        log_append(args.log, linija)
+        print(linija)
+        for a in anomalije if prilivi else []:
+            upozorenje = f"  [!] ANOMALIJA red {a['Redni broj']}: {a['Uplatioc']} - {a['Iznos (RSD)']:,.2f} RSD ({'; '.join(a['_anomalije'])})"
+            print(upozorenje)
+            log_append(args.log, upozorenje)
+
+    print()
+    if ukupno_dodatih_redova:
+        print(f"KPO azurirana: {args.kpo}  (+{ukupno_dodatih_redova} redova)")
+    else:
+        print("Novi izvodi pronadjeni, ali bez priliva - KPO nije menjana.")
+
+    if svih_anomalija:
+        print(f"\nUPOZORENJE: {len(svih_anomalija)} anomalija oznaceno crvenom bojom u KPO.")
     else:
         print("Bez anomalija.")
 
@@ -552,4 +591,8 @@ if __name__ == "__main__":
         print(f"\n[GRESKA] {e}")
         import traceback
         traceback.print_exc()
+        try:
+            log_append(os.path.join(BASE_DIR, "kpo_log.txt"), f"GRESKA: {e}")
+        except Exception:
+            pass
         sys.exit(1)
