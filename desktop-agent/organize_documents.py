@@ -319,6 +319,9 @@ class DesktopHandler(FileSystemEventHandler):
     def handle(self, path: Path):
         if path.name in IGNORE_NAMES or path.suffix.lower() in IGNORE_SUFFIXES:
             return
+        if path.name.startswith("~$") or path.name.startswith("."):
+            # Word/Excel privremeni "lock" fajlovi (npr. ~$Ugovor.docx) i skriveni fajlovi
+            return
         if path.suffix.lower() not in SUPPORTED_EXT:
             return
         if not wait_until_stable(path, self.stability_seconds):
