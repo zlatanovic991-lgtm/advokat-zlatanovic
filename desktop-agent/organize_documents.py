@@ -83,19 +83,42 @@ def get_desktop_path() -> Path:
 
 SUPPORTED_EXT = {".pdf", ".docx", ".txt"}
 
+_CYR_SINGLE = (
+    "АБВГДЕЖЗИЈКЛМНОПРСТЋУФХЦЧШЂ"
+    "абвгдежзијклмнопрстћуфхцчшђ"
+)
+_LAT_SINGLE = (
+    "ABVGDEŽZIJKLMNOPRSTĆUFHCČŠĐ"
+    "abvgdežzijklmnoprstćufhcčšđ"
+)
+CYR_TO_LAT_TABLE = {ord(c): l for c, l in zip(_CYR_SINGLE, _LAT_SINGLE)}
+CYR_TO_LAT_TABLE.update({
+    ord("Љ"): "Lj", ord("љ"): "lj",
+    ord("Њ"): "Nj", ord("њ"): "nj",
+    ord("Џ"): "Dž", ord("џ"): "dž",
+})
+
+
+def cyrillic_to_latin(text: str) -> str:
+    """Prevodi srpsku cirilicu u latinicu; latinica i ostali karakteri
+    prolaze nepromenjeni, tako da radi i na mesovitom tekstu."""
+    return text.translate(CYR_TO_LAT_TABLE)
+
 
 def extract_text(path: Path) -> str:
     ext = path.suffix.lower()
+    text = ""
     try:
         if ext == ".pdf":
-            return _extract_text_pdf(path)
-        if ext == ".docx":
-            return _extract_text_docx(path)
-        if ext == ".txt":
-            return path.read_text(encoding="utf-8", errors="ignore")
+            text = _extract_text_pdf(path)
+        elif ext == ".docx":
+            text = _extract_text_docx(path)
+        elif ext == ".txt":
+            text = path.read_text(encoding="utf-8", errors="ignore")
     except Exception:
         logging.exception("Neuspesno citanje teksta iz %s", path.name)
-    return ""
+        return ""
+    return cyrillic_to_latin(text)
 
 
 def _extract_text_pdf(path: Path) -> str:
