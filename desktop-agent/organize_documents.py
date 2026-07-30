@@ -471,6 +471,12 @@ class DesktopHandler(FileSystemEventHandler):
                 )
             else:
                 self.process(path)
+        except PermissionError:
+            logging.warning(
+                "Fajl '%s' je trenutno otvoren u drugom programu (npr. Word) - preskačem ga, "
+                "obradiće se sledeći put kad se pokrenem.",
+                path.name,
+            )
         except Exception:
             logging.exception("Greska pri obradi fajla %s", path.name)
 
