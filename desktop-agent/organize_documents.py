@@ -152,9 +152,7 @@ def normalize(text: str) -> str:
     return "".join(ch for ch in text if not unicodedata.combining(ch))
 
 
-# Redosled je bitan - specificniji izrazi idu pre opstijih. "Punomocje" je
-# namerno pri dnu jer se ta rec cesto pominje samo kao prilog uz neki drugi
-# dokument (npr. "u prilogu punomocje"), pa ne sme da "pregazi" pravi naslov.
+# Redosled je bitan - specificniji izrazi idu pre opstijih.
 DOCUMENT_TYPES = [
     ("Odgovor na tužbu", ["odgovor na tuzbu"]),
     ("Protivtužba", ["protivtuzba"]),
@@ -181,6 +179,13 @@ DOCUMENT_TYPES = [
     ("Krivična prijava", ["krivicna prijava"]),
     ("Optužni predlog", ["optuzni predlog", "optuznica"]),
     ("Zahtev", ["zahtev za", "molba"]),
+]
+
+# "Punomocje" se cesto pominje samo kao prilog uz neki sasvim drugi dokument
+# (npr. "Prilozi: punomocje..."), pa sme da se prepozna SAMO iz naslova -
+# nikad kao "poslednja slamka" pretragom celog teksta, jer bi tada pogresno
+# "pregazio" stvarni (makar i neprepoznati) naslov dokumenta.
+HEADING_ONLY_DOCUMENT_TYPES = [
     ("Punomoćje", ["punomocje", "punomoc"]),
 ]
 
@@ -190,10 +195,11 @@ HEADING_CHARS = 400
 def classify_document_type(text: str):
     """Prvo trazi vrstu dokumenta u naslovu (pocetak teksta) - to je mnogo
     pouzdaniji signal nego bilo koje pominjanje kljucne reci u telu teksta
-    (npr. spisak priloga). Tek ako naslov ne da odgovor, gleda ceo tekst."""
+    (npr. spisak priloga). Tek ako naslov ne da odgovor, gleda ostatak teksta
+    (osim za HEADING_ONLY_DOCUMENT_TYPES, koji se prepoznaju samo iz naslova)."""
     norm = normalize(text)
     heading = norm[:HEADING_CHARS]
-    for name, keywords in DOCUMENT_TYPES:
+    for name, keywords in DOCUMENT_TYPES + HEADING_ONLY_DOCUMENT_TYPES:
         for kw in keywords:
             if kw in heading:
                 return name
@@ -329,9 +335,10 @@ def decide_destination(text: str, clients_root: Path, own_name: str = ""):
 ILLEGAL_CHARS = re.compile(r'[\\/:*?"<>|]')
 
 
-def build_filename(doc_type: str, client_folder_name: str, suffix: str) -> str:
-    date_str = time.strftime("%Y-%m-%d")
-    raw = f"{doc_type} - {client_folder_name} - {date_str}{suffix.lower()}"
+def build_filename(client_folder_name: str, original_name: str) -> str:
+    """Samo dodaje ime klijenta ispred postojeceg imena fajla - ostatak
+    (naziv, ekstenzija) ostaje neizmenjen."""
+    raw = f"{client_folder_name} - {original_name}"
     return ILLEGAL_CHARS.sub("", raw)
 
 
@@ -455,7 +462,7 @@ class DesktopHandler(FileSystemEventHandler):
         target_dir = self.clients_root / folder_name
         target_dir.mkdir(parents=True, exist_ok=True)
 
-        new_name = build_filename(doc_type, folder_name, path.suffix)
+        new_name = build_filename(folder_name, path.name)
         destination = unique_path(target_dir / new_name)
         shutil.move(str(path), str(destination))
 
