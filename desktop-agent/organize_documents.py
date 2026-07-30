@@ -476,12 +476,12 @@ class DesktopHandler(FileSystemEventHandler):
 def run_once(handler: "DesktopHandler", desktop: Path):
     """Obradi sve fajlove koji trenutno stoje na Desktop-u, pa se vrati (bez
     stalnog pracenja) - za pokretanje po rasporedu (npr. jednom nedeljno)."""
-    count = 0
-    for entry in sorted(desktop.iterdir()):
-        if entry.is_file():
-            handler.handle(entry)
-            count += 1
-    logging.info("Jednokratna provera zavrsena - pregledano fajlova: %d", count)
+    entries = [e for e in sorted(desktop.iterdir()) if e.is_file()]
+    logging.info("Pronadjeno fajlova na Desktop-u: %d", len(entries))
+    for i, entry in enumerate(entries, start=1):
+        logging.info("[%d/%d] Proveravam: '%s'", i, len(entries), entry.name)
+        handler.handle(entry)
+    logging.info("Jednokratna provera zavrsena - pregledano fajlova: %d", len(entries))
 
 
 def main():
