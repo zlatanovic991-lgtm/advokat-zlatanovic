@@ -498,10 +498,8 @@ class DesktopHandler(FileSystemEventHandler):
             self.move_to_review(path, reason)
             return
 
-        if not doc_type:
-            self.move_to_review(path, f"Klijent prepoznat kao '{folder_name}', ali vrsta dokumenta nije jasna")
-            return
-
+        # Klijent je siguran - ubacujemo kod njega bez obzira da li je vrsta
+        # dokumenta prepoznata (ime fajla se ionako ne oslanja na vrstu).
         target_dir = self.clients_root / folder_name
         target_dir.mkdir(parents=True, exist_ok=True)
 
@@ -510,7 +508,8 @@ class DesktopHandler(FileSystemEventHandler):
         shutil.move(str(path), str(destination))
 
         status = "NOVI KLIJENT - napravljen folder" if is_new else "postojeci klijent"
-        logging.info("Premesteno: '%s' -> '%s'  [%s]", path.name, destination, status)
+        vrsta = doc_type or "nije prepoznata"
+        logging.info("Premesteno: '%s' -> '%s'  [%s, vrsta: %s]", path.name, destination, status, vrsta)
         if is_new:
             logging.info("Proverite da li je redosled ime/prezime foldera '%s' ispravan.", folder_name)
 
