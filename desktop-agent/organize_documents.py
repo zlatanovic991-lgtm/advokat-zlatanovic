@@ -85,7 +85,7 @@ def get_desktop_path() -> Path:
 # Citanje teksta iz fajla
 # ---------------------------------------------------------------------------
 
-SUPPORTED_EXT = {".pdf", ".docx", ".txt"}
+SUPPORTED_EXT = {".pdf", ".docx", ".doc", ".xlsx", ".txt"}
 
 _CYR_SINGLE = (
     "АБВГДЕЖЗИЈКЛМНОПРСТЋУФХЦЧШЂ"
@@ -117,6 +117,10 @@ def extract_text(path: Path) -> str:
             text = _extract_text_pdf(path)
         elif ext == ".docx":
             text = _extract_text_docx(path)
+        elif ext == ".doc":
+            text = _extract_text_doc(path)
+        elif ext == ".xlsx":
+            text = _extract_text_xlsx(path)
         elif ext == ".txt":
             text = path.read_text(encoding="utf-8", errors="ignore")
     except Exception:
@@ -140,6 +144,39 @@ def _extract_text_docx(path: Path) -> str:
 
     document = docx.Document(path)
     return "\n".join(p.text for p in document.paragraphs)
+
+
+def _extract_text_doc(path: Path) -> str:
+    """Stari (binarni) Word format - cita se preko instaliranog Word-a,
+    pošto ne postoji dobra čisto-Python biblioteka za ovaj format."""
+    import win32com.client
+
+    word = win32com.client.DispatchEx("Word.Application")
+    word.Visible = False
+    try:
+        document = word.Documents.Open(str(path.resolve()), ReadOnly=True)
+        try:
+            return document.Content.Text
+        finally:
+            document.Close(False)
+    finally:
+        word.Quit()
+
+
+def _extract_text_xlsx(path: Path) -> str:
+    import openpyxl
+
+    workbook = openpyxl.load_workbook(path, read_only=True, data_only=True)
+    try:
+        parts = []
+        for sheet in workbook.worksheets:
+            for row in sheet.iter_rows(values_only=True):
+                for cell in row:
+                    if cell is not None:
+                        parts.append(str(cell))
+        return "\n".join(parts)
+    finally:
+        workbook.close()
 
 
 # ---------------------------------------------------------------------------
