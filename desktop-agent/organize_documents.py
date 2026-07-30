@@ -152,7 +152,9 @@ def normalize(text: str) -> str:
     return "".join(ch for ch in text if not unicodedata.combining(ch))
 
 
-# Redosled je bitan - specificniji izrazi idu pre opstijih.
+# Redosled je bitan - specificniji izrazi idu pre opstijih. "Punomocje" je
+# namerno pri dnu jer se ta rec cesto pominje samo kao prilog uz neki drugi
+# dokument (npr. "u prilogu punomocje"), pa ne sme da "pregazi" pravi naslov.
 DOCUMENT_TYPES = [
     ("Odgovor na tužbu", ["odgovor na tuzbu"]),
     ("Protivtužba", ["protivtuzba"]),
@@ -162,7 +164,8 @@ DOCUMENT_TYPES = [
     ("Presuda", ["presuda"]),
     ("Rešenje", ["resenje"]),
     ("Zaključak", ["zakljucak"]),
-    ("Punomoćje", ["punomocje", "punomoc"]),
+    ("Predlog za vraćanje u pređašnje stanje", ["vracanje u predjasnje stanje"]),
+    ("Predlog za izvršenje", ["predlog za izvrsenje"]),
     ("Ugovor o zakupu", ["ugovor o zakupu"]),
     ("Ugovor o radu", ["ugovor o radu"]),
     ("Ugovor o kupoprodaji", ["ugovor o kupoprodaji", "kupoprodajni ugovor"]),
@@ -170,7 +173,6 @@ DOCUMENT_TYPES = [
     ("Ugovor", ["ugovor"]),
     ("Sporazum", ["sporazum"]),
     ("Zapisnik", ["zapisnik"]),
-    ("Predlog za izvršenje", ["predlog za izvrsenje"]),
     ("Nalaz veštaka", ["nalaz i misljenje", "vestacenje"]),
     ("Opomena pred tužbu", ["opomena pred utuzenje", "opomena pred tuzbu"]),
     ("Račun", ["faktura", "racun broj", "predracun"]),
@@ -179,11 +181,22 @@ DOCUMENT_TYPES = [
     ("Krivična prijava", ["krivicna prijava"]),
     ("Optužni predlog", ["optuzni predlog", "optuznica"]),
     ("Zahtev", ["zahtev za", "molba"]),
+    ("Punomoćje", ["punomocje", "punomoc"]),
 ]
+
+HEADING_CHARS = 400
 
 
 def classify_document_type(text: str):
+    """Prvo trazi vrstu dokumenta u naslovu (pocetak teksta) - to je mnogo
+    pouzdaniji signal nego bilo koje pominjanje kljucne reci u telu teksta
+    (npr. spisak priloga). Tek ako naslov ne da odgovor, gleda ceo tekst."""
     norm = normalize(text)
+    heading = norm[:HEADING_CHARS]
+    for name, keywords in DOCUMENT_TYPES:
+        for kw in keywords:
+            if kw in heading:
+                return name
     for name, keywords in DOCUMENT_TYPES:
         for kw in keywords:
             if kw in norm:
