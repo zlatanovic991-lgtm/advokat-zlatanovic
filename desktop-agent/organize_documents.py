@@ -473,6 +473,17 @@ class DesktopHandler(FileSystemEventHandler):
         logging.info("SPORNO - premesteno u '_Za proveru': '%s' | Razlog: %s", path.name, reason)
 
 
+def run_once(handler: "DesktopHandler", desktop: Path):
+    """Obradi sve fajlove koji trenutno stoje na Desktop-u, pa se vrati (bez
+    stalnog pracenja) - za pokretanje po rasporedu (npr. jednom nedeljno)."""
+    count = 0
+    for entry in sorted(desktop.iterdir()):
+        if entry.is_file():
+            handler.handle(entry)
+            count += 1
+    logging.info("Jednokratna provera zavrsena - pregledano fajlova: %d", count)
+
+
 def main():
     clients_root, stability_seconds, own_name = load_config()
     desktop = get_desktop_path()
@@ -495,6 +506,11 @@ def main():
         sys.exit(1)
 
     handler = DesktopHandler(clients_root, stability_seconds, review_dir, own_name)
+
+    if "--jednom" in sys.argv:
+        run_once(handler, desktop)
+        return
+
     observer = Observer()
     observer.schedule(handler, str(desktop), recursive=False)
     observer.start()
