@@ -2797,7 +2797,7 @@ function renderKlijentDetail(){
     </div>
   </div>
   <div class="detail-tabs-content" id="dtab-predmeti">
-    <button class="btn btn-primary btn-sm" style="margin-bottom:14px" onclick="openAddModal()">+ Novi predmet za ovog klijenta</button>
+    <button class="btn btn-primary btn-sm" style="margin-bottom:14px" onclick="openPredmetModal(null,'${k.id}')">+ Novi predmet za ovog klijenta</button>
     ${predmeti.length===0?`<div class="empty"><h3>Nema predmeta</h3><p>Ovaj klijent nema predmeta</p></div>`:
       `<div class="table-wrap"><table>
         <thead><tr><th>Interni br.</th><th>Vrsta</th><th>Državni organ</th><th>Status</th><th>Ročište</th><th>Vrednost</th></tr></thead>
@@ -4031,7 +4031,7 @@ function pickFinKlijent(id){
   document.getElementById('fin_k_dropdown').style.display='none';
 }
 
-function openPredmetModal(id){
+function openPredmetModal(id,presetKlijentId){
   currentModal='predmet';editId=id||null;
   const p=id?db.predmeti.find(x=>x.id===id):null;
   openModal(id?'Uredi predmet':'Novi predmet',predmetModalBody(p));
@@ -4039,6 +4039,9 @@ function openPredmetModal(id){
   if(p&&p.klijentId){
     switchKlijentMode('postojeci');
     selectKlijent(p.klijentId);
+  } else if(!p&&presetKlijentId){
+    switchKlijentMode('postojeci');
+    selectKlijent(presetKlijentId);
   } else {
     switchKlijentMode('novi');
   }
