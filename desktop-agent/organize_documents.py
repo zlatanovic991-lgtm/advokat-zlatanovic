@@ -345,17 +345,31 @@ def _words_occur_close(norm_text: str, words, window: int = NAME_PROXIMITY_WINDO
     return False
 
 
+EXTRA_WORD_MIN_LEN = 4
+
+
 def match_existing_client(text: str, folders):
     """Poredi ime svakog postojeceg foldera (bez obzira na redosled reci u
     folderu) sa tekstom dokumenta - ime i prezime moraju biti blizu jedno
-    drugom, ne samo negde nezavisno pomenuti u dokumentu."""
+    drugom, ne samo negde nezavisno pomenuti u dokumentu.
+
+    Ako folder ima i dodatne reci preko imena i prezimena (npr. naziv firme,
+    "Cvetkovic Mirko Mikrolift"), dovoljno je da se ijedna dovoljno duga i
+    prepoznatljiva dodatna rec pojavi u dokumentu, i bez licnog imena."""
     norm = normalize(text)
     matches = []
     for folder in folders:
         parts = [normalize(p) for p in re.split(r"\s+", folder.name.strip()) if p]
         if len(parts) < 2:
             continue
-        if _words_occur_close(norm, parts):
+        primary, extra = parts[:2], parts[2:]
+        matched = _words_occur_close(norm, primary)
+        if not matched and extra:
+            matched = any(
+                len(word) >= EXTRA_WORD_MIN_LEN and re.search(rf"\b{re.escape(word)}\b", norm)
+                for word in extra
+            )
+        if matched:
             matches.append(folder)
     return matches
 
