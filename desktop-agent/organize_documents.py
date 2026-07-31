@@ -346,6 +346,25 @@ def _words_occur_close(norm_text: str, words, window: int = NAME_PROXIMITY_WINDO
 
 
 EXTRA_WORD_MIN_LEN = 4
+EXTRA_WORD_MIN_COUNT = 2
+
+# Poznata mesta i opsti pravni/administrativni izrazi - previse cesti da bi
+# sami po sebi pouzdano identifikovali konkretnog klijenta (npr. grad se
+# pomene u adresi/sudu, a nema veze sa tim da li je to bas taj klijent).
+# "extra" reci su uvek pojedinacne reci, pa razbijamo visereci nazive mesta
+# (npr. "Novi Sad") na pojedinacne reci pre poredjenja.
+_GENERIC_EXTRA_PHRASES = [
+    "beograd", "novi sad", "nis", "kragujevac", "subotica", "zrenjanin",
+    "pancevo", "cacak", "kraljevo", "novi pazar", "smederevo", "leskovac",
+    "uzice", "vranje", "sabac", "sombor", "pozarevac", "pirot", "zajecar",
+    "krusevac", "valjevo", "vrsac", "bor", "prokuplje", "sremska mitrovica",
+    "loznica", "kikinda", "indjija", "ruma", "stara pazova", "backa palanka",
+    "vrbas", "srbija", "republika", "opstina", "sud", "osnovni", "visi",
+    "apelacioni", "privredni", "prekrsajni", "ulica", "grad",
+]
+GENERIC_EXTRA_WORDS = {
+    normalize(w) for phrase in _GENERIC_EXTRA_PHRASES for w in phrase.split()
+}
 
 
 def match_existing_client(text: str, folders):
@@ -354,8 +373,9 @@ def match_existing_client(text: str, folders):
     drugom, ne samo negde nezavisno pomenuti u dokumentu.
 
     Ako folder ima i dodatne reci preko imena i prezimena (npr. naziv firme,
-    "Cvetkovic Mirko Mikrolift"), dovoljno je da se ijedna dovoljno duga i
-    prepoznatljiva dodatna rec pojavi u dokumentu, i bez licnog imena."""
+    "Cvetkovic Mirko Mikrolift"), dovoljno je da se ijedna dovoljno duga,
+    neuobicajena (nije poznato mesto/opsti izraz) i vise puta pomenuta
+    dodatna rec pojavi u dokumentu, i bez licnog imena."""
     norm = normalize(text)
     matches = []
     for folder in folders:
@@ -366,7 +386,9 @@ def match_existing_client(text: str, folders):
         matched = _words_occur_close(norm, primary)
         if not matched and extra:
             matched = any(
-                len(word) >= EXTRA_WORD_MIN_LEN and re.search(rf"\b{re.escape(word)}\b", norm)
+                len(word) >= EXTRA_WORD_MIN_LEN
+                and word not in GENERIC_EXTRA_WORDS
+                and len(re.findall(rf"\b{re.escape(word)}\b", norm)) >= EXTRA_WORD_MIN_COUNT
                 for word in extra
             )
         if matched:
