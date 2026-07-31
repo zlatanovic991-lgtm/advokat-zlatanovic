@@ -1568,13 +1568,17 @@ async function gAddRocisteEvent(predmet){
   if(!predmet.rociste){ showAlert('Predmet nema zakazano ročište.'); return; }
   const k = getKlijent(predmet.klijentId);
   const startDate = predmet.rociste; // YYYY-MM-DD
+  const startTime = /^\d{2}:\d{2}$/.test(predmet.rocisteVreme||'') ? predmet.rocisteVreme : '09:00';
+  const [startH,startM] = startTime.split(':').map(Number);
+  const endDt = new Date(2000,0,1,startH,startM+30);
+  const endTime = String(endDt.getHours()).padStart(2,'0')+':'+String(endDt.getMinutes()).padStart(2,'0');
   try{
     const event = {
       summary: `Ročište: ${predmet.interni} — ${k.ime}`,
       description: `Predmet: ${predmet.interni}\nKlijent: ${k.ime}\nSud: ${predmet.sud}\nProtivna strana: ${predmet.protivna||'—'}\nOpis: ${predmet.opis||'—'}`,
       location: predmet.sud,
-      start: { dateTime: `${startDate}T09:00:00`, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
-      end: { dateTime: `${startDate}T09:30:00`, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+      start: { dateTime: `${startDate}T${startTime}:00`, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+      end: { dateTime: `${startDate}T${endTime}:00`, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone },
       colorId: '11', // tomato red
       reminders: {
         useDefault: false,
@@ -2947,7 +2951,7 @@ function renderPredmetDetail(){
       <div class="detail-meta-item">🏛 Državni organ: <strong>${esc(p.sud)}</strong></div>
       ${p.protivna?`<div class="detail-meta-item">⚔ Protivna strana: <strong>${esc(p.protivna)}</strong></div>`:''}
       <div class="detail-meta-item">📅 Prijem: <strong>${fmtDate(p.datum)}</strong></div>
-      ${p.rociste?`<div class="detail-meta-item" style="${d!==null&&d<=7?'color:var(--warn)':''}">⚖ Ročište: <strong>${fmtDate(p.rociste)}${d!==null?` (za ${d} dana)`:''}</strong></div>`:''}
+      ${p.rociste?`<div class="detail-meta-item" style="${d!==null&&d<=7?'color:var(--warn)':''}">⚖ Ročište: <strong>${fmtDate(p.rociste)}${p.rocisteVreme?` u ${esc(p.rocisteVreme)}`:''}${d!==null?` (za ${d} dana)`:''}</strong></div>`:''}
       ${p.vrednost?`<div class="detail-meta-item">💰 Vrednost spora: <strong>${fmtMoney(p.vrednost)}</strong></div>`:''}
     </div>
     ${(()=>{
@@ -3883,6 +3887,7 @@ function predmetModalBody(p){
     <div class="form-group"><label>Sledeće ročište</label>${makeDateInput("f_rociste", p?.rociste||"", true)}</div>
   </div>
   <div class="form-row">
+    <div class="form-group"><label>Vreme ročišta</label><input id="f_rociste_vreme" value="${esc(p?.rocisteVreme||'')}" placeholder="HH:MM" maxlength="5" oninput="formatVremeInput(this)"></div>
     <div class="form-group"><label>Vrednost spora (RSD)</label><input type="number" id="f_vrednost" value="${p?.vrednost||''}" placeholder="0"></div>
   </div>
   <div class="form-group">
@@ -4486,14 +4491,14 @@ function saveModal(){
         opisDnevnikEdit.push({datum:opisDatumEdit, tekst:noviOpisTekst});
       }
       const opisZaPrikaz = opisDnevnikEdit.length>0 ? opisDnevnikEdit[opisDnevnikEdit.length-1].tekst : '';
-      Object.assign(p,{interni,klijentId,vrsta,sudski:v('f_sudski'),sud:v('f_sud'),protivna:v('f_protivna'),status:v('f_status'),datum:getDateVal('f_datum'),rociste:getDateVal('f_rociste'),vrednost:parseFloat(v('f_vrednost'))||0,opis:opisZaPrikaz,opisDnevnik:opisDnevnikEdit,napomena:v('f_napomena')});
+      Object.assign(p,{interni,klijentId,vrsta,sudski:v('f_sudski'),sud:v('f_sud'),protivna:v('f_protivna'),status:v('f_status'),datum:getDateVal('f_datum'),rociste:getDateVal('f_rociste'),rocisteVreme:v('f_rociste_vreme').trim(),vrednost:parseFloat(v('f_vrednost'))||0,opis:opisZaPrikaz,opisDnevnik:opisDnevnikEdit,napomena:v('f_napomena')});
     } else {
       const autoVal=genPredmetBroj(vrsta);
       const finalInterni=interni||autoVal;
       const noviOpisTekstN = v('f_opis').trim();
       const opisDatumNew = getDateVal('f_opis_datum') || new Date().toISOString().slice(0,10);
       const opisDnevnikNew = noviOpisTekstN ? [{datum:opisDatumNew, tekst:noviOpisTekstN}] : [];
-      db.predmeti.push({id:genId('P'),interni:finalInterni,sudski:v('f_sudski'),klijentId,vrsta,sud:v('f_sud'),protivna:v('f_protivna'),status:v('f_status'),datum:getDateVal('f_datum'),rociste:getDateVal('f_rociste'),vrednost:parseFloat(v('f_vrednost'))||0,opis:noviOpisTekstN,opisDnevnik:opisDnevnikNew,napomena:v('f_napomena')});
+      db.predmeti.push({id:genId('P'),interni:finalInterni,sudski:v('f_sudski'),klijentId,vrsta,sud:v('f_sud'),protivna:v('f_protivna'),status:v('f_status'),datum:getDateVal('f_datum'),rociste:getDateVal('f_rociste'),rocisteVreme:v('f_rociste_vreme').trim(),vrednost:parseFloat(v('f_vrednost'))||0,opis:noviOpisTekstN,opisDnevnik:opisDnevnikNew,napomena:v('f_napomena')});
     }
   } else if(currentModal==='aktivnost'){
     const predmetId=v('f_predmet');const opis=v('f_opis');
