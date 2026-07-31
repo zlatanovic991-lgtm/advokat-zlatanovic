@@ -374,7 +374,13 @@ ILLEGAL_CHARS = re.compile(r'[\\/:*?"<>|]')
 
 def build_filename(client_folder_name: str, original_name: str) -> str:
     """Samo dodaje ime klijenta ispred postojeceg imena fajla - ostatak
-    (naziv, ekstenzija) ostaje neizmenjen."""
+    (naziv, ekstenzija) ostaje neizmenjen. Ako ime fajla vec pocinje imenom
+    klijenta (u bilo kom redosledu, cirilica/latinica), ne duplira ga."""
+    parts = [normalize(p) for p in re.split(r"\s+", client_folder_name.strip()) if p]
+    heading = normalize(cyrillic_to_latin(original_name))[:60]
+    already_present = bool(parts) and all(re.search(rf"\b{re.escape(p)}\b", heading) for p in parts)
+    if already_present:
+        return ILLEGAL_CHARS.sub("", original_name)
     raw = f"{client_folder_name} - {original_name}"
     return ILLEGAL_CHARS.sub("", raw)
 
