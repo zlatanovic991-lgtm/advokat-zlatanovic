@@ -346,7 +346,6 @@ def _words_occur_close(norm_text: str, words, window: int = NAME_PROXIMITY_WINDO
 
 
 EXTRA_WORD_MIN_LEN = 4
-EXTRA_WORD_MIN_COUNT = 2
 
 # Poznata mesta i opsti pravni/administrativni izrazi - previse cesti da bi
 # sami po sebi pouzdano identifikovali konkretnog klijenta (npr. grad se
@@ -374,8 +373,8 @@ def match_existing_client(text: str, folders):
 
     Ako folder ima i dodatne reci preko imena i prezimena (npr. naziv firme,
     "Cvetkovic Mirko Mikrolift"), dovoljno je da se ijedna dovoljno duga,
-    neuobicajena (nije poznato mesto/opsti izraz) i vise puta pomenuta
-    dodatna rec pojavi u dokumentu, i bez licnog imena."""
+    neuobicajena (nije poznato mesto/opsti izraz) dodatna rec pojavi u
+    dokumentu, i bez licnog imena."""
     norm = normalize(text)
     matches = []
     for folder in folders:
@@ -388,7 +387,7 @@ def match_existing_client(text: str, folders):
             matched = any(
                 len(word) >= EXTRA_WORD_MIN_LEN
                 and word not in GENERIC_EXTRA_WORDS
-                and len(re.findall(rf"\b{re.escape(word)}\b", norm)) >= EXTRA_WORD_MIN_COUNT
+                and re.search(rf"\b{re.escape(word)}\b", norm)
                 for word in extra
             )
         if matched:
