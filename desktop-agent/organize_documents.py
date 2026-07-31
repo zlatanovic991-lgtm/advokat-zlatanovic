@@ -86,6 +86,7 @@ def get_desktop_path() -> Path:
 # ---------------------------------------------------------------------------
 
 SUPPORTED_EXT = {".pdf", ".docx", ".doc", ".xlsx", ".txt"}
+IMAGE_EXT = {".jpg", ".jpeg", ".png", ".tiff", ".tif", ".bmp", ".heic", ".gif"}
 
 _CYR_SINGLE = (
     "АБВГДЕЖЗИЈКЛМНОПРСТЋУФХЦЧШЂ"
@@ -123,20 +124,67 @@ def extract_text(path: Path) -> str:
             text = _extract_text_xlsx(path)
         elif ext == ".txt":
             text = path.read_text(encoding="utf-8", errors="ignore")
+        elif ext in IMAGE_EXT:
+            text = _extract_text_image(path)
     except Exception:
         logging.exception("Neuspesno citanje teksta iz %s", path.name)
         return ""
     return cyrillic_to_latin(text)
 
 
+TESSERACT_DEFAULT_PATHS = [
+    r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+    r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+]
+# "srp_latn" = srpski latinicom, "srp" = srpski cirilicom - probamo redom,
+# jer ne znamo unapred koji je jezicki paket instaliran.
+OCR_LANGS = ["srp_latn+eng", "srp+eng", "eng"]
+OCR_MAX_PDF_PAGES = 5
+
+
+def _ocr_image(image) -> str:
+    import pytesseract
+
+    if not shutil.which("tesseract"):
+        for candidate in TESSERACT_DEFAULT_PATHS:
+            if Path(candidate).exists():
+                pytesseract.pytesseract.tesseract_cmd = candidate
+                break
+
+    for lang in OCR_LANGS:
+        try:
+            return pytesseract.image_to_string(image, lang=lang)
+        except Exception:
+            continue
+    return ""
+
+
+def _extract_text_image(path: Path) -> str:
+    from PIL import Image
+
+    with Image.open(path) as image:
+        return _ocr_image(image)
+
+
 def _extract_text_pdf(path: Path) -> str:
     import pdfplumber
 
-    parts = []
     with pdfplumber.open(path) as pdf:
-        for page in pdf.pages[:15]:
-            parts.append(page.extract_text() or "")
-    return "\n".join(parts)
+        pages = pdf.pages[:15]
+        parts = [page.extract_text() or "" for page in pages]
+        text = "\n".join(parts)
+        if text.strip():
+            return text
+
+        # Verovatno skeniran PDF bez teksta - probaj OCR na prvih par strana.
+        ocr_parts = []
+        for page in pages[:OCR_MAX_PDF_PAGES]:
+            try:
+                image = page.to_image(resolution=200).original
+                ocr_parts.append(_ocr_image(image))
+            except Exception:
+                logging.exception("OCR neuspesan za stranu u %s", path.name)
+        return "\n".join(ocr_parts)
 
 
 def _extract_text_docx(path: Path) -> str:
@@ -434,7 +482,6 @@ def wait_until_stable(path: Path, wait_seconds: int, timeout: int = 60) -> bool:
 
 IGNORE_SUFFIXES = {".tmp", ".crdownload", ".partial", ".download", ".part"}
 IGNORE_NAMES = {"desktop.ini", "thumbs.db"}
-IMAGE_EXT = {".jpg", ".jpeg", ".png", ".tiff", ".tif", ".bmp", ".heic", ".gif"}
 
 
 class DesktopHandler(FileSystemEventHandler):
@@ -469,14 +516,7 @@ class DesktopHandler(FileSystemEventHandler):
             return
 
         try:
-            if ext in IMAGE_EXT:
-                self.move_to_review(
-                    path,
-                    "Slika (" + ext + ") - agent trenutno ne cita tekst sa slika (nema OCR ugradjen). "
-                    "Prevucite je rucno u odgovarajuci folder klijenta.",
-                )
-            else:
-                self.process(path)
+            self.process(path)
         except PermissionError:
             logging.warning(
                 "Fajl '%s' je trenutno otvoren u drugom programu (npr. Word) - preskačem ga, "
