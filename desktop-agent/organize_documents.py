@@ -533,8 +533,13 @@ class DesktopHandler(FileSystemEventHandler):
             self.move_to_review(path, "Nije moguce procitati tekst iz fajla (mozda je skeniran bez teksta)")
             return
 
-        doc_type = classify_document_type(text)
-        matching_text = strip_own_name(text, self.own_name)
+        # Naziv fajla cesto vec sadrzi ime klijenta i/ili vrstu dokumenta
+        # (narocito korisno kad je OCR tekst slabog kvaliteta) - dodajemo ga
+        # ispred, kao deo "naslova" koji se pretrazuje.
+        combined_text = cyrillic_to_latin(path.stem) + "\n" + text
+
+        doc_type = classify_document_type(combined_text)
+        matching_text = strip_own_name(combined_text, self.own_name)
         folder_name, is_new, note = decide_destination(matching_text, self.clients_root, self.own_name)
 
         if folder_name is None:
