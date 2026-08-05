@@ -374,22 +374,39 @@ def match_existing_client(text: str, folders):
     Ako folder ima i dodatne reci preko imena i prezimena (npr. naziv firme,
     "Cvetkovic Mirko Mikrolift"), dovoljno je da se ijedna dovoljno duga,
     neuobicajena (nije poznato mesto/opsti izraz) dodatna rec pojavi u
-    dokumentu, i bez licnog imena."""
+    dokumentu, i bez licnog imena - OSIM kad postoji drugi folder sa istim
+    imenom i prezimenom (npr. dva razlicita klijenta "Jovanovic Darko",
+    razlikovana dodatnom recju kao "izdrzavanje"): tada ta dodatna rec sluzi
+    SAMO za razlikovanje medju njima i mora biti blizu imena, ne bilo gde."""
     norm = normalize(text)
+    all_parts = [
+        [normalize(p) for p in re.split(r"\s+", f.name.strip()) if p]
+        for f in folders
+    ]
+    primary_counts: dict = {}
+    for parts in all_parts:
+        if len(parts) >= 2:
+            key = tuple(sorted(parts[:2]))
+            primary_counts[key] = primary_counts.get(key, 0) + 1
+
     matches = []
-    for folder in folders:
-        parts = [normalize(p) for p in re.split(r"\s+", folder.name.strip()) if p]
+    for folder, parts in zip(folders, all_parts):
         if len(parts) < 2:
             continue
         primary, extra = parts[:2], parts[2:]
-        matched = _words_occur_close(norm, primary)
-        if not matched and extra:
-            matched = any(
-                len(word) >= EXTRA_WORD_MIN_LEN
-                and word not in GENERIC_EXTRA_WORDS
-                and re.search(rf"\b{re.escape(word)}\b", norm)
-                for word in extra
-            )
+        has_name_collision = primary_counts.get(tuple(sorted(primary)), 0) > 1
+
+        if has_name_collision:
+            matched = _words_occur_close(norm, parts)
+        else:
+            matched = _words_occur_close(norm, primary)
+            if not matched and extra:
+                matched = any(
+                    len(word) >= EXTRA_WORD_MIN_LEN
+                    and word not in GENERIC_EXTRA_WORDS
+                    and re.search(rf"\b{re.escape(word)}\b", norm)
+                    for word in extra
+                )
         if matched:
             matches.append(folder)
     return matches
