@@ -3746,7 +3746,7 @@ function selectTipBtn(btn){
     predmetRow.style.display='none';
     klijentRow.style.display='';
     nazivLabel.textContent='Naziv (opciono)';
-    setTimeout(()=>{buildKlijentSearchSelect('m_ev_klijent_ss','m_ev_klijent','');},10);
+    setTimeout(()=>{buildKlijentSearchSelect('m_ev_klijent_ss','m_ev_klijent','',true);},10);
   } else {
     predmetRow.style.display='';
     klijentRow.style.display='none';
@@ -4376,6 +4376,7 @@ function saveModal(){
     const vreme = document.getElementById('m_ev_vreme').value.trim();
     const predmetId = document.getElementById('m_ev_predmet')?.value || '';
     const klijentId = document.getElementById('m_ev_klijent')?.value || '';
+    const klijentSlobodno = klijentId ? '' : (document.getElementById('m_ev_klijent_ss_input')?.value||'').trim();
     if(!datum){ showAlert('Unesite datum.'); return; }
     const parts = datum.split('/');
     if(parts.length!==3||parts[2].length!==4){ showAlert('Format datuma: DD/MM/YYYY'); return; }
@@ -4384,7 +4385,7 @@ function saveModal(){
     const k = p ? getKlijent(p.klijentId) : (klijentId ? getKlijent(klijentId) : null);
     // Privatno: naziv obavezan, nema predmeta
     if(tip==='Privatno' && !naziv){ showAlert('Unesite naziv privatnog događaja.'); return; }
-    const finalNaziv = naziv || (p ? `${tip}: ${p.interni} — ${k?k.ime:''}` : (k ? `${tip}: ${k.ime}` : tip));
+    const finalNaziv = naziv || (p ? `${tip}: ${p.interni} — ${k?k.ime:''}` : (k ? `${tip}: ${k.ime}` : (klijentSlobodno ? `${tip}: ${klijentSlobodno}` : tip)));
     _modalSaving=true;
     const _saveBtn=document.getElementById('modalSaveBtn');
     if(_saveBtn){_saveBtn.disabled=true;_saveBtn.style.opacity='0.6';_saveBtn.style.cursor='default';}
@@ -4410,6 +4411,7 @@ function saveModal(){
           ev = { summary:finalNaziv, start:{dateTime:startStr,timeZone:tz}, end:{dateTime:endStr,timeZone:tz}, colorId:colorMap[tip]||'7' };
         }
         if(p) ev.description = `Predmet: ${p.interni}\nKlijent: ${k?k.ime:''}\nSud: ${p.sud||''}`;
+        else if(klijentSlobodno) ev.description = `Klijent: ${klijentSlobodno}`;
         const resp = await gapi.client.calendar.events.insert({ calendarId:'primary', resource:ev });
         const links = gGetLinks();
         if(p){
@@ -4960,14 +4962,14 @@ function parseVreme(vreme){
 }
 
 // ========== SEARCHABLE SELECT ==========
-function buildSearchSelect(wrapperId,hiddenId,options,placeholder){
+function buildSearchSelect(wrapperId,hiddenId,options,placeholder,freeText){
   const wrap=document.getElementById(wrapperId);
   if(!wrap) return;
   const hidden=document.getElementById(hiddenId);
   const currentVal=hidden?hidden.value:'';
   const currentLabel=currentVal?(options.find(o=>o.value===currentVal)?.label||''):'';
   wrap.innerHTML=`<input type="text" class="ss-input" id="${wrapperId}_input" placeholder="${placeholder||'Pretraži...'}" value="${currentLabel}" autocomplete="off" onkeydown="ssKeydown(event,'${wrapperId}')" oninput="ssFilter('${wrapperId}')"><div class="ss-dropdown" id="${wrapperId}_dd"></div>`;
-  wrap._ssOptions=options; wrap._ssHiddenId=hiddenId;
+  wrap._ssOptions=options; wrap._ssHiddenId=hiddenId; wrap._ssFreeText=!!freeText;
   if(wrap._ssClickHandler) document.removeEventListener('mousedown',wrap._ssClickHandler);
   wrap._ssClickHandler=function(e){if(!document.getElementById(wrapperId)?.contains(e.target)){ssClose(wrapperId);}};
   document.addEventListener('mousedown',wrap._ssClickHandler);
@@ -4997,7 +4999,8 @@ function ssClose(wrapperId){
   const hidden=document.getElementById(wrap._ssHiddenId);
   const currentVal=hidden?hidden.value:'';
   const currentLabel=currentVal?((wrap._ssOptions||[]).find(o=>o.value===currentVal)?.label||''):'';
-  const input=document.getElementById(wrapperId+'_input');if(input)input.value=currentLabel;
+  const input=document.getElementById(wrapperId+'_input');
+  if(input && !(wrap._ssFreeText && !currentVal && input.value.trim())) input.value=currentLabel;
 }
 function ssPick(wrapperId,value,label){
   const wrap=document.getElementById(wrapperId);if(!wrap)return;
@@ -5022,10 +5025,10 @@ function buildPredmetSearchSelect(wrapperId,hiddenId,currentVal){
   const options=[{value:'',label:'— Bez predmeta —'}].concat(db.predmeti.filter(p=>p.status!=='arhiviran').map(p=>{const k=getKlijent(p.klijentId);return{value:p.id,label:p.interni+' — '+k.ime+(p.protivna?' vs. '+p.protivna:'')};}));
   buildSearchSelect(wrapperId,hiddenId,options,'Ukucajte ime ili broj predmeta...');
 }
-function buildKlijentSearchSelect(wrapperId,hiddenId,currentVal){
+function buildKlijentSearchSelect(wrapperId,hiddenId,currentVal,freeText){
   const hidden=document.getElementById(hiddenId);if(hidden&&currentVal!==undefined)hidden.value=currentVal;
   const options=[{value:'',label:'— Bez klijenta —'}].concat(db.klijenti.map(k=>{const extra=k.jmbg?(' · '+k.jmbg):k.pib?(' · PIB:'+k.pib):'';return{value:k.id,label:k.ime+extra};}));
-  buildSearchSelect(wrapperId,hiddenId,options,'Ukucajte ime klijenta...');
+  buildSearchSelect(wrapperId,hiddenId,options,'Ukucajte ime klijenta ili unesite novog (ime, telefon)...',freeText);
 }
 
 function dodajStavku(){
