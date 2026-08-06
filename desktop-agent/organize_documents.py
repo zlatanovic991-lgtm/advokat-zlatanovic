@@ -159,11 +159,19 @@ def _ocr_image(image) -> str:
     return ""
 
 
+def _preprocess_for_ocr(image):
+    """Crno-belo + pojacan kontrast - cesto znatno pomaze OCR-u kod fotografija
+    (za razliku od pravih skenova, koji obicno vec imaju cist kontrast)."""
+    from PIL import ImageOps
+
+    return ImageOps.autocontrast(ImageOps.grayscale(image))
+
+
 def _extract_text_image(path: Path) -> str:
     from PIL import Image
 
     with Image.open(path) as image:
-        return _ocr_image(image)
+        return _ocr_image(_preprocess_for_ocr(image))
 
 
 def _extract_text_pdf(path: Path) -> str:
@@ -181,7 +189,7 @@ def _extract_text_pdf(path: Path) -> str:
         for page in pages[:OCR_MAX_PDF_PAGES]:
             try:
                 image = page.to_image(resolution=200).original
-                ocr_parts.append(_ocr_image(image))
+                ocr_parts.append(_ocr_image(_preprocess_for_ocr(image)))
             except Exception:
                 logging.exception("OCR neuspesan za stranu u %s", path.name)
         return "\n".join(ocr_parts)
