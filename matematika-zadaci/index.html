@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Zekina matematička igraonica</title>
+<style>
+  :root {
+    --bg: #FFF7EC;
+    --card: #FFFFFF;
+    --ink: #33324A;
+    --muted: #8A8AA3;
+    --good: #2EC4B6;
+    --bad: #FF5C7A;
+    --star: #FFC53D;
+    --radius: 26px;
+    --shadow: 0 10px 24px rgba(51,50,74,0.12);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    height: 100%;
+    font-family: 'Baloo 2', 'Comic Sans MS', 'Trebuchet MS', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+  }
+  #app {
+    max-width: 720px;
+    margin: 0 auto;
+    min-height: 100%;
+    padding: 18px 18px 40px;
+    display: flex;
+    flex-direction: column;
+  }
+  .screen { display: none; flex-direction: column; flex: 1; animation: fadeIn .35s ease; }
+  .screen.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: translateY(0);} }
+
+  /* ---------- Header ---------- */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 22px; }
+  .brand .mascot { font-size: 34px; }
+  .star-pill {
+    display: flex; align-items: center; gap: 6px;
+    background: #fff; border-radius: 999px; padding: 8px 14px;
+    box-shadow: var(--shadow); font-weight: 800; font-size: 18px;
+  }
+  .icon-btn {
+    border: none; background: #fff; border-radius: 999px;
+    width: 44px; height: 44px; font-size: 20px; box-shadow: var(--shadow);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ---------- Start screen ---------- */
+  #screen-start { align-items: center; justify-content: center; text-align: center; gap: 18px; }
+  #screen-start .mascot-big { font-size: 96px; }
+  #screen-start h1 { font-size: 30px; margin: 0; line-height: 1.25; }
+  #screen-start p { color: var(--muted); font-size: 18px; margin: 0; max-width: 420px; }
+  .big-btn {
+    border: none; cursor: pointer; font-family: inherit;
+    background: linear-gradient(180deg,#FFC53D,#FFA93D);
+    color: #4A3200; font-weight: 800; font-size: 22px;
+    padding: 18px 40px; border-radius: 999px;
+    box-shadow: 0 8px 0 #E08A00, var(--shadow);
+    transition: transform .06s ease;
+  }
+  .big-btn:active { transform: translateY(6px); box-shadow: 0 2px 0 #E08A00; }
+
+  /* ---------- Category grid ---------- */
+  .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
+  @media (max-width: 480px) { .cat-grid { grid-template-columns: 1fr; } }
+  .cat-card {
+    border: none; cursor: pointer; text-align: left; font-family: inherit;
+    border-radius: var(--radius); padding: 18px; color: #fff;
+    box-shadow: var(--shadow); position: relative; overflow: hidden;
+    min-height: 130px; display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .cat-card .cat-icon { font-size: 40px; }
+  .cat-card .cat-name { font-size: 19px; font-weight: 800; margin-top: 6px; }
+  .cat-card .cat-meta { font-size: 14px; opacity: .92; font-weight: 600; }
+  .cat-card:active { transform: scale(0.98); }
+
+  /* ---------- Quiz screen ---------- */
+  .quiz-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .progress-track {
+    flex: 1; height: 14px; background: #EFE7D8; border-radius: 999px; overflow: hidden;
+  }
+  .progress-fill { height: 100%; background: var(--good); border-radius: 999px; transition: width .3s ease; }
+
+  .question-card {
+    background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 22px; margin-top: 4px;
+  }
+  .question-text { font-size: 21px; font-weight: 700; line-height: 1.4; }
+  .question-source { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  .mini-table { border-collapse: collapse; margin: 16px auto 4px; font-size: 18px; font-weight: 700; }
+  .mini-table th, .mini-table td {
+    border: 2px solid #E4DCC9; width: 46px; height: 46px; text-align: center;
+  }
+  .mini-table th { background: #FFF1CE; }
+  .mini-table td.unknown { background: #FFE1E8; color: var(--bad); font-size: 22px; }
+
+  .eq-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 18px; margin: 14px 0 4px; font-size: 18px; font-weight: 700; text-align: center; }
+  @media (max-width: 420px) { .eq-list { grid-template-columns: 1fr; } }
+  .eq-list div.unknown-eq { color: var(--bad); }
+
+  .options { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+  .opt-btn {
+    font-family: inherit; font-size: 19px; font-weight: 700;
+    border: 3px solid #EFE7D8; background: #fff; color: var(--ink);
+    border-radius: 18px; padding: 16px 18px; text-align: left; cursor: pointer;
+    transition: transform .06s ease, background .15s ease, border-color .15s ease;
+  }
+  .opt-btn:active { transform: scale(0.98); }
+  .opt-btn.correct { background: #E4FBF8; border-color: var(--good); color: #147D73; }
+  .opt-btn.wrong { background: #FFE9ED; border-color: var(--bad); color: #B31E3D; }
+  .opt-btn[disabled] { cursor: default; }
+
+  .feedback-banner {
+    margin-top: 16px; border-radius: 18px; padding: 14px 16px;
+    font-weight: 800; font-size: 18px; display: none; align-items: center; gap: 10px;
+  }
+  .feedback-banner.show { display: flex; }
+  .feedback-banner.good { background: #E4FBF8; color: #147D73; }
+  .feedback-banner.bad { background: #FFE9ED; color: #B31E3D; }
+  .feedback-banner .fb-emoji { font-size: 28px; }
+  .feedback-banner .fb-explain { font-weight: 600; font-size: 15px; display: block; margin-top: 2px; }
+
+  .next-btn {
+    margin-top: 16px; align-self: flex-end;
+    border: none; cursor: pointer; font-family: inherit;
+    background: var(--ink); color: #fff; font-weight: 800; font-size: 17px;
+    padding: 12px 26px; border-radius: 999px; display: none;
+  }
+  .next-btn.show { display: inline-flex; }
+
+  /* ---------- Summary screen ---------- */
+  #screen-summary { align-items: center; justify-content: center; text-align: center; gap: 14px; }
+  #screen-summary .big-emoji { font-size: 80px; }
+  .stars-row { font-size: 40px; letter-spacing: 6px; }
+  .summary-stats { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 28px; font-size: 17px; font-weight: 700; }
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .secondary-btn {
+    font-family: inherit; border: 3px solid #EFE7D8; background: #fff; color: var(--ink);
+    font-weight: 800; font-size: 16px; padding: 12px 22px; border-radius: 999px; cursor: pointer;
+  }
+
+  /* ---------- Parent panel ---------- */
+  #screen-parent h2 { margin-top: 0; }
+  .parent-table-wrap { width: 100%; overflow-x: auto; border-radius: 18px; box-shadow: var(--shadow); }
+  .parent-table { width: 100%; min-width: 480px; border-collapse: collapse; background: #fff; border-radius: 18px; overflow: hidden; }
+  .parent-table th, .parent-table td { padding: 12px 10px; text-align: left; font-size: 14px; white-space: nowrap; }
+  .parent-table th { background: #F1EAD9; }
+  .parent-table tr:nth-child(even) td { background: #FBF7EE; }
+  .parent-note { color: var(--muted); font-size: 13px; margin-top: 14px; }
+  .danger-btn {
+    margin-top: 18px; border: none; background: #FFE9ED; color: #B31E3D; font-weight: 800;
+    font-family: inherit; padding: 12px 20px; border-radius: 14px; cursor: pointer; font-size: 14px;
+  }
+  .back-row { margin-bottom: 14px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ===================== START ===================== -->
+  <div class="screen active" id="screen-start">
+    <div class="mascot-big">🐰</div>
+    <h1>Zekina<br>matematička igraonica</h1>
+    <p>Reši zadatke, skupljaj zvezdice i pomozi Zeki da nauči da broji!</p>
+    <button class="big-btn" id="btn-start">Idemo! ▶</button>
+  </div>
+
+  <!-- ===================== CATEGORY SELECT ===================== -->
+  <div class="screen" id="screen-categories">
+    <div class="topbar">
+      <div class="brand"><span class="mascot">🐰</span> Izaberi igru</div>
+      <div class="star-pill">⭐ <span id="total-stars">0</span></div>
+    </div>
+    <div class="cat-grid" id="cat-grid"></div>
+    <div style="flex:1"></div>
+    <button class="icon-btn" id="btn-parent" title="Za roditelje" style="align-self:flex-end; margin-top:14px;">👪</button>
+  </div>
+
+  <!-- ===================== QUIZ ===================== -->
+  <div class="screen" id="screen-quiz">
+    <div class="back-row">
+      <button class="icon-btn" id="btn-quiz-back">←</button>
+    </div>
+    <div class="quiz-top">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <div class="star-pill">⭐ <span id="quiz-stars">0</span></div>
+    </div>
+    <div class="question-card">
+      <div class="question-text" id="question-text"></div>
+      <div id="question-extra"></div>
+      <div class="options" id="options"></div>
+      <div class="feedback-banner" id="feedback">
+        <span class="fb-emoji" id="fb-emoji">🎉</span>
+        <span>
+          <span id="fb-text"></span>
+          <span class="fb-explain" id="fb-explain"></span>
+        </span>
+      </div>
+      <button class="next-btn" id="btn-next">Dalje →</button>
+    </div>
+  </div>
+
+  <!-- ===================== SUMMARY ===================== -->
+  <div class="screen" id="screen-summary">
+    <div class="big-emoji" id="summary-emoji">🏆</div>
+    <h1 id="summary-title">Bravo!</h1>
+    <div class="stars-row" id="summary-stars"></div>
+    <div class="summary-stats" id="summary-stats"></div>
+    <div class="btn-row">
+      <button class="big-btn" id="btn-replay">Igraj ponovo 🔁</button>
+      <button class="secondary-btn" id="btn-to-categories">Sve igre</button>
+    </div>
+  </div>
+
+  <!-- ===================== PARENT PANEL ===================== -->
+  <div class="screen" id="screen-parent">
+    <div class="back-row">
+      <button class="icon-btn" id="btn-parent-back">←</button>
+    </div>
+    <h2>👪 Pregled napretka</h2>
+    <div class="parent-table-wrap"><table class="parent-table" id="parent-table"></table></div>
+    <p class="parent-note">Podaci se čuvaju samo na ovom uređaju (u ovom browseru), nema interneta ni servera.</p>
+    <button class="danger-btn" id="btn-reset">Resetuj sav napredak</button>
+  </div>
+
+</div>
+
+<script src="zadaci.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  const STORAGE_KEY = "zekina_igraonica_v1";
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch (e) {}
+    return { stars: {}, stats: {} };
+  }
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  const state = loadState();
+
+  function ensureCat(catId) {
+    if (!state.stars[catId]) state.stars[catId] = 0;
+    if (!state.stats[catId]) state.stats[catId] = { tacno: 0, ukupno: 0, poslednji: null };
+  }
+  ZADACI_DB.kategorije.forEach(k => ensureCat(k.id));
+
+  function totalStars() {
+    return Object.values(state.stars).reduce((a, b) => a + b, 0);
+  }
+
+  // ---------------- Sound (Web Audio, no files needed) ----------------
+  let audioCtx = null;
+  function getCtx() {
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    return audioCtx;
+  }
+  function tone(freq, start, dur, type, gainPeak) {
+    const ctx = getCtx();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type || "sine";
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, ctx.currentTime + start);
+    gain.gain.linearRampToValueAtTime(gainPeak || 0.15, ctx.currentTime + start + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + dur);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(ctx.currentTime + start);
+    osc.stop(ctx.currentTime + start + dur + 0.05);
+  }
+  function playCorrect() {
+    tone(523.25, 0, 0.14, "triangle");
+    tone(659.25, 0.12, 0.14, "triangle");
+    tone(783.99, 0.24, 0.22, "triangle");
+  }
+  function playWrong() {
+    tone(220, 0, 0.18, "sawtooth", 0.08);
+    tone(180, 0.14, 0.22, "sawtooth", 0.08);
+  }
+
+  // ---------------- Navigation ----------------
+  const screens = {};
+  document.querySelectorAll(".screen").forEach(s => screens[s.id] = s);
+  function show(id) {
+    Object.values(screens).forEach(s => s.classList.remove("active"));
+    screens[id].classList.add("active");
+    window.scrollTo(0, 0);
+  }
+
+  document.getElementById("btn-start").addEventListener("click", () => {
+    renderCategories();
+    show("screen-categories");
+  });
+  document.getElementById("btn-parent").addEventListener("click", () => {
+    renderParent();
+    show("screen-parent");
+  });
+  document.getElementById("btn-parent-back").addEventListener("click", () => show("screen-categories"));
+  document.getElementById("btn-quiz-back").addEventListener("click", () => {
+    renderCategories();
+    show("screen-categories");
+  });
+  document.getElementById("btn-to-categories").addEventListener("click", () => {
+    renderCategories();
+    show("screen-categories");
+  });
+
+  // ---------------- Category screen ----------------
+  function renderCategories() {
+    document.getElementById("total-stars").textContent = totalStars();
+    const grid = document.getElementById("cat-grid");
+    grid.innerHTML = "";
+    ZADACI_DB.kategorije.forEach(cat => {
+      const zad = ZADACI_DB.zadaci.filter(z => z.kategorija === cat.id);
+      const stats = state.stats[cat.id];
+      const btn = document.createElement("button");
+      btn.className = "cat-card";
+      btn.style.background = cat.boja;
+      const pct = stats.ukupno ? Math.round((stats.tacno / stats.ukupno) * 100) : null;
+      btn.innerHTML = `
+        <div class="cat-icon">${cat.ikonica}</div>
+        <div>
+          <div class="cat-name">${cat.naziv}</div>
+          <div class="cat-meta">${zad.length} zadataka ${pct !== null ? "· " + pct + "% tačno" : ""}</div>
+          <div class="cat-meta">⭐ ${state.stars[cat.id] || 0}</div>
+        </div>`;
+      btn.addEventListener("click", () => startQuiz(cat.id));
+      grid.appendChild(btn);
+    });
+  }
+
+  // ---------------- Quiz logic ----------------
+  let quiz = null; // { catId, items, index, correctCount, starsEarned }
+
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function startQuiz(catId) {
+    const items = shuffle(ZADACI_DB.zadaci.filter(z => z.kategorija === catId));
+    quiz = { catId, items, index: 0, correctCount: 0, starsEarned: 0 };
+    document.getElementById("quiz-stars").textContent = state.stars[catId] || 0;
+    renderQuestion();
+    show("screen-quiz");
+  }
+
+  function renderQuestion() {
+    const z = quiz.items[quiz.index];
+    document.getElementById("progress-fill").style.width =
+      Math.round((quiz.index / quiz.items.length) * 100) + "%";
+    document.getElementById("question-text").textContent = z.tekst;
+
+    const extra = document.getElementById("question-extra");
+    extra.innerHTML = "";
+    if (z.tabela) {
+      extra.appendChild(renderTabela(z.tabela));
+    } else if (z.jednacine) {
+      extra.appendChild(renderJednacine(z.jednacine));
+    }
+
+    const opts = document.getElementById("options");
+    opts.innerHTML = "";
+    shuffle(z.opcije).forEach(opt => {
+      const b = document.createElement("button");
+      b.className = "opt-btn";
+      b.textContent = opt;
+      b.addEventListener("click", () => answer(opt, b));
+      opts.appendChild(b);
+    });
+
+    document.getElementById("feedback").classList.remove("show", "good", "bad");
+    document.getElementById("btn-next").classList.remove("show");
+  }
+
+  function renderTabela(t) {
+    const table = document.createElement("table");
+    table.className = "mini-table";
+    let html = "<tr><th></th>";
+    t.kolone.forEach(c => html += `<th>${c}</th>`);
+    html += "</tr>";
+    t.vrste.forEach(v => {
+      html += `<tr><th>${v}</th>`;
+      t.kolone.forEach(c => {
+        if (t.upitnik.vrsta === v && t.upitnik.kolona === c) {
+          html += `<td class="unknown">?</td>`;
+        } else if (t.popunjeno[v + "," + c] !== undefined) {
+          html += `<td>${t.popunjeno[v + "," + c]}</td>`;
+        } else {
+          html += `<td></td>`;
+        }
+      });
+      html += "</tr>";
+    });
+    table.innerHTML = html;
+    return table;
+  }
+
+  function renderJednacine(list) {
+    const wrap = document.createElement("div");
+    wrap.className = "eq-list";
+    list.forEach(eq => {
+      const d = document.createElement("div");
+      d.textContent = eq;
+      wrap.appendChild(d);
+    });
+    const unk = document.createElement("div");
+    unk.className = "unknown-eq";
+    unk.textContent = "?";
+    return wrap;
+  }
+
+  function answer(chosen, btn) {
+    const z = quiz.items[quiz.index];
+    const opts = document.querySelectorAll("#options .opt-btn");
+    opts.forEach(b => b.disabled = true);
+
+    const isCorrect = chosen.trim() === z.odgovor.trim();
+    const fb = document.getElementById("feedback");
+    const fbEmoji = document.getElementById("fb-emoji");
+    const fbText = document.getElementById("fb-text");
+    const fbExplain = document.getElementById("fb-explain");
+
+    ensureCat(z.kategorija);
+    state.stats[z.kategorija].ukupno += 1;
+    state.stats[z.kategorija].poslednji = new Date().toISOString();
+
+    if (isCorrect) {
+      btn.classList.add("correct");
+      fb.classList.add("show", "good");
+      const cheer = ["Bravo!", "Odlično!", "Tako je!", "Super posao!", "Zeka je ponosan na tebe!"];
+      fbEmoji.textContent = "🎉";
+      fbText.textContent = cheer[Math.floor(Math.random() * cheer.length)];
+      quiz.correctCount++;
+      state.stats[z.kategorija].tacno += 1;
+      state.stars[z.kategorija] = (state.stars[z.kategorija] || 0) + 1;
+      quiz.starsEarned++;
+      document.getElementById("quiz-stars").textContent = state.stars[z.kategorija];
+      playCorrect();
+    } else {
+      btn.classList.add("wrong");
+      opts.forEach(b => { if (b.textContent.trim() === z.odgovor.trim()) b.classList.add("correct"); });
+      fb.classList.add("show", "bad");
+      fbEmoji.textContent = "🙈";
+      fbText.textContent = "Nije baš, ali nema veze!";
+      playWrong();
+    }
+    fbExplain.textContent = z.objasnjenje || "";
+    saveState();
+
+    document.getElementById("btn-next").classList.add("show");
+  }
+
+  document.getElementById("btn-next").addEventListener("click", () => {
+    quiz.index++;
+    if (quiz.index >= quiz.items.length) {
+      finishQuiz();
+    } else {
+      renderQuestion();
+    }
+  });
+
+  function finishQuiz() {
+    const cat = ZADACI_DB.kategorije.find(c => c.id === quiz.catId);
+    const pct = Math.round((quiz.correctCount / quiz.items.length) * 100);
+    document.getElementById("summary-title").textContent =
+      pct === 100 ? "Savršeno!" : pct >= 70 ? "Bravo!" : "Dobar pokušaj!";
+    document.getElementById("summary-emoji").textContent =
+      pct === 100 ? "🏆" : pct >= 70 ? "🌟" : "💪";
+    document.getElementById("summary-stars").textContent =
+      "⭐".repeat(quiz.correctCount) + "☆".repeat(quiz.items.length - quiz.correctCount);
+    document.getElementById("summary-stats").innerHTML =
+      `${cat.ikonica} ${cat.naziv}<br>Tačno: ${quiz.correctCount} / ${quiz.items.length} (${pct}%)`;
+    show("screen-summary");
+  }
+
+  document.getElementById("btn-replay").addEventListener("click", () => startQuiz(quiz.catId));
+
+  // ---------------- Parent panel ----------------
+  function renderParent() {
+    const tbl = document.getElementById("parent-table");
+    let html = "<tr><th>Kategorija</th><th>Rešeno</th><th>Tačno</th><th>Uspešnost</th><th>Zvezdice</th></tr>";
+    ZADACI_DB.kategorije.forEach(cat => {
+      const s = state.stats[cat.id];
+      const pct = s.ukupno ? Math.round((s.tacno / s.ukupno) * 100) + "%" : "—";
+      html += `<tr><td>${cat.ikonica} ${cat.naziv}</td><td>${s.ukupno}</td><td>${s.tacno}</td><td>${pct}</td><td>⭐ ${state.stars[cat.id] || 0}</td></tr>`;
+    });
+    tbl.innerHTML = html;
+  }
+
+  document.getElementById("btn-reset").addEventListener("click", () => {
+    if (confirm("Sigurno želiš da obrišeš sav sačuvani napredak?")) {
+      localStorage.removeItem(STORAGE_KEY);
+      location.reload();
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
