@@ -242,6 +242,18 @@
 (function () {
   "use strict";
 
+  if (typeof ZADACI_DB === "undefined") {
+    document.getElementById("app").innerHTML =
+      '<div style="margin-top:60px;text-align:center;padding:0 10px;">' +
+      '<div style="font-size:60px;">⚠️</div>' +
+      '<h2>Fajl zadaci.js nije pronađen</h2>' +
+      '<p style="color:#8A8AA3;font-size:16px;line-height:1.5;">' +
+      'Fajlovi <b>index.html</b> i <b>zadaci.js</b> moraju biti sačuvani ' +
+      'u ISTOM folderu, sa tim istim imenima. Sačuvaj oba fajla ponovo u ' +
+      'jedan prazan folder i otvori index.html iz njega.</p></div>';
+    return;
+  }
+
   const STORAGE_KEY = "zekina_igraonica_v1";
 
   function loadState() {
