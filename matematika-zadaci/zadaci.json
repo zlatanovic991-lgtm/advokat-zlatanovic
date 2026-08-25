@@ -1,0 +1,133 @@
+{
+  "kategorije": [
+    { "id": "sabiranje-oduzimanje", "naziv": "Sabiranje i oduzimanje", "boja": "#FF9F1C", "ikonica": "➕" },
+    { "id": "nizovi-brojeva", "naziv": "Nizovi brojeva", "boja": "#2EC4B6", "ikonica": "🔢" },
+    { "id": "logicke-zagonetke", "naziv": "Logičke zagonetke", "boja": "#E71D73", "ikonica": "🧩" },
+    { "id": "nizovi-slova", "naziv": "Nizovi slova (teže)", "boja": "#7B61FF", "ikonica": "🔤" }
+  ],
+  "zadaci": [
+    {
+      "id": 1,
+      "kategorija": "oduzimanje",
+      "kategorija_id": "sabiranje-oduzimanje",
+      "tezina": 1,
+      "tip": "unos-broja",
+      "tekst": "Zeka je gladan. Zeki je za ručak potrebno 4 šargarepe da bi bio sit. Dobio je samo 1 šargarepu. Koliko mu još šargarepa treba?",
+      "odgovor": 3,
+      "objasnjenje": "4 − 1 = 3",
+      "izvor": "zadatak 61, strana 21",
+      "napomena_za_roditelja": null
+    },
+    {
+      "id": 2,
+      "kategorija": "logicke-zagonetke",
+      "kategorija_id": "logicke-zagonetke",
+      "tezina": 2,
+      "tip": "unos-tri-broja",
+      "tekst": "Zbir tri različita broja je 3, a svaki od njih je manji od 3. Koja su to tri broja?",
+      "odgovor": [0, 1, 2],
+      "objasnjenje": "0 + 1 + 2 = 3, sva tri broja su različita i svako je manje od 3.",
+      "izvor": "zadatak 60, strana 20",
+      "napomena_za_roditelja": null
+    },
+    {
+      "id": 3,
+      "kategorija": "oduzimanje",
+      "kategorija_id": "sabiranje-oduzimanje",
+      "tezina": 2,
+      "tip": "unos-broja",
+      "tekst": "Koliko se dobije kada se od najmanjeg dvocifrenog broja oduzme najveći jednocifreni broj?",
+      "odgovor": 1,
+      "objasnjenje": "Najmanji dvocifreni broj je 10, najveći jednocifreni je 9. 10 − 9 = 1",
+      "izvor": "zadatak 63, strana 22",
+      "napomena_za_roditelja": "Tačan tekst zadatka nisam mogao 100% pouzdano da pročitam sa iskošene slike (rekonstruisao sam ga iz konteksta) — molim te da po mogućstvu potvrdiš originalni tekst kad budeš imao/imala priliku."
+    },
+    {
+      "id": 4,
+      "kategorija": "logicke-zagonetke",
+      "kategorija_id": "sabiranje-oduzimanje",
+      "tezina": 2,
+      "tip": "unos-broja",
+      "tekst": "Milan je rešavao zadatke redom iz svoje zbirke. Počeo je od zadatka broj 5, a završio tog dana zadatkom broj 20. Koliko je zadataka Milan tog dana rešio?",
+      "odgovor": 16,
+      "objasnjenje": "Broji se i prvi i poslednji zadatak: 20 − 5 + 1 = 16",
+      "izvor": "zadatak 64, strana 22",
+      "napomena_za_roditelja": null
+    },
+    {
+      "id": 5,
+      "kategorija": "niz-brojeva",
+      "kategorija_id": "nizovi-brojeva",
+      "tezina": 1,
+      "tip": "unos-broja",
+      "tekst": "Koji broj dolazi posle u nizu: 1, 2, 3, 4, 5, 6, ?",
+      "odgovor": 7,
+      "objasnjenje": "Brojevi rastu za 1.",
+      "izvor": "zadatak 65, strana 22",
+      "napomena_za_roditelja": null
+    },
+    {
+      "id": 6,
+      "kategorija": "niz-brojeva",
+      "kategorija_id": "nizovi-brojeva",
+      "tezina": 1,
+      "tip": "unos-broja",
+      "tekst": "Koji broj dolazi posle u nizu: 2, 4, 6, 8, 10, ?",
+      "odgovor": 12,
+      "objasnjenje": "Brojevi rastu za 2 (parni brojevi).",
+      "izvor": "zadatak 66, strana 22",
+      "napomena_za_roditelja": null
+    },
+    {
+      "id": 7,
+      "kategorija": "niz-brojeva",
+      "kategorija_id": "nizovi-brojeva",
+      "tezina": 1,
+      "tip": "unos-broja",
+      "tekst": "Koji broj dolazi posle u nizu: 1, 3, 5, 7, 9, ?",
+      "odgovor": 11,
+      "objasnjenje": "Brojevi rastu za 2 (neparni brojevi).",
+      "izvor": "zadatak 67, strana 22",
+      "napomena_za_roditelja": null
+    },
+    {
+      "id": 8,
+      "kategorija": "niz-slova",
+      "kategorija_id": "nizovi-slova",
+      "tezina": 3,
+      "tip": "izbor",
+      "tekst": "Koje slovo dolazi posle u nizu: J, D, T, Č, P, ?",
+      "odgovor": "Š",
+      "opcije": ["Š", "O", "K", "N"],
+      "objasnjenje": "Svako slovo je prvo slovo redom izgovorenih brojeva: Jedan, Dva, Tri, Četiri, Pet, Šest.",
+      "izvor": "zadatak 70, strana 23",
+      "napomena_za_roditelja": "Ovo je teža/apstraktna zagonetka (prepoznavanje prvog slova reči), verovatno prezahtevna za 6 godina dok dete ne nauči da čita bolje — ostavljam je za kasnije, više kao izazov."
+    },
+    {
+      "id": 9,
+      "kategorija": "niz-slova",
+      "kategorija_id": "nizovi-slova",
+      "tezina": 3,
+      "tip": "izbor",
+      "tekst": "Koje slovo dolazi posle u nizu: P, U, S, Č, P, ?",
+      "odgovor": "S",
+      "opcije": ["S", "N", "O", "V"],
+      "objasnjenje": "Prva slova dana u nedelji: Ponedeljak, Utorak, Sreda, Četvrtak, Petak, Subota.",
+      "izvor": "zadatak 71, strana 23",
+      "napomena_za_roditelja": "Ista napomena kao kod zadatka 8 — teže, ostaviti za kasnije."
+    },
+    {
+      "id": 10,
+      "kategorija": "niz-slova",
+      "kategorija_id": "nizovi-slova",
+      "tezina": 3,
+      "tip": "izbor",
+      "tekst": "Koje slovo dolazi posle u nizu: J, F, M, A, M, ?",
+      "odgovor": "J",
+      "opcije": ["J", "S", "O", "D"],
+      "objasnjenje": "Prva slova meseci: Januar, Februar, Mart, April, Maj, Jun.",
+      "izvor": "zadatak 72, strana 23",
+      "napomena_za_roditelja": "Prvo slovo u nizu na slici mi je delovalo nejasno (moglo je biti pogrešno pročitano) — proveri ako imaš originalnu sliku pri ruci."
+    }
+  ]
+}
