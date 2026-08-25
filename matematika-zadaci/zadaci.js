@@ -255,6 +255,461 @@ const ZADACI_DB = {
       odgovor: "2",
       objasnjenje: "6 + 4 − 2 = 8",
       izvor: "zadatak 80, str. 25"
+    },
+    {
+      id: 24,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Dva pačeta - koliko tu ima nogu?",
+      opcije: ["4", "5", "6", "7", "8"],
+      odgovor: "4",
+      objasnjenje: "2 + 2 = 4",
+      izvor: "zadatak 1, str. 5"
+    },
+    {
+      id: 25,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Jedan tricikl - koliko je tu točkova?",
+      opcije: ["1", "2", "3", "4", "6"],
+      odgovor: "3",
+      objasnjenje: "Tricikl ima 3 točka.",
+      izvor: "zadatak 2, str. 5"
+    },
+    {
+      id: 26,
+      kategorija: "logicke-zagonetke",
+      tezina: 1,
+      tekst: "Sa koliko se patuljaka družila Snežana?",
+      opcije: ["3", "4", "5", "6", "7"],
+      odgovor: "7",
+      objasnjenje: "Snežana i sedam patuljaka!",
+      izvor: "zadatak 3, str. 5"
+    },
+    {
+      id: 27,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Jedan mačak - koliko je tu ušiju?",
+      opcije: ["1", "2", "3", "4", "5"],
+      odgovor: "2",
+      objasnjenje: "Mačka ima 2 uva.",
+      izvor: "zadatak 4, str. 5"
+    },
+    {
+      id: 28,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Dva mačka - koliko je tu nogu?",
+      opcije: ["4", "5", "6", "8", "10"],
+      odgovor: "8",
+      objasnjenje: "Svaki mačak ima 4 noge: 4 + 4 = 8.",
+      izvor: "zadatak 5, str. 5"
+    },
+    {
+      id: 29,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Ana je od bake dobila 2 lutkice, a od deke još 3 lutkice. Koliko je lutkica, posle toga, imala Ana?",
+      opcije: ["1", "2", "3", "4", "5"],
+      odgovor: "5",
+      objasnjenje: "2 + 3 = 5",
+      izvor: "zadatak 6, str. 6"
+    },
+    {
+      id: 30,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Imaš 12 automobilčića, pa svom drugu pokloniš 5. Koliko ti automobilčića ostaje?",
+      opcije: ["8", "7", "6", "5", "4"],
+      odgovor: "7",
+      objasnjenje: "12 − 5 = 7",
+      izvor: "zadatak 7, str. 6"
+    },
+    {
+      id: 31,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Broj 9 je veći od broja 6. Za koliko?",
+      opcije: ["1", "2", "3", "4", "6"],
+      odgovor: "3",
+      objasnjenje: "9 − 6 = 3",
+      izvor: "zadatak 9, str. 6"
+    },
+    {
+      id: 32,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Broj 6 je manji od broja 9. Za koliko?",
+      opcije: ["6", "5", "4", "3", "2"],
+      odgovor: "3",
+      objasnjenje: "9 − 6 = 3",
+      izvor: "zadatak 10, str. 6"
+    },
+    {
+      id: 33,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Šumom su šetali lav, lavica i njihova 3 lavića. Koliko članova te lavlje porodice je šetalo šumom?",
+      opcije: ["2", "3", "4", "5", "6"],
+      odgovor: "5",
+      objasnjenje: "1 + 1 + 3 = 5",
+      izvor: "zadatak 11, str. 7"
+    },
+    {
+      id: 34,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Pored staze u parku raslo je 12 mirisnih ruža. Na 8 ruža sleteo je po jedan leptir. Na koliko ruža nije sleteo ni jedan leptir?",
+      opcije: ["1", "2", "3", "4", "6"],
+      odgovor: "4",
+      objasnjenje: "12 − 8 = 4",
+      izvor: "zadatak 12, str. 7"
+    },
+    {
+      id: 35,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Tri devojčice i četiri dečaka doneli su u školsko dvorište po jednu loptu za igranje. Sa koliko najviše lopti mogu oni da se igraju?",
+      opcije: ["3", "4", "5", "6", "7"],
+      odgovor: "7",
+      objasnjenje: "3 + 4 = 7",
+      izvor: "zadatak 13, str. 7"
+    },
+    {
+      id: 36,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Ku-ku-ri-ku! Tri petla - koliko tu ima krila?",
+      opcije: ["3", "4", "5", "6", "8"],
+      odgovor: "6",
+      objasnjenje: "Svaki petao ima 2 krila: 2 + 2 + 2 = 6.",
+      izvor: "zadatak 14, str. 7"
+    },
+    {
+      id: 37,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Jedna ovčica - četiri noge. Koliko nogu imaju 3 ovčice?",
+      opcije: ["6", "8", "12", "14", "16"],
+      odgovor: "12",
+      objasnjenje: "4 + 4 + 4 = 12",
+      izvor: "zadatak 15, str. 7"
+    },
+    {
+      id: 38,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Jednog letnjeg dana, Sunce se pojavilo u 6 sati. Oblak se pojavio u 12 sati i zaklonio Sunce. Koliko sati je Sunce tog jutra sijalo?",
+      opcije: ["5", "6", "7", "8", "9"],
+      odgovor: "6",
+      objasnjenje: "12 − 6 = 6",
+      izvor: "zadatak 16, str. 8"
+    },
+    {
+      id: 39,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Tri mačka - koliko je tu prednjih šapica?",
+      opcije: ["1", "2", "3", "4", "6"],
+      odgovor: "6",
+      objasnjenje: "Svaki mačak ima 2 prednje šapice: 2 + 2 + 2 = 6.",
+      izvor: "zadatak 17, str. 8"
+    },
+    {
+      id: 40,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Na grani stoje 3 pticice. Šta možemo reći o broju krila i o broju nogu kod tih pticica?",
+      opcije: [
+        "Broj krila je veći od broja nogu",
+        "Broj krila je manji od broja nogu",
+        "Broj krila je jednak broju nogu",
+        "Broj krila kod sve tri pticice je veći od 6"
+      ],
+      odgovor: "Broj krila je jednak broju nogu",
+      objasnjenje: "Svaka pticica ima 2 noge i 2 krila, pa je broj krila jednak broju nogu.",
+      izvor: "zadatak 18, str. 8"
+    },
+    {
+      id: 41,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Jedna ptica kukavica, Paja Patak i dve zebre - koliko je tu nogu?",
+      opcije: ["5", "6", "8", "10", "12"],
+      odgovor: "12",
+      objasnjenje: "2 + 2 + 4 + 4 = 12",
+      izvor: "zadatak 19, str. 8"
+    },
+    {
+      id: 42,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Jedno prase, jedno jare i tri petlića - koliko je tu nogu?",
+      opcije: ["14", "12", "18", "8", "6"],
+      odgovor: "14",
+      objasnjenje: "4 + 4 + 2 + 2 + 2 = 14",
+      izvor: "zadatak 20, str. 8"
+    },
+    {
+      id: 43,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "U prvom dvorištu ima 5 trotineta, u drugom dvorištu 3 trotineta (svaki trotinet ima 2 točka). U kom dvorištu ima više točkova i za koliko?",
+      opcije: ["U prvom, za 2", "U drugom, za 2", "U prvom, za 3", "U drugom, za 3", "U prvom, za 4"],
+      odgovor: "U prvom, za 4",
+      objasnjenje: "U prvom je 5 × 2 = 10 točkova, u drugom 3 × 2 = 6 točkova. 10 − 6 = 4.",
+      izvor: "zadatak 21, str. 9"
+    },
+    {
+      id: 44,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Ovde su napisani brojevi 1, 2, 3, 4, 5 i jedno slovo A. Kojem znaku ovde nije mesto?",
+      opcije: ["1", "2", "3", "A", "4"],
+      odgovor: "A",
+      objasnjenje: "A je jedino slovo među brojevima.",
+      izvor: "zadatak 22, str. 9"
+    },
+    {
+      id: 45,
+      kategorija: "logicke-zagonetke",
+      tezina: 1,
+      tekst: "Koliko slova ima naša (srpska) azbuka?",
+      opcije: ["10", "15", "20", "25", "30"],
+      odgovor: "30",
+      objasnjenje: "Srpska azbuka ima 30 slova.",
+      izvor: "zadatak 23, str. 9"
+    },
+    {
+      id: 46,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Srela se dva zeca. Jedan kaže: \"Ima nas 11 u kavezu.\" Drugi kaže: \"A nas ima 8!\" Koliko tu ima ukupno zečeva?",
+      opcije: ["11", "12", "15", "18", "19"],
+      odgovor: "19",
+      objasnjenje: "11 + 8 = 19",
+      izvor: "zadatak 24, str. 9"
+    },
+    {
+      id: 47,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Na drvetu je bilo 6 vrabaca i 4 laste. Onda su, od svih tih ptica, 3 ptice odletele. Koliko je ptica ostalo na drvetu?",
+      opcije: ["6", "7", "8", "9", "10"],
+      odgovor: "7",
+      objasnjenje: "6 + 4 = 10, pa 10 − 3 = 7",
+      izvor: "zadatak 25, str. 10"
+    },
+    {
+      id: 48,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Na ogradi je stajalo 6 vrabaca. Zatim im se pridružilo još 5 vrabaca. Prišunjao se mačak i uplašio ih - svi su odleteli! Koliko je vrabaca, posle toga, ostalo na ogradi?",
+      opcije: ["11", "6", "5", "1", "0"],
+      odgovor: "0",
+      objasnjenje: "Svi vrapci su pobegli, pa je ostalo 0.",
+      izvor: "zadatak 26, str. 10"
+    },
+    {
+      id: 49,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Na prvom tanjiru ima 4 jabuke. Na drugom isto toliko. Na trećem tanjiru ima isto toliko jabuka koliko i na drugom. Koliko jabuka ima na trećem tanjiru?",
+      opcije: ["4", "6", "8", "10", "12"],
+      odgovor: "4",
+      objasnjenje: "Na trećem tanjiru ima isto koliko i na drugom - 4 jabuke.",
+      izvor: "zadatak 28, str. 10"
+    },
+    {
+      id: 50,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Na prvom tanjiru ima 4 jabuke. Na drugom isto toliko, a na trećem koliko na prvom i drugom zajedno. Koliko jabuka ima na trećem tanjiru?",
+      opcije: ["16", "12", "10", "8", "6"],
+      odgovor: "8",
+      objasnjenje: "4 + 4 = 8",
+      izvor: "zadatak 29, str. 11"
+    },
+    {
+      id: 51,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Na prvom tanjiru ima 4 jabuke. Na drugom tanjiru ima 2 jabuke više nego na prvom, a na trećem tanjiru ima koliko na prvom i na drugom tanjiru zajedno. Koliko jabuka ima na trećem tanjiru?",
+      opcije: ["16", "12", "10", "8", "6"],
+      odgovor: "10",
+      objasnjenje: "Prvi tanjir: 4. Drugi: 4+2=6. Treći: 4+6=10.",
+      izvor: "zadatak 30, str. 11"
+    },
+    {
+      id: 52,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "U vrtiću ima 3 lutkice i 6 kolica za lutke. Koliko još lutkica treba nabaviti da bi u vrtiću bilo isto toliko lutkica koliko i kolica?",
+      opcije: ["1", "2", "3", "4", "6"],
+      odgovor: "3",
+      objasnjenje: "6 − 3 = 3",
+      izvor: "zadatak 33, str. 13"
+    },
+    {
+      id: 53,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Pčelice su krenule iz košnice u ranu zoru i ostale na livadi sve do 11 sati. U koliko sati su krenule, ako se zna da su vredno sakupljale med tačno 7 sati?",
+      opcije: ["1", "2", "3", "4", "6"],
+      odgovor: "4",
+      objasnjenje: "11 − 7 = 4",
+      izvor: "zadatak 34, str. 13"
+    },
+    {
+      id: 54,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Krava Belka ujutru daje 7 litara mleka, a istog dana uveče daje 8 litara mleka. Koliko litara mleka daje Belka u toku jednog dana?",
+      opcije: ["12", "13", "14", "15", "16"],
+      odgovor: "15",
+      objasnjenje: "7 + 8 = 15",
+      izvor: "zadatak 35, str. 13"
+    },
+    {
+      id: 55,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Mleko je još vruće. Mačka treba da sačeka još pola sata. Koliko je to minuta?",
+      opcije: ["10", "15", "20", "25", "30"],
+      odgovor: "30",
+      objasnjenje: "Pola sata = 30 minuta.",
+      izvor: "zadatak 36, str. 13"
+    },
+    {
+      id: 56,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Kad poželi da prošeta kroz svih 5 kula svog dvorca, princ treba da otključa vrata na svakoj kuli. Koliko ključeva treba da ponese?",
+      opcije: ["1", "2", "3", "4", "5"],
+      odgovor: "5",
+      objasnjenje: "Za 5 kula treba 5 ključeva - po jedan za svaku.",
+      izvor: "zadatak 37, str. 14"
+    },
+    {
+      id: 57,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Pero, Pero! Koliko cifara znaš?",
+      opcije: ["Naravno: 10", "9", "8", "7", "Mnogo"],
+      odgovor: "Naravno: 10",
+      objasnjenje: "Cifre su: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 - ima ih 10.",
+      izvor: "zadatak 38, str. 14"
+    },
+    {
+      id: 58,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Pero, Pero! A zašto smo učili sve te cifre?",
+      opcije: [
+        "Da bismo znali da brojimo",
+        "Da bismo znali da računamo",
+        "Da bismo znali da sabiramo do 20",
+        "Da bismo znali da pišemo sve brojeve: jednocifrene, dvocifrene, trocifrene, itd."
+      ],
+      odgovor: "Da bismo znali da pišemo sve brojeve: jednocifrene, dvocifrene, trocifrene, itd.",
+      objasnjenje: "Pomoću samo 10 cifara možemo napisati baš svaki broj.",
+      izvor: "zadatak 39, str. 14"
+    },
+    {
+      id: 59,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "Na brojčaniku sata vidimo brojeve 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12. Koliki je zbir svih cifara (pojedinačno), a koliki zbir svih tih brojeva?",
+      opcije: [
+        "Zbir cifara 50, zbir brojeva 70",
+        "To je nemoguće izračunati",
+        "Zbir cifara 51, zbir brojeva 78",
+        "Ti zbirovi su jednaki"
+      ],
+      odgovor: "Zbir cifara 51, zbir brojeva 78",
+      objasnjenje: "Zbir brojeva 1 do 12 je 78. Zbir cifara (1+2+...+9+1+0+1+1+1+2) je 51.",
+      izvor: "zadatak 40, str. 15"
+    },
+    {
+      id: 60,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "Na jedrima brodova napisani su brojevi: 1, 9, 10, 8, 4, 3, 6, 3. Koliko je ukupno cifara napisano na svim tim jedrima?",
+      opcije: ["6", "8", "9", "10", "12"],
+      odgovor: "9",
+      objasnjenje: "Svi brojevi su jednocifreni (7 komada), osim broja 10 koji ima 2 cifre. 7 + 2 = 9.",
+      izvor: "zadatak 41, str. 15"
+    },
+    {
+      id: 61,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Deset kosmonauta je poređano redom od 10 do 1, ali dvojici nedostaje broj: 10, 9, 8, ?, 6, 5, 4, ?, 2, 1. Izračunaj razliku većeg i manjeg od ta dva nedostajuća broja.",
+      opcije: ["10", "9", "6", "4", "3"],
+      odgovor: "4",
+      objasnjenje: "Nedostaju brojevi 7 i 3. Njihova razlika je 7 − 3 = 4.",
+      izvor: "zadatak 42, str. 15"
+    },
+    {
+      id: 62,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Koji broj treba staviti umesto praznog mesta da bude tačno: ? + 2 = 8",
+      opcije: ["3", "5", "6", "7", "Nema takvog broja"],
+      odgovor: "6",
+      objasnjenje: "6 + 2 = 8",
+      izvor: "zadatak 44, str. 16"
+    },
+    {
+      id: 63,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "Tamara je imala 4 balona. Neki su bili zeleni, a neki žuti. Zelenih je bilo više nego žutih. Koliko je bilo žutih?",
+      opcije: ["1", "2", "3", "4", "6"],
+      odgovor: "1",
+      objasnjenje: "Da je bilo isto zelenih i žutih, bilo bi po 2. Ali zelenih ima više, pa ostaje samo 1 žuti balon.",
+      izvor: "zadatak 45, str. 16"
+    },
+    {
+      id: 64,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Majstor Sima treba da zakuca 10 ekserčića čekićem. Svaki ekserčić treba da udari po dva puta. Sa koliko udaraca čekićem će majstor Sima završiti taj posao?",
+      opcije: ["10", "12", "18", "20", "22"],
+      odgovor: "20",
+      objasnjenje: "10 × 2 = 20",
+      izvor: "zadatak 49, str. 18"
+    },
+    {
+      id: 65,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Na tanjiru su bile 4 jabuke i 6 trešanja. Došla su deca i pojela sve jabuke i isto toliko trešanja (4 trešnje). Koliko je trešanja ostalo na tanjiru?",
+      opcije: ["1", "2", "3", "4", "6"],
+      odgovor: "2",
+      objasnjenje: "6 − 4 = 2",
+      izvor: "zadatak 50, str. 18"
+    },
+    {
+      id: 66,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Lukina mama je imala 3 kruške i svaku je presekla tačno na pola. Koliko je delova nastalo?",
+      opcije: ["3", "6", "8", "9", "12"],
+      odgovor: "6",
+      objasnjenje: "3 kruške × 2 polovine = 6.",
+      izvor: "zadatak 51, str. 18"
+    },
+    {
+      id: 67,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "Koliko je grešaka napravljeno u ovim jednačinama? 2+4=5, 4+4=8, 7−3=5, 3−3=1, 9−2=6, 9+0=9, 2+5=7, 8−0=7, 2+6=9",
+      opcije: ["1", "2", "3", "4", "6"],
+      odgovor: "6",
+      objasnjenje: "Tačno su samo: 4+4=8, 9+0=9 i 2+5=7. Ostalih 6 jednačina je pogrešno.",
+      izvor: "zadatak 53, str. 19"
     }
   ]
 };
