@@ -710,6 +710,506 @@ const ZADACI_DB = {
       odgovor: "6",
       objasnjenje: "Tačno su samo: 4+4=8, 9+0=9 i 2+5=7. Ostalih 6 jednačina je pogrešno.",
       izvor: "zadatak 53, str. 19"
+    },
+    {
+      id: 68,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Marija se sprema za rekreativnu nastavu. Mama joj je pripremila 8 pari čarapica. Koliko je to komada čarapica?",
+      opcije: ["8", "10", "12", "14", "16"],
+      odgovor: "16",
+      objasnjenje: "8 pari × 2 = 16 komada.",
+      izvor: "zadatak 81, str. 26"
+    },
+    {
+      id: 69,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "U družini ima 10 dece. Učiteljica ih razvrstava u parove (grupe od po 2 deteta). Koliko će parova napraviti?",
+      opcije: ["2", "4", "5", "6", "10"],
+      odgovor: "5",
+      objasnjenje: "10 : 2 = 5 parova.",
+      izvor: "zadatak 82, str. 26"
+    },
+    {
+      id: 70,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Ista družina od 10 dece sada se razvrstava u grupe od po 3 učenika. Koliko će učenika ostati neraspoređeno?",
+      opcije: ["1", "2", "3", "4", "6"],
+      odgovor: "1",
+      objasnjenje: "10 = 3+3+3+1, pa 1 učenik ostaje neraspoređen.",
+      izvor: "zadatak 83, str. 26"
+    },
+    {
+      id: 71,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Četiri skijaša - svaki ima na sebi jedan par cipela i jedan par skija. Koliko je ukupno pari cipela, a koliko pari skija?",
+      opcije: ["8 cipela, 4 para skija", "4 para cipela, 2 para skija", "6 cipela, 4 para skija", "4 para cipela, 4 para skija"],
+      odgovor: "4 para cipela, 4 para skija",
+      objasnjenje: "Svaki od 4 skijaša ima 1 par cipela i 1 par skija.",
+      izvor: "zadatak 84, str. 26"
+    },
+    {
+      id: 72,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Pera se vratio sa zimovanja. Na slici mama suši 10 čarapa okačenih na konopcu. Koliko pari čarapa je to?",
+      opcije: ["1", "2", "3", "4", "5"],
+      odgovor: "5",
+      objasnjenje: "10 : 2 = 5 pari.",
+      izvor: "zadatak 85, str. 27"
+    },
+    {
+      id: 73,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Na boru iglice rastu u parovima. Koliko iglica ima u 5 parova?",
+      opcije: ["5", "6", "8", "10", "12"],
+      odgovor: "10",
+      objasnjenje: "5 × 2 = 10",
+      izvor: "zadatak 86, str. 27"
+    },
+    {
+      id: 74,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Učiteljica želi da razvrsta 7 dece u parove za igru. Pošto se ne mogu svi upariti, koliko dece će morati da sačeka da se igra završi?",
+      opcije: ["0", "1", "2", "3", "4"],
+      odgovor: "1",
+      objasnjenje: "7 je neparan broj, pa jedno dete ostaje bez para.",
+      izvor: "zadatak 87, str. 28"
+    },
+    {
+      id: 75,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Ako napišeš parne brojeve od 2 do 20 (2,4,...,20) i neparne brojeve od 1 do 19 (1,3,...,19), šta važi?",
+      opcije: ["Parnih ima više", "Neparnih ima više", "Parnih i neparnih brojeva ima jednako", "U prvom redu ima 20 parnih brojeva"],
+      odgovor: "Parnih i neparnih brojeva ima jednako",
+      objasnjenje: "U oba reda ima po 10 brojeva.",
+      izvor: "zadatak 88, str. 28"
+    },
+    {
+      id: 76,
+      kategorija: "logicke-zagonetke",
+      tezina: 1,
+      tekst: "Kad prođeš ulicom, na kućama vidiš kućne brojeve. Šta je zajedničko za kućne brojeve na jednoj strani ulice, a šta za one na drugoj strani?",
+      opcije: [
+        "Na svakoj strani ulice brojevi su napisani redom: 1,2,3,...",
+        "Na jednoj strani ulice su kuće sa parnim brojevima, a na drugoj kuće sa neparnim brojevima",
+        "Na svakoj strani ulice uvek postoji isti broj kuća",
+        "Nema nikakvog pravila u ređanju kućnih brojeva"
+      ],
+      odgovor: "Na jednoj strani ulice su kuće sa parnim brojevima, a na drugoj kuće sa neparnim brojevima",
+      objasnjenje: "Tako su po pravilu numerisane ulice - parni brojevi na jednoj strani, neparni na drugoj.",
+      izvor: "zadatak 89, str. 29"
+    },
+    {
+      id: 77,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Ima jedna kratka ulica. Na svakoj strani te ulice ima samo po 5 kuća (kućni brojevi 1 do 10). Koliko je ukupno cifara napisano na svim tablicama u toj ulici?",
+      opcije: ["8", "9", "10", "11", "12"],
+      odgovor: "11",
+      objasnjenje: "Brojevi 1-9 imaju po 1 cifru (9 cifara), a broj 10 ima 2 cifre. Ukupno 9+2=11.",
+      izvor: "zadatak 90, str. 29"
+    },
+    {
+      id: 78,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Na dve police stavljeno je 15 knjiga (neparan broj). Šta mora da važi?",
+      opcije: [
+        "Na svakoj polici je isti broj knjiga",
+        "Na svakoj polici je paran broj knjiga",
+        "Na svakoj polici je neparan broj knjiga",
+        "Na jednoj polici je paran, a na drugoj neparan broj knjiga"
+      ],
+      odgovor: "Na jednoj polici je paran, a na drugoj neparan broj knjiga",
+      objasnjenje: "Paran + neparan broj = neparan zbir (15). Da su oba ista (i parna i neparna), zbir bi bio paran.",
+      izvor: "zadatak 91, str. 29"
+    },
+    {
+      id: 79,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Ana kaže: svi neparni brojevi u ovoj knjizi napisani su crvenom bojom. Jelena dodaje: a svi parni brojevi napisani su plavom bojom. Kojom bojom bi bio napisan broj koji predstavlja zbir jednog parnog i jednog neparnog broja?",
+      opcije: ["Crvenom", "Plavom", "Ljubičastom", "Nemoguće je odrediti"],
+      odgovor: "Crvenom",
+      objasnjenje: "Zbir parnog i neparnog broja je uvek neparan broj (npr. 6+3=9), pa bi bio crven.",
+      izvor: "zadatak 92, str. 30"
+    },
+    {
+      id: 80,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Za koliko je zbir svih parnih brojeva prve desetice (2+4+6+8+10) veći od zbira svih neparnih brojeva prve desetice (1+3+5+7+9)?",
+      opcije: ["Za 5", "Za 10", "Za 15", "Za 20"],
+      odgovor: "Za 5",
+      objasnjenje: "(2+4+6+8+10) − (1+3+5+7+9) = 30 − 25 = 5",
+      izvor: "zadatak 93, str. 30"
+    },
+    {
+      id: 81,
+      kategorija: "logicke-zagonetke",
+      tezina: 1,
+      tekst: "Najmanji dvocifreni broj koji se piše jednakim ciframa (obe cifre iste) je broj:",
+      opcije: ["99", "22", "33", "11", "66"],
+      odgovor: "11",
+      objasnjenje: "11 je najmanji takav broj.",
+      izvor: "zadatak 94, str. 31"
+    },
+    {
+      id: 82,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Koliko ima dvocifrenih brojeva koji se pišu jednakim ciframa (kao 11, 22, 33...)?",
+      opcije: ["8", "9", "10", "12", "16"],
+      odgovor: "9",
+      objasnjenje: "To su brojevi: 11, 22, 33, 44, 55, 66, 77, 88, 99 - ima ih 9.",
+      izvor: "zadatak 95, str. 31"
+    },
+    {
+      id: 83,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Koliko ima brojeva u prvoj desetici (1 do 10) koji imaju dvocifrenog sledbenika (sledeći broj ima dve cifre)?",
+      opcije: ["1", "2", "3", "4", "6"],
+      odgovor: "2",
+      objasnjenje: "To su brojevi 9 i 10 - njihovi sledbenici su 10 i 11.",
+      izvor: "zadatak 96, str. 31"
+    },
+    {
+      id: 84,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Đole je napisao 16 u obliku zbira 4 jednaka sabirka: 16 = ? + ? + ? + ?. Koji je broj Đole upisao?",
+      opcije: ["8", "6", "4", "3", "2"],
+      odgovor: "4",
+      objasnjenje: "16 = 4+4+4+4",
+      izvor: "zadatak 97, str. 31"
+    },
+    {
+      id: 85,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "Isekao si 4 kartončića od kartona i napisao brojeve 1, 3, 4 i 6. Kartončiće možeš premeštati, pa čak i okrenuti naopako (kartončić sa brojem 6 okrenut izgleda kao 9!). Koji je najveći zbir koji možeš dobiti sabiranjem ta četiri broja?",
+      opcije: ["13", "14", "15", "17", "19"],
+      odgovor: "17",
+      objasnjenje: "Kad broj 6 okreneš, dobijaš 9: 1+3+4+9=17.",
+      izvor: "zadatak 98, str. 32"
+    },
+    {
+      id: 86,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "Isekao si 4 kartončića od kartona i napisao brojeve 1, 2, 8 i 9. Kartončiće možeš premeštati, pa čak i okrenuti naopako (kartončić sa brojem 9 okrenut izgleda kao 6!). Koji je najmanji zbir koji možeš dobiti sabiranjem ta četiri broja?",
+      opcije: ["13", "14", "15", "17", "19"],
+      odgovor: "17",
+      objasnjenje: "Kad broj 9 okreneš, dobijaš 6: 1+2+8+6=17.",
+      izvor: "zadatak 99, str. 32"
+    },
+    {
+      id: 87,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Na parkingu su stajali bicikli i automobili, i to isti broj automobila i bicikala. Ukupno je izbrojano 18 točkova. Koliko je bicikala bilo na parkingu?",
+      opcije: ["3", "4", "5", "6", "8"],
+      odgovor: "3",
+      objasnjenje: "Svaki par (1 bicikl + 1 automobil) ima 2+4=6 točkova. 18 : 6 = 3 para, znači 3 bicikla.",
+      izvor: "zadatak 100, str. 32"
+    },
+    {
+      id: 88,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "U kavezu se nalaze zečevi i pilići. Ukupno imaju 4 glave i 10 nogu. Koliko tu ima zečeva (zec ima 4 noge, pile 2 noge)?",
+      opcije: ["0", "1", "2", "3", "4"],
+      odgovor: "1",
+      objasnjenje: "Da su sve 4 životinje pilići, bilo bi 8 nogu. Višak od 2 noge (10-8) pripada jednom zecu.",
+      izvor: "zadatak 101, str. 32"
+    },
+    {
+      id: 89,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "U dvorištu su deca vozila bicikle (2 točka) i tricikle (3 točka), i bilo je bar jedan od svakog. Mama je izbrojala ukupno 10 točkova. Koliko je bicikala bilo u dvorištu?",
+      opcije: ["2", "6", "8", "10", "12"],
+      odgovor: "2",
+      objasnjenje: "10 se mora rastaviti kao zbir dvojki i trojki uz bar jednu od svake: 2+2+3+3=10, dakle 2 bicikla i 2 tricikla.",
+      izvor: "zadatak 102, str. 32"
+    },
+    {
+      id: 90,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Milica i Milena su u svojim korpicama imale po 5 jabuka. Onda je Milena poklonila Milici jednu jabuku. Ko posle toga ima više jabuka i za koliko?",
+      opcije: ["Milena, za 1 jabuku", "Milica, za 1 jabuku", "Milena, za 2 jabuke", "Milica, za 2 jabuke"],
+      odgovor: "Milica, za 2 jabuke",
+      objasnjenje: "Milica: 5+1=6, Milena: 5-1=4. Razlika je 2.",
+      izvor: "zadatak 103, str. 33"
+    },
+    {
+      id: 91,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "U dva kaveza bio je isti broj zečeva (ali ne znamo po koliko). Jedan zec je prešao iz prvog u drugi kavez. U kom kavezu je, posle toga, bilo više zečeva i za koliko?",
+      opcije: ["U prvom, za 1", "U drugom, za 1", "U prvom, za 2", "U drugom, za 2", "Nemoguće izračunati"],
+      odgovor: "U drugom, za 2",
+      objasnjenje: "Prvi kavez gubi 1, drugi dobija 1 - razlika između njih postaje 2, u korist drugog.",
+      izvor: "zadatak 104, str. 33"
+    },
+    {
+      id: 92,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Joca i Moca imaju isti broj klikera (kliker=kuglica za igru). Ako Joca pokloni Moci jedan kliker, ko će posle toga imati više klikera i za koliko?",
+      opcije: ["Joca, za 1", "Moca, za 1", "Joca, za 2", "Moca, za 2"],
+      odgovor: "Moca, za 2",
+      objasnjenje: "Moca dobija 1 (postaje veći za 1), Joca gubi 1 (postaje manji za 1) - razlika je 2.",
+      izvor: "zadatak 105, str. 34"
+    },
+    {
+      id: 93,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Joca je u svakom od svoja dva džepa imao isti broj klikera. Ako Joca izvadi iz levog džepa 2 klikera i prebaci ih u desni džep, u kom džepu će posle toga Joca imati više klikera i za koliko?",
+      opcije: ["U levom, za 2", "U desnom, za 2", "U levom, za 4", "U desnom, za 4"],
+      odgovor: "U desnom, za 4",
+      objasnjenje: "Levi džep gubi 2, desni dobija 2 - razlika je 4, u korist desnog.",
+      izvor: "zadatak 106, str. 34"
+    },
+    {
+      id: 94,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Kaća ima 3 bombone više od Nade. Kaća je pojela 3 bombone, a Nada je od mame dobila još 5 bombona. Ko sada ima više bombona i za koliko?",
+      opcije: ["Kaća, za 3", "Nada, za 3", "Kaća, za 5", "Nada, za 5"],
+      odgovor: "Nada, za 5",
+      objasnjenje: "Kad Kaća pojede 3 bombone, obe devojčice imaju isti broj. Onda Nada dobije još 5, pa je za 5 ispred.",
+      izvor: "zadatak 107, str. 35"
+    },
+    {
+      id: 95,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Filip je viši od Jelene, ali je niži od Tome, a Peđa i Filip su iste visine. Ko je najviši među njima?",
+      opcije: ["Filip", "Jelena", "Toma", "Peđa", "Svi su iste visine"],
+      odgovor: "Toma",
+      objasnjenje: "Jelena < Filip = Peđa < Toma, pa je Toma najviši.",
+      izvor: "zadatak 108, str. 35"
+    },
+    {
+      id: 96,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Kaja je viša od Ane, ali niža od Maše, a Jelena je najniža od sve četiri devojčice. Na slici, devojčica koja drži mačku je najviša od svih. Kako se ona zove?",
+      opcije: ["Kaja", "Ana", "Maša", "Jelena"],
+      odgovor: "Maša",
+      objasnjenje: "Redosled po visini: Jelena < Ana < Kaja < Maša, pa je Maša najviša.",
+      izvor: "zadatak 109, str. 35"
+    },
+    {
+      id: 97,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Na slici su tri praseta: Njuf, Njaf i Njif. Njihov drugar Njef, koji je najdeblji od svih, nije hteo da se slika. Njuf je debiji od Njafa, a Njaf je debiji od Njifa. Ko je najmršaviji?",
+      opcije: ["Njuf", "Njef", "Njif", "Njaf"],
+      odgovor: "Njif",
+      objasnjenje: "Redosled: Njef > Njuf > Njaf > Njif, pa je Njif najmršaviji.",
+      izvor: "zadatak 110, str. 36"
+    },
+    {
+      id: 98,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Steva, Vlada i Darko su rešavali zadatke iz matematike. Zna se da je jedan dečak rešio 12 zadataka, drugi 13, a treći 14 zadataka. Takođe se zna da je Steva rešio manje zadataka nego Darko, a Darko manje nego Vlada. Koliko zadataka je rešio Darko?",
+      opcije: ["11", "12", "13", "14", "Nemoguće je rešiti"],
+      odgovor: "13",
+      objasnjenje: "Steva < Darko < Vlada, pa je Steva=12, Darko=13, Vlada=14.",
+      izvor: "zadatak 111, str. 36"
+    },
+    {
+      id: 99,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Voja, Saša i Andrija su od papira napravili igračke: mačka, brodić, rodu i zmaja. Voja nije napravio ni brodić, ni mačku ni zmaja. Saša je napravio mačka i zmaja (dve igračke). Koju igračku je napravio Andrija?",
+      opcije: ["Brodić", "Rodu", "Zmaja", "Mačku"],
+      odgovor: "Brodić",
+      objasnjenje: "Voja je napravio rodu (jedino što mu je ostalo). Saša je napravio mačka i zmaja. Andriji ostaje brodić.",
+      izvor: "zadatak 112, str. 36"
+    },
+    {
+      id: 100,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Zoran, Miša, Marko i Vlada nosili su stolice. Miša je nosio onoliko stolica koliko Marko i Vlada zajedno, a Zoran manje od Marka. Ko je nosio najviše stolica?",
+      opcije: ["Zoran", "Marko", "Vlada", "Miša", "Nemoguće je odrediti"],
+      odgovor: "Miša",
+      objasnjenje: "Miša = Marko + Vlada, pa Miša ima više od svakog pojedinačno.",
+      izvor: "zadatak 114, str. 37"
+    },
+    {
+      id: 101,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Pera ima 20 dinara, a kliker košta 4 dinara. Koliko klikera može Pera da kupi?",
+      opcije: ["1", "2", "3", "4", "5"],
+      odgovor: "5",
+      objasnjenje: "20 : 4 = 5",
+      izvor: "zadatak 117, str. 39"
+    },
+    {
+      id: 102,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Tetka Ljilja je brojala. Njena kokoška je tokom 10 dana svakog dana snela po jedno jaje. Ali, svakog drugog dana nailazile su ptice grabljivice i odnosile po jedno jaje. Koliko je jaja imala tetka Ljilja posle 10 dana?",
+      opcije: ["20", "18", "14", "10", "5"],
+      odgovor: "5",
+      objasnjenje: "Kokoška snese 10 jaja, ali grabljivice odnesu tačno polovinu (svakog drugog dana) - ostaje 5.",
+      izvor: "zadatak 118, str. 39"
+    },
+    {
+      id: 103,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "Miki je slavio treći rođendan i izabrao 3 različite svećice za svoju okruglu tortu. Na koliko različitih načina može Mikijeva mama da rasporedi svećice na torti u krug (po obodu)?",
+      opcije: ["1", "2", "3", "4", "6"],
+      odgovor: "2",
+      objasnjenje: "Kad fiksiramo jednu sveću, preostale dve se mogu rasporediti na 2 načina (levo/desno).",
+      izvor: "zadatak 119, str. 39"
+    },
+    {
+      id: 104,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Dok je šetao sa bakom, unuk je pojeo 5 bombona. Dok je baka sedela i pila kafu, unuk je pojeo 2 bombone manje nego dok je šetao. Koliko je ukupno bombona unuk pojeo?",
+      opcije: ["7", "8", "9", "10", "14"],
+      odgovor: "8",
+      objasnjenje: "5 + (5-2) = 5+3 = 8",
+      izvor: "zadatak 120, str. 40"
+    },
+    {
+      id: 105,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Dok je šetao sa bakom, unuk je upitao: \"Koliko, bako, imaš jabuka u toj kesi?\" A baka je odgovorila: \"Nedostaju mi 3 jabuke, pa da ih bude tačno 20.\" Koliko jabuka je baka imala u kesi?",
+      opcije: ["20", "18", "17", "15", "3"],
+      odgovor: "17",
+      objasnjenje: "20 − 3 = 17",
+      izvor: "zadatak 122, str. 40"
+    },
+    {
+      id: 106,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "U prvoj kućici živi porodica sa jednim detetom, u drugoj porodica sa 2 deteta, i tako redom do pete kućice u kojoj živi petoro dece. Koliko ukupno dece žive u ovih 5 kućica?",
+      opcije: ["5", "7", "9", "10", "15"],
+      odgovor: "15",
+      objasnjenje: "1+2+3+4+5=15",
+      izvor: "zadatak 124, str. 41"
+    },
+    {
+      id: 107,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Mišo je presekao makazama kanap na 4 mesta. Koliko je parčića kanapa dobio?",
+      opcije: ["4", "5", "6", "7", "8"],
+      odgovor: "5",
+      objasnjenje: "Sečenjem na 4 mesta konopac se deli na 5 delova (broj delova je uvek za 1 veći od broja mesta sečenja).",
+      izvor: "zadatak 131, str. 45"
+    },
+    {
+      id: 108,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Mišo je presekao makazama kanap na 10 mesta. Koliko je parčića kanapa dobio?",
+      opcije: ["10", "11", "15", "18", "20"],
+      odgovor: "11",
+      objasnjenje: "Broj delova je uvek za 1 veći od broja mesta sečenja: 10+1=11.",
+      izvor: "zadatak 132, str. 45"
+    },
+    {
+      id: 109,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Kanap treba podeliti na 5 delova. Na koliko mesta ga treba seći?",
+      opcije: ["4", "5", "6", "7", "10"],
+      odgovor: "4",
+      objasnjenje: "Za 5 delova treba seći na 4 mesta (za 1 manje od broja delova).",
+      izvor: "zadatak 133, str. 45"
+    },
+    {
+      id: 110,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Voja je pred sobom imao štanglu čokolade podeljenu na 4 kvadratića (znači ima 3 mesta za lomljenje - žljeba). Lomio je tačno po žljebovima. Koliko je jednakih delova dobio?",
+      opcije: ["4", "5", "6", "7", "8"],
+      odgovor: "4",
+      objasnjenje: "Štangla ima 4 kvadratića, pa lomljenjem po svim žlebovima dobija se 4 dela.",
+      izvor: "zadatak 134, str. 46"
+    },
+    {
+      id: 111,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Ista štangla čokolade (4 kvadratića, 3 žljeba). Koliko lomljenja treba Voja da izvrši, tačno po žljebovima, da bi dobio sva 4 jednaka dela?",
+      opcije: ["6", "5", "4", "3", "2"],
+      odgovor: "3",
+      objasnjenje: "Za 4 dela potrebna su 3 lomljenja (broj lomljenja je uvek za 1 manji od broja delova).",
+      izvor: "zadatak 135, str. 46"
+    },
+    {
+      id: 112,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Čokolada je podeljena na kvadratiće žljebovima. Koliko lomljenja treba da izvršimo, tačno po žljebovima, da bismo dobili 6 jednakih delova?",
+      opcije: ["6", "5", "4", "3", "2"],
+      odgovor: "5",
+      objasnjenje: "Svakim lomom broj delova raste za 1, počevši od 1 dela. Za 6 delova treba 5 lomova.",
+      izvor: "zadatak 136, str. 46"
+    },
+    {
+      id: 113,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Čokolada je podeljena na kvadratiće žljebovima. Koliko lomljenja treba da izvršimo, tačno po žljebovima, da bismo dobili 8 jednakih delova?",
+      opcije: ["6", "7", "8", "9", "10"],
+      odgovor: "7",
+      objasnjenje: "Za 8 delova treba 7 lomova (svaki lom dodaje tačno 1 deo).",
+      izvor: "zadatak 137, str. 46"
+    },
+    {
+      id: 114,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Zec i jež su bili udaljeni 20 metara jedan od drugog kad su krenuli jedno drugom u susret. Kad zec pređe 13 metara, a jež 2 metra, koliko će im još metara ostati do susreta?",
+      opcije: ["1 metar", "2 metra", "3 metra", "4 metra", "5 metara"],
+      odgovor: "5 metara",
+      objasnjenje: "Zajedno su prešli 13+2=15 metara. Ostalo im je 20−15=5 metara.",
+      izvor: "zadatak 138, str. 46"
+    },
+    {
+      id: 115,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Maša i Daša se prezivaju Nikolić i Petrović (svaka drugačije), i žive u različitim kućama. Zna se da Maša i Petrovićeva žive u različitim kućama. Kako se Daša preziva?",
+      opcije: ["Nikolić", "Petrović", "Petronijević", "Nikolajević"],
+      odgovor: "Petrović",
+      objasnjenje: "Pošto Maša i \"Petrovićeva\" žive u različitim kućama, to znači da Maša nije Petrović. Znači Maša je Nikolić, a Daša je Petrović.",
+      izvor: "zadatak 139, str. 47"
+    },
+    {
+      id: 116,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Kapetan broda je ugledao kita u 11 sati. Kit je plivao pored broda tačno 3 sata, a onda se udaljio. U koliko sati se kit udaljio od broda?",
+      opcije: ["Tačno u podne", "U 13 sati", "U 14 sati", "U 4 sata"],
+      odgovor: "U 14 sati",
+      objasnjenje: "11 + 3 = 14 sati (2 posle podne).",
+      izvor: "zadatak 140, str. 47"
     }
   ]
 };
