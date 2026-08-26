@@ -61,6 +61,7 @@
   #screen-start .mascot-big { font-size: 96px; }
   #screen-start h1 { font-size: 30px; margin: 0; line-height: 1.25; }
   #screen-start p { color: var(--muted); font-size: 18px; margin: 0; max-width: 420px; }
+  .child-name { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 4px; }
   .big-btn {
     border: none; cursor: pointer; font-family: inherit;
     background: linear-gradient(180deg,#FFC53D,#FFA93D);
@@ -118,9 +119,24 @@
     transition: transform .06s ease, background .15s ease, border-color .15s ease;
   }
   .opt-btn:active { transform: scale(0.98); }
+  .opt-btn.selected { background: #FFF6DE; border-color: var(--star); box-shadow: 0 0 0 3px rgba(255,197,61,0.35); }
   .opt-btn.correct { background: #E4FBF8; border-color: var(--good); color: #147D73; }
   .opt-btn.wrong { background: #FFE9ED; border-color: var(--bad); color: #B31E3D; }
   .opt-btn[disabled] { cursor: default; }
+
+  .confirm-row {
+    display: none; flex-direction: column; align-items: center; gap: 10px;
+    margin-top: 18px; padding: 14px; background: #FFF6DE; border-radius: 18px;
+  }
+  .confirm-row.show { display: flex; }
+  .confirm-text { margin: 0; font-weight: 700; font-size: 16px; text-align: center; color: var(--ink); }
+  .confirm-btn {
+    font-family: inherit; border: none; cursor: pointer;
+    background: linear-gradient(180deg,#2EC4B6,#1FA99C); color: #fff;
+    font-weight: 800; font-size: 17px; padding: 12px 26px; border-radius: 999px;
+    box-shadow: 0 6px 0 #148075;
+  }
+  .confirm-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #148075; }
 
   .feedback-banner {
     margin-top: 16px; border-radius: 18px; padding: 14px 16px;
@@ -172,8 +188,8 @@
   <!-- ===================== START ===================== -->
   <div class="screen active" id="screen-start">
     <div class="mascot-big">🐰</div>
-    <h1>Zekina<br>matematička igraonica</h1>
-    <p>Reši zadatke, skupljaj zvezdice i pomozi Zeki da nauči da broji!</p>
+    <h1>Zdravo, <span class="child-name" id="child-name" title="Klikni da promeniš ime">Đina</span>! 👋</h1>
+    <p>Spremna za igru brojeva sa Zekom? Reši zadatke, skupljaj zvezdice i pokaži svoj šampionski duh! ⚽🤸‍♀️</p>
     <button class="big-btn" id="btn-start">Idemo! ▶</button>
   </div>
 
@@ -201,6 +217,10 @@
       <div class="question-text" id="question-text"></div>
       <div id="question-extra"></div>
       <div class="options" id="options"></div>
+      <div class="confirm-row" id="confirm-row">
+        <p class="confirm-text">Jesi li sigurna? Da li je to tvoj konačan odgovor?</p>
+        <button class="confirm-btn" id="btn-confirm">Da, to je moj odgovor ✅</button>
+      </div>
       <div class="feedback-banner" id="feedback">
         <span class="fb-emoji" id="fb-emoji">🎉</span>
         <span>
@@ -261,13 +281,27 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) return JSON.parse(raw);
     } catch (e) {}
-    return { stars: {}, stats: {} };
+    return { stars: {}, stats: {}, ime: "Đina" };
   }
   function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
 
   const state = loadState();
+  if (!state.ime) state.ime = "Đina";
+
+  function renderName() {
+    document.querySelectorAll(".child-name").forEach(el => el.textContent = state.ime);
+  }
+  renderName();
+  document.getElementById("child-name").addEventListener("click", () => {
+    const novo = prompt("Kako se zoveš?", state.ime);
+    if (novo && novo.trim()) {
+      state.ime = novo.trim();
+      saveState();
+      renderName();
+    }
+  });
 
   function ensureCat(catId) {
     if (!state.stars[catId]) state.stars[catId] = 0;
@@ -399,17 +433,34 @@
 
     const opts = document.getElementById("options");
     opts.innerHTML = "";
+    selected = { value: null, btn: null };
     shuffle(z.opcije).forEach(opt => {
       const b = document.createElement("button");
       b.className = "opt-btn";
       b.textContent = opt;
-      b.addEventListener("click", () => answer(opt, b));
+      b.addEventListener("click", () => selectOption(opt, b));
       opts.appendChild(b);
     });
 
+    document.getElementById("confirm-row").classList.remove("show");
     document.getElementById("feedback").classList.remove("show", "good", "bad");
     document.getElementById("btn-next").classList.remove("show");
   }
+
+  let selected = { value: null, btn: null };
+
+  function selectOption(opt, btn) {
+    document.querySelectorAll("#options .opt-btn").forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    selected = { value: opt, btn: btn };
+    document.getElementById("confirm-row").classList.add("show");
+  }
+
+  document.getElementById("btn-confirm").addEventListener("click", () => {
+    if (!selected.value) return;
+    document.getElementById("confirm-row").classList.remove("show");
+    answer(selected.value, selected.btn);
+  });
 
   function renderTabela(t) {
     const table = document.createElement("table");
@@ -466,8 +517,15 @@
     if (isCorrect) {
       btn.classList.add("correct");
       fb.classList.add("show", "good");
-      const cheer = ["Bravo!", "Odlično!", "Tako je!", "Super posao!", "Zeka je ponosan na tebe!"];
-      fbEmoji.textContent = "🎉";
+      const ime = state.ime;
+      const cheerEmoji = ["🎉", "⚽", "🤸‍♀️", "🥇", "🏆", "✨"];
+      const cheer = [
+        `Bravo, ${ime}!`, "Odlično!", "Tako je!", "Super posao!",
+        "Zeka je ponosan na tebe!", "GOOOL!", "Savršen skok, kao na gimnastici!",
+        "To je bilo kao pogodak u gornji ugao!", "Zlatna medalja za ovo!",
+        `Šampionko, ${ime}!`, "Sjajan refleks, kao pravi golman!", "Savršen doskok!"
+      ];
+      fbEmoji.textContent = cheerEmoji[Math.floor(Math.random() * cheerEmoji.length)];
       fbText.textContent = cheer[Math.floor(Math.random() * cheer.length)];
       quiz.correctCount++;
       state.stats[z.kategorija].tacno += 1;
@@ -479,8 +537,12 @@
       btn.classList.add("wrong");
       opts.forEach(b => { if (b.textContent.trim() === z.odgovor.trim()) b.classList.add("correct"); });
       fb.classList.add("show", "bad");
+      const gentle = [
+        "Nije baš, ali nema veze!", "Nije bilo gola, ali napad je bio dobar - probaj opet!",
+        "Mala greška u vežbi, hajde još jednom!", "Blizu si bila, pokušaj ponovo!"
+      ];
       fbEmoji.textContent = "🙈";
-      fbText.textContent = "Nije baš, ali nema veze!";
+      fbText.textContent = gentle[Math.floor(Math.random() * gentle.length)];
       playWrong();
     }
     fbExplain.textContent = z.objasnjenje || "";
