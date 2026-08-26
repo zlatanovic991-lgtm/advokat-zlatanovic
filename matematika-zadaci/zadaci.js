@@ -1535,6 +1535,296 @@ const ZADACI_DB = {
       odgovor: "8",
       objasnjenje: "N+N mora dati dvocifren broj koji se završava na 6. Jedino 8+8=16 to zadovoljava (N=8, Б=1).",
       izvor: "zadatak 186, str. 63"
+    },
+    {
+      id: 149,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "Ako različita slova predstavljaju različite cifre, koju cifru predstavlja (skriva) slovo N u ovom računu: M + 1 = EN (EN je dvocifren broj)?",
+      opcije: ["0", "1", "5", "9", "Ne može se odrediti"],
+      odgovor: "0",
+      objasnjenje: "M+1 mora biti dvocifren broj, pa je M=9 (najveća cifra), 9+1=10, znači E=1, N=0.",
+      izvor: "zadatak 187, str. 64"
+    },
+    {
+      id: 150,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "Ako različita slova predstavljaju različite cifre, koju cifru predstavlja (skriva) slovo M u ovom računu: M + E = EN (EN je dvocifren broj)?",
+      opcije: ["3", "5", "8", "9", "Ne može se odrediti"],
+      odgovor: "9",
+      objasnjenje: "Jedino rešenje je M=9, E=1, N=0, jer je 9+1=10.",
+      izvor: "zadatak 188, str. 64"
+    },
+    {
+      id: 151,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "U svakoj od tri kutije nalazi se po jedan kliker: crveni, zeleni ili žuti. Kutije su označene: 1. \"Crveni kliker\", 2. \"Žuti kliker\", 3. \"Crveni ili zeleni kliker\". Svi natpisi na kutijama su POGREŠNI! Koje je boje kliker u srednjoj kutiji (kutija 2)?",
+      opcije: ["Žuti", "Zeleni", "Crveni", "Zeleni ili žuti", "Nemoguće je otkriti"],
+      odgovor: "Crveni",
+      objasnjenje: "Kutija 3 (natpis 'crveni ili zeleni') mora sadržati žuti (jedino što nije crveno ni zeleno). Kutija 1 (natpis 'crveni') ne sme biti crvena ni žuta (žuta je zauzeta) - mora biti zelena. Ostaje da kutija 2 (natpis 'žuti') sadrži crveni kliker.",
+      izvor: "zadatak 189, str. 64"
+    },
+    {
+      id: 152,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "U kutiji se nalazi 10 belih i 5 crvenih kuglica. Koliko najmanje kuglica treba da izvadimo zatvorenih očiju iz kutije, da bismo bili SIGURNI da smo izvadili 1 belu kuglicu?",
+      opcije: ["2", "3", "4", "5", "6"],
+      odgovor: "6",
+      objasnjenje: "U najgorem slučaju prvo izvučemo svih 5 crvenih, pa nam sledeća (6.) mora biti bela.",
+      izvor: "zadatak 190, str. 64"
+    },
+    {
+      id: 153,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "U kutiji se nalazi 10 belih i 5 crvenih kuglica. Koliko najmanje kuglica treba da izvadimo zatvorenih očiju, da bismo bili SIGURNI da smo izvadili 1 crvenu kuglicu?",
+      opcije: ["15", "12", "11", "10", "9"],
+      odgovor: "11",
+      objasnjenje: "U najgorem slučaju prvo izvučemo svih 10 belih, pa nam sledeća (11.) mora biti crvena.",
+      izvor: "zadatak 191, str. 64"
+    },
+    {
+      id: 154,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "U kutiji se nalazi 10 belih i 5 crvenih kuglica. Koliko najmanje kuglica treba da izvadimo zatvorenih očiju, da bismo bili SIGURNI da smo izvadili 2 kuglice RAZLIČITIH boja?",
+      opcije: ["10", "11", "12", "13", "15"],
+      odgovor: "11",
+      objasnjenje: "U najgorem slučaju prvo izvučemo svih 10 belih (iste boje), pa nam sledeća (11.) mora biti crvena - druge boje.",
+      izvor: "zadatak 192, str. 64"
+    },
+    {
+      id: 155,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "Na igralištu se igralo 7 devojčica. Među njima su bile 3 devojčice sa crvenim majicama i 6 devojčica sa belim mašnicama. Koliko IMA mogućnosti za broj devojčica koje su imale i crvenu majicu i belu mašnicu?",
+      opcije: ["0", "1", "2", "3", "4"],
+      odgovor: "2",
+      objasnjenje: "Broj devojčica sa oba obeležja mora biti bar 3+6-7=2 (najmanje), a najviše min(3,6)=3. Dakle moguće su 2 ili 3 - to su 2 mogućnosti.",
+      izvor: "zadatak 193, str. 65"
+    },
+    {
+      id: 156,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Od kuće do drveta ima 12 metara, a od kuće do bunara ima 21 metar (drvo i bunar su u istom pravcu od kuće, drvo je bliže). Koliko metara ima od drveta do bunara?",
+      opcije: ["33", "31", "13", "9", "8"],
+      odgovor: "9",
+      objasnjenje: "21 − 12 = 9",
+      izvor: "zadatak 194, str. 66"
+    },
+    {
+      id: 157,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "Mogu li dva oca i dva sina da podele tri jabuke tako da svaki dobije po jednu celu jabuku?",
+      opcije: ["Ne mogu", "Mogu, ako preseku jednu jabuku", "Mogu, ako su to deda, njegov sin i unuk", "Mogu, ako prepolove svaku jabuku"],
+      odgovor: "Mogu, ako su to deda, njegov sin i unuk",
+      objasnjenje: "Deda je otac, sin je i otac i sin, unuk je sin - to su samo 3 osobe (\"dva oca\" i \"dva sina\"), pa im je dovoljne 3 jabuke.",
+      izvor: "zadatak 195, str. 66"
+    },
+    {
+      id: 158,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Vera se rodila 2 godine posle Jelene. Jelena sada ima 7 godina. Koliko godina ima Vera?",
+      opcije: ["9", "8", "7", "6", "5"],
+      odgovor: "5",
+      objasnjenje: "Vera je 2 godine mlađa: 7 − 2 = 5.",
+      izvor: "zadatak 196, str. 66"
+    },
+    {
+      id: 159,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Ana je sada 3 godine starija od Nikole. Koliko će godina ona biti starija od Nikole kroz 5 godina?",
+      opcije: ["2 godine", "3 godine", "4 godine", "5 godina", "6 godina"],
+      odgovor: "3 godine",
+      objasnjenje: "Razlika u godinama se nikad ne menja - uvek ostaje 3 godine.",
+      izvor: "zadatak 197, str. 66"
+    },
+    {
+      id: 160,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Ana ima 5 godina, a zajedno sa Verom ima 12 godina. Koliko će godina one imati zajedno kroz 2 godine?",
+      opcije: ["12", "16", "17", "18", "20"],
+      odgovor: "16",
+      objasnjenje: "Svaka od njih ostari 2 godine, pa zbir raste za 2+2=4: 12+4=16.",
+      izvor: "zadatak 198, str. 66"
+    },
+    {
+      id: 161,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Ana ima 4 godine, a zajedno sa Verom ima 7 godina. Koliko su one godina imale zajedno pre 2 godine?",
+      opcije: ["6", "5", "4", "3", "2"],
+      odgovor: "3",
+      objasnjenje: "Pre 2 godine je svaka bila 2 godine mlađa, pa je zbir bio manji za 4: 7−4=3.",
+      izvor: "zadatak 199, str. 66"
+    },
+    {
+      id: 162,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Ana i Vesna imaju zajedno 10 godina. Koliko će godina one imati zajedno kroz 3 godine?",
+      opcije: ["12", "14", "16", "18", "20"],
+      odgovor: "16",
+      objasnjenje: "Zbir raste za 3+3=6: 10+6=16.",
+      izvor: "zadatak 200, str. 66"
+    },
+    {
+      id: 163,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "Pera je rođen 30. decembra 2012. godine, a Nikola je tri dana mlađi od Pere. Kada je rođen Nikola?",
+      opcije: ["27. januara 2012.", "27. januara 2013.", "31. januara 2013.", "1. januara 2013.", "2. januara 2013."],
+      odgovor: "2. januara 2013.",
+      objasnjenje: "30. decembar + 3 dana = 31. decembar, 1. januar, 2. januar (decembar ima 31 dan).",
+      izvor: "zadatak 201, str. 67"
+    },
+    {
+      id: 164,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Pera i Nikola mere visinu. Ako je Pera mlađi i nije viši od Nikole, da li to onda znači da je on niži od Nikole?",
+      opcije: ["Naravno da je Pera niži", "Nikola je niži od Pere", "Pera je mlađi, pa je zato niži", "Ne mora da znači, jer mogu da budu iste visine"],
+      odgovor: "Ne mora da znači, jer mogu da budu iste visine",
+      objasnjenje: "\"Nije viši\" znači niži ILI iste visine - ne mora značiti da je niži.",
+      izvor: "zadatak 202, str. 67"
+    },
+    {
+      id: 165,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Puž puzi po stubu visine 5 metara. Svaki dan se popne 2 metra, a svake noći sklizne nazad 1 metar. Kroz koliko dana će on stići na vrh?",
+      opcije: ["7", "6", "5", "4", "3"],
+      odgovor: "4",
+      objasnjenje: "Dan1: 0→2→(noć)1. Dan2: 1→3→(noć)2. Dan3: 2→4→(noć)3. Dan4: 3→5 - stigao je na vrh!",
+      izvor: "zadatak 204, str. 68"
+    },
+    {
+      id: 166,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "Stub je visok 10 metara. Puž se penje 3 metra tokom dana, ali noću, dok odmara, sklizne natrag 2 metra. Kog dana će puž stići na vrh stuba?",
+      opcije: ["6", "7", "8", "9", "10"],
+      odgovor: "8",
+      objasnjenje: "Svaki pun dan-noć ciklus puž napreduje samo 1 metar (3-2), ali poslednjeg dana ne klizi nazad. Posle 7 noći je na 7m, osmog dana se popne za 3m i stigne na 10m.",
+      izvor: "zadatak 205, str. 68"
+    },
+    {
+      id: 167,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Mama dinosaurus je snela nekoliko jaja. Dva jaja su joj ispala i razbila se. Tri jaja joj je ukrao strašni komšija. Iz ostalih jaja se izleglo 4 mladunčeta dinosaurusa. Koliko je jaja snela mama dinosaurus?",
+      opcije: ["6", "8", "9", "10", "12"],
+      odgovor: "9",
+      objasnjenje: "2 (razbijena) + 3 (ukradena) + 4 (izlegla) = 9",
+      izvor: "zadatak 206, str. 69"
+    },
+    {
+      id: 168,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Na levom tasu terazija nalaze se lubenica i teg od 3 kg, a na desnom tasu je teg od 10 kg. Terazije su u ravnoteži. Koliko kilograma ima lubenica?",
+      opcije: ["6", "7", "8", "9", "10"],
+      odgovor: "7",
+      objasnjenje: "Lubenica + 3 kg = 10 kg, pa lubenica ima 10−3=7 kg.",
+      izvor: "zadatak 182, str. 62"
+    },
+    {
+      id: 169,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Kosmonauti drže table na kojima su redom upisani brojevi prve desetice (1 do 10), ali nekih brojeva nema: 10, 9, 8, __, 6, 5, 4, __, 2, 1. Koliki je zbir brojeva koji nisu upisani?",
+      opcije: ["8", "9", "10", "11", "12"],
+      odgovor: "10",
+      objasnjenje: "Nedostaju brojevi 7 i 3, pa je njihov zbir 7+3=10.",
+      izvor: "Mislisa 2019, 1. razred, zad. 2, str. 104"
+    },
+    {
+      id: 170,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Napiši slovo K desno od Š; slovo O levo od (novoformiranog) L, a desno od K; i slovo A desno od L. Koja je reč nastala?",
+      opcije: ["LAKOŠ", "KOŠLA", "ŠKOLA", "ŠOLAK", "KALOŠ"],
+      odgovor: "ŠKOLA",
+      objasnjenje: "Redom dobijamo: Š, ŠK, ŠKOL (O ide između K i L), pa na kraju ŠKOLA (A na kraju).",
+      izvor: "Mislisa 2019, 1. razred, zad. 3, str. 104"
+    },
+    {
+      id: 171,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Jedan jarac, tri vrapca i jedan konj - koliko oni ukupno imaju nogu?",
+      opcije: ["13", "14", "15", "16", "18"],
+      odgovor: "14",
+      objasnjenje: "Jarac 4 + vrapci 3×2=6 + konj 4 = 14.",
+      izvor: "Mislisa 2019, 1. razred, zad. 5, str. 105"
+    },
+    {
+      id: 172,
+      kategorija: "logicke-zagonetke",
+      tezina: 1,
+      tekst: "Jaša je viši od Raše, a Raša je viši od Saše. Ko je najniži?",
+      opcije: ["Raša", "Saša", "Jaša", "Miša", "Maša"],
+      odgovor: "Saša",
+      objasnjenje: "Jaša > Raša > Saša, pa je Saša najniži.",
+      izvor: "Mislisa 2019, 1. razred, zad. 6, str. 106"
+    },
+    {
+      id: 173,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Pera je broju 9 dodao dva različita broja i dobio zbir 10. Koje je brojeve Pera dodao broju 9?",
+      opcije: ["1 i 2", "0 i 2", "0 i 1", "2 i 0", "0 i 0"],
+      odgovor: "0 i 1",
+      objasnjenje: "9+0+1=10, a 0 i 1 su različiti brojevi.",
+      izvor: "Mislisa 2019, 1. razred, zad. 7, str. 106"
+    },
+    {
+      id: 174,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Na grani je sedelo 7 ptica. Sve, osim 3, su odletele. Koliko ptica je odletelo sa grane?",
+      opcije: ["2", "3", "4", "5", "6"],
+      odgovor: "4",
+      objasnjenje: "7 − 3 = 4 ptice su odletele (3 su ostale).",
+      izvor: "Mislisa 2019, 1. razred, zad. 8, str. 106"
+    },
+    {
+      id: 175,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Na grani je sedelo 7 ptica. Sve, osim 3, su odletele. Koliko ptica je ostalo na grani?",
+      opcije: ["2", "3", "4", "5", "6"],
+      odgovor: "3",
+      objasnjenje: "U tekstu piše da su sve OSIM 3 odletele - znači 3 su ostale.",
+      izvor: "Mislisa 2019, 1. razred, zad. 9, str. 106"
+    },
+    {
+      id: 176,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Zamisli jedan jednocifren broj manji od 9. Dodaj mu 5, a zatim tom zbiru dodaj 4. Od dobijenog zbira oduzmi broj koji si zamislio. Koji je tvoj rezultat?",
+      opcije: ["4", "5", "9", "13", "14"],
+      odgovor: "9",
+      objasnjenje: "Kad god oduzmeš isti broj koji si dodao, on se poništi: ostaje samo 5+4=9, bez obzira koji si broj zamislio.",
+      izvor: "Mislisa 2019, 1. razred, zad. 12, str. 107"
+    },
+    {
+      id: 177,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Goran je niži od Ranka. Marija je niža od Sanje, ali viša od Ranka. Ko je najviši?",
+      opcije: ["Goran", "Ranko", "Marija", "Sanja", "Nemoguće je odrediti"],
+      odgovor: "Sanja",
+      objasnjenje: "Redosled po visini: Goran < Ranko < Marija < Sanja, pa je Sanja najviša.",
+      izvor: "Mislisa 2019, 1. razred, zad. 14, str. 108"
     }
   ]
 };
