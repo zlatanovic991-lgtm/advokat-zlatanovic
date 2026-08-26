@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
 <title>Zekina matematička igraonica</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<meta name="theme-color" content="#FFC53D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Đinina igraonica">
 <style>
   :root {
     --bg: #FFF7EC;
@@ -180,6 +187,58 @@
     font-family: inherit; padding: 12px 20px; border-radius: 14px; cursor: pointer; font-size: 14px;
   }
   .back-row { margin-bottom: 14px; }
+
+  /* ---------- Settings row (sound / text size / theme) ---------- */
+  .settings-row { display: flex; gap: 10px; align-items: center; justify-content: flex-end; margin-top: 14px; }
+  .icon-btn.small { width: 40px; height: 40px; font-size: 17px; font-weight: 800; }
+
+  /* ---------- Daily challenge card ---------- */
+  .daily-card {
+    border: none; cursor: pointer; text-align: left; font-family: inherit; width: 100%;
+    border-radius: var(--radius); padding: 16px 18px; color: #fff; margin-bottom: 14px;
+    background: linear-gradient(120deg, #FF9F1C, #E71D73 50%, #7B61FF);
+    box-shadow: var(--shadow); display: flex; align-items: center; gap: 14px;
+  }
+  .daily-card .daily-icon { font-size: 34px; }
+  .daily-card .daily-name { font-size: 18px; font-weight: 800; }
+  .daily-card .daily-meta { font-size: 13px; opacity: .92; font-weight: 600; }
+  .daily-card:active { transform: scale(0.98); }
+
+  /* ---------- Veći tekst ---------- */
+  html.large-text .question-text { font-size: 26px; }
+  html.large-text .opt-btn { font-size: 22px; padding: 19px 20px; }
+  html.large-text #screen-start h1 { font-size: 35px; }
+  html.large-text #screen-start p { font-size: 21px; }
+  html.large-text .cat-name { font-size: 21px; }
+  html.large-text .cat-meta { font-size: 15px; }
+  html.large-text .confirm-text, html.large-text .confirm-btn { font-size: 19px; }
+  html.large-text .feedback-banner { font-size: 20px; }
+
+  /* ---------- Tamna tema ---------- */
+  html.dark-theme {
+    --bg: #1E1B2E;
+    --card: #2A2640;
+    --ink: #F1EEFB;
+    --muted: #B9B2D6;
+    --shadow: 0 10px 24px rgba(0,0,0,0.5);
+  }
+  html.dark-theme .icon-btn,
+  html.dark-theme .star-pill,
+  html.dark-theme .secondary-btn,
+  html.dark-theme .summary-stats { background: #2A2640; color: var(--ink); }
+  html.dark-theme .opt-btn { background: #241F3A; border-color: #40395C; color: var(--ink); }
+  html.dark-theme .opt-btn.selected { background: #3A3355; }
+  html.dark-theme .opt-btn.correct { background: #14413D; border-color: var(--good); color: #7FEFE2; }
+  html.dark-theme .opt-btn.wrong { background: #4A1F2B; border-color: var(--bad); color: #FFB4C4; }
+  html.dark-theme .progress-track { background: #2A2640; }
+  html.dark-theme .confirm-row { background: #3A3355; }
+  html.dark-theme .confirm-text { color: var(--ink); }
+  html.dark-theme .mini-table th, html.dark-theme .mini-table td { border-color: #40395C; }
+  html.dark-theme .mini-table th { background: #2A2640; }
+  html.dark-theme .parent-table { background: #2A2640; }
+  html.dark-theme .parent-table th { background: #3A3355; }
+  html.dark-theme .parent-table tr:nth-child(even) td { background: #241F3A; }
+  html.dark-theme .secondary-btn { border-color: #40395C; }
 </style>
 </head>
 <body>
@@ -199,9 +258,21 @@
       <div class="brand"><span class="mascot">🐰</span> Izaberi igru</div>
       <div class="star-pill">⭐ <span id="total-stars">0</span></div>
     </div>
+    <button class="daily-card" id="btn-daily">
+      <span class="daily-icon">🌟</span>
+      <span>
+        <div class="daily-name">Izazov dana</div>
+        <div class="daily-meta">12 pitanja izmešanih iz svih igara</div>
+      </span>
+    </button>
     <div class="cat-grid" id="cat-grid"></div>
     <div style="flex:1"></div>
-    <button class="icon-btn" id="btn-parent" title="Za roditelje" style="align-self:flex-end; margin-top:14px;">👪</button>
+    <div class="settings-row">
+      <button class="icon-btn small" id="btn-sound" title="Zvuk">🔊</button>
+      <button class="icon-btn small" id="btn-textsize" title="Veći tekst">Aa</button>
+      <button class="icon-btn small" id="btn-theme" title="Tamna tema">🌙</button>
+      <button class="icon-btn" id="btn-parent" title="Za roditelje">👪</button>
+    </div>
   </div>
 
   <!-- ===================== QUIZ ===================== -->
@@ -281,7 +352,7 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) return JSON.parse(raw);
     } catch (e) {}
-    return { stars: {}, stats: {}, ime: "Đina" };
+    return { stars: {}, stats: {}, ime: "Đina", mastery: {}, zvuk: true, tama: false, velikTekst: false };
   }
   function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -289,6 +360,34 @@
 
   const state = loadState();
   if (!state.ime) state.ime = "Đina";
+  if (!state.mastery) state.mastery = {};
+  if (typeof state.zvuk !== "boolean") state.zvuk = true;
+  if (typeof state.tama !== "boolean") state.tama = false;
+  if (typeof state.velikTekst !== "boolean") state.velikTekst = false;
+
+  // ---------------- Podešavanja (zvuk / veći tekst / tamna tema) ----------------
+  function applySettingsUI() {
+    document.documentElement.classList.toggle("dark-theme", state.tama);
+    document.documentElement.classList.toggle("large-text", state.velikTekst);
+    document.getElementById("btn-sound").textContent = state.zvuk ? "🔊" : "🔇";
+    document.getElementById("btn-theme").textContent = state.tama ? "☀️" : "🌙";
+  }
+  applySettingsUI();
+  document.getElementById("btn-sound").addEventListener("click", () => {
+    state.zvuk = !state.zvuk;
+    saveState();
+    applySettingsUI();
+  });
+  document.getElementById("btn-textsize").addEventListener("click", () => {
+    state.velikTekst = !state.velikTekst;
+    saveState();
+    applySettingsUI();
+  });
+  document.getElementById("btn-theme").addEventListener("click", () => {
+    state.tama = !state.tama;
+    saveState();
+    applySettingsUI();
+  });
 
   function renderName() {
     document.querySelectorAll(".child-name").forEach(el => el.textContent = state.ime);
@@ -323,6 +422,7 @@
     return audioCtx;
   }
   function tone(freq, start, dur, type, gainPeak) {
+    if (!state.zvuk) return;
     const ctx = getCtx();
     if (!ctx) return;
     const osc = ctx.createOscillator();
@@ -409,13 +509,46 @@
     return a;
   }
 
+  // Zadaci koje je dete već dobro savladalo (2+ tačna odgovora zaredom) se ređe
+  // ponavljaju, a preostali se poređaju od lakših ka težim.
+  function odaberiIPoreajZadatke(spisak) {
+    const izabrani = spisak.filter(z => {
+      const m = state.mastery[z.id] || 0;
+      if (m < 2) return true;
+      return Math.random() < 0.35;
+    });
+    const bazen = izabrani.length ? izabrani : spisak;
+    const poTezini = {};
+    bazen.forEach(z => { (poTezini[z.tezina] = poTezini[z.tezina] || []).push(z); });
+    let poredjano = [];
+    Object.keys(poTezini).map(Number).sort((a, b) => a - b).forEach(t => {
+      poredjano = poredjano.concat(shuffle(poTezini[t]));
+    });
+    return poredjano;
+  }
+
+  function updateQuizStars() {
+    document.getElementById("quiz-stars").textContent =
+      quiz.catId === "izazov-dana" ? totalStars() : (state.stars[quiz.catId] || 0);
+  }
+
   function startQuiz(catId) {
-    const items = shuffle(ZADACI_DB.zadaci.filter(z => z.kategorija === catId));
+    const items = odaberiIPoreajZadatke(ZADACI_DB.zadaci.filter(z => z.kategorija === catId));
     quiz = { catId, items, index: 0, correctCount: 0, starsEarned: 0 };
-    document.getElementById("quiz-stars").textContent = state.stars[catId] || 0;
+    updateQuizStars();
     renderQuestion();
     show("screen-quiz");
   }
+
+  function startDailyChallenge() {
+    const izabrani = odaberiIPoreajZadatke(ZADACI_DB.zadaci);
+    const items = shuffle(izabrani).slice(0, 12).sort((a, b) => a.tezina - b.tezina);
+    quiz = { catId: "izazov-dana", items, index: 0, correctCount: 0, starsEarned: 0 };
+    updateQuizStars();
+    renderQuestion();
+    show("screen-quiz");
+  }
+  document.getElementById("btn-daily").addEventListener("click", startDailyChallenge);
 
   function renderQuestion() {
     const z = quiz.items[quiz.index];
@@ -530,8 +663,9 @@
       quiz.correctCount++;
       state.stats[z.kategorija].tacno += 1;
       state.stars[z.kategorija] = (state.stars[z.kategorija] || 0) + 1;
+      state.mastery[z.id] = (state.mastery[z.id] || 0) + 1;
       quiz.starsEarned++;
-      document.getElementById("quiz-stars").textContent = state.stars[z.kategorija];
+      updateQuizStars();
       playCorrect();
     } else {
       btn.classList.add("wrong");
@@ -543,6 +677,7 @@
       ];
       fbEmoji.textContent = "🙈";
       fbText.textContent = gentle[Math.floor(Math.random() * gentle.length)];
+      state.mastery[z.id] = 0;
       playWrong();
     }
     fbExplain.textContent = z.objasnjenje || "";
@@ -562,6 +697,8 @@
 
   function finishQuiz() {
     const cat = ZADACI_DB.kategorije.find(c => c.id === quiz.catId);
+    const naziv = cat ? cat.naziv : "Izazov dana";
+    const ikonica = cat ? cat.ikonica : "🌟";
     const pct = Math.round((quiz.correctCount / quiz.items.length) * 100);
     document.getElementById("summary-title").textContent =
       pct === 100 ? "Savršeno!" : pct >= 70 ? "Bravo!" : "Dobar pokušaj!";
@@ -570,11 +707,13 @@
     document.getElementById("summary-stars").textContent =
       "⭐".repeat(quiz.correctCount) + "☆".repeat(quiz.items.length - quiz.correctCount);
     document.getElementById("summary-stats").innerHTML =
-      `${cat.ikonica} ${cat.naziv}<br>Tačno: ${quiz.correctCount} / ${quiz.items.length} (${pct}%)`;
+      `${ikonica} ${naziv}<br>Tačno: ${quiz.correctCount} / ${quiz.items.length} (${pct}%)`;
     show("screen-summary");
   }
 
-  document.getElementById("btn-replay").addEventListener("click", () => startQuiz(quiz.catId));
+  document.getElementById("btn-replay").addEventListener("click", () => {
+    if (quiz.catId === "izazov-dana") startDailyChallenge(); else startQuiz(quiz.catId);
+  });
 
   // ---------------- Parent panel ----------------
   function renderParent() {

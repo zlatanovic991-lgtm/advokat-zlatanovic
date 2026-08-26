@@ -1,0 +1,11 @@
+{
+  "name": "Đinina matematička igraonica",
+  "short_name": "Đinina igraonica",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#FFF7EC",
+  "theme_color": "#FFC53D",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
