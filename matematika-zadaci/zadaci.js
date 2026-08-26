@@ -1210,6 +1210,331 @@ const ZADACI_DB = {
       odgovor: "U 14 sati",
       objasnjenje: "11 + 3 = 14 sati (2 posle podne).",
       izvor: "zadatak 140, str. 47"
+    },
+    {
+      id: 117,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "Vladan je za Novu godinu dobio voz sa 7 vagona. Imao je 4 čokoladice, a njegov brat 4 bombone. Brat počinje da broji vagone od početka i u svaki od prva 4 vagona stavlja po 1 bombonu. Vladan broji vagone od kraja i u svaki od poslednja 4 vagona (računajući od kraja) stavlja po 1 čokoladicu. Koja od sledećih rečenica će, posle toga, biti tačna?",
+      opcije: [
+        "U svakom vagončiću je bio po jedan slatkiš.",
+        "Samo u jednom vagončiću biće dva različita slatkiša.",
+        "Ukupno je u vagončićima bilo 7 slatkiša.",
+        "Jedan vagončić je ostao bez slatkiša."
+      ],
+      odgovor: "Samo u jednom vagončiću biće dva različita slatkiša.",
+      objasnjenje: "Voz ima 7 vagona, pa je četvrti vagon (brojeći od početka) ujedno i četvrti vagon brojeći od kraja - isti vagon dobija i bombonu i čokoladicu.",
+      izvor: "zadatak 141, str. 48"
+    },
+    {
+      id: 118,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Dva putnika su se dogovorila da se sretnu u petom vagonu jednog voza. Koliko vagona ima taj voz, ako je prvi putnik seo u peti vagon od početka, a drugi putnik u peti vagon \"s kraja\", i tu su se sreli?",
+      opcije: ["6", "7", "8", "9", "10"],
+      odgovor: "9",
+      objasnjenje: "5 + 5 − 1 = 9 (peti vagon se broji samo jednom).",
+      izvor: "zadatak 142, str. 48"
+    },
+    {
+      id: 119,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "U vrsti stoji ukupno 7 dečaka. Vasa je peti sleva. Na kom se mestu Vasa nalazi kada brojimo sdesna?",
+      opcije: ["Na prvom", "Na drugom", "Na trećem", "Na četvrtom", "Ne može se odrediti"],
+      odgovor: "Na trećem",
+      objasnjenje: "7 − 5 + 1 = 3",
+      izvor: "zadatak 143, str. 48"
+    },
+    {
+      id: 120,
+      kategorija: "logicke-zagonetke",
+      tezina: 1,
+      tekst: "Prva kornjača je kazala da ima šest i po godina, a druga je kazala da ima osam godina. Koja kornjača se ranije izlegla (kornjače se legu iz jaja)?",
+      opcije: ["Prva", "Druga", "Istovremeno", "Ne znamo koje godine je to bilo"],
+      odgovor: "Druga",
+      objasnjenje: "Druga kornjača je starija (8 > 6,5), što znači da se ranije izlegla.",
+      izvor: "zadatak 144, str. 49"
+    },
+    {
+      id: 121,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Pogledaj ovaj kvadrat brojeva:\n2 9 4\n7 5 3\n6 1 8\nU njemu zbir svakog reda, svake kolone i obe dijagonale iznosi 15. Koliko od ovih 6 tvrdnji je NETAČNO: (1) zbir 1. reda=15, (2) zbir 1. kolone=15, (3) zbir jedne dijagonale=15, (4) zbir druge dijagonale=15, (5) zbir 3. kolone=15, (6) zbir 2. reda=15?",
+      opcije: ["0", "1", "2", "3", "4"],
+      odgovor: "0",
+      objasnjenje: "Ovo je \"čarobni kvadrat\" - baš svaki red, kolona i dijagonala daju zbir 15. Sve tvrdnje su tačne, nema netačnih.",
+      izvor: "zadatak 145, str. 49"
+    },
+    {
+      id: 122,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Kosta i Aleksa treba, svaki od njih, da se popnu po jednom na svako od 3 drveta. Koliko će ukupno penjanja biti?",
+      opcije: ["3", "4", "6", "8", "9"],
+      odgovor: "6",
+      objasnjenje: "Svaki dečak se penje 3 puta (na 3 drveta): 3+3=6.",
+      izvor: "zadatak 146, str. 50"
+    },
+    {
+      id: 123,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Milena želi da na tacni rasporedi krušku, jabuku i grozd (svako voće jednom) da iznenadi tetka Ljilju. Na koliko različitih načina to može da uradi?",
+      opcije: ["3", "4", "6", "8", "9"],
+      odgovor: "6",
+      objasnjenje: "3 različita voća se mogu rasporediti na 3×2×1=6 načina.",
+      izvor: "zadatak 147, str. 50"
+    },
+    {
+      id: 124,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Mila je nacrtala 3 jabuke i želi svaku da oboji drugom bojom, imajući crvenu, žutu i zelenu bojicu (svaka boja se koristi tačno jednom). Na koliko različitih načina Mila može to da uradi?",
+      opcije: ["1", "2", "3", "4", "6"],
+      odgovor: "6",
+      objasnjenje: "3 boje na 3 jabuke - 3×2×1=6 rasporeda.",
+      izvor: "zadatak 148, str. 50"
+    },
+    {
+      id: 125,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Zastavu treba obojiti sa 3 vodoravne trake - jednom crvenom, jednom plavom i jednom belom bojom, svaki put u drugačijem rasporedu. Na koliko različitih načina je to moguće?",
+      opcije: ["3", "6", "7", "8", "9"],
+      odgovor: "6",
+      objasnjenje: "3 boje na 3 trake - 3×2×1=6 rasporeda.",
+      izvor: "zadatak 149, str. 51"
+    },
+    {
+      id: 126,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Maja ima 2 bluze i 3 suknjice. Svaka njena bluza slaže se sa svakom od suknjica. Na koliko različitih načina Maja može da se obuče?",
+      opcije: ["5", "6", "7", "8", "9"],
+      odgovor: "6",
+      objasnjenje: "2 bluze × 3 suknjice = 6 kombinacija.",
+      izvor: "zadatak 150, str. 51"
+    },
+    {
+      id: 127,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "U plesnu školu upisala su se 3 dečaka i 3 devojčice. Koliko različitih plesnih parova može da napravi njihov učitelj plesa, ako jedan par uvek čine 1 dečak i 1 devojčica?",
+      opcije: ["5", "6", "7", "8", "9"],
+      odgovor: "9",
+      objasnjenje: "3 dečaka × 3 devojčice = 9 mogućih parova.",
+      izvor: "zadatak 151, str. 52"
+    },
+    {
+      id: 128,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Imamo 3 trougla i 3 kruga. Svaki trougao je povezan (uparen) sa svakim krugom. Koliko ukupno ima takvih parova?",
+      opcije: ["3", "6", "9", "12", "15"],
+      odgovor: "9",
+      objasnjenje: "3 trougla × 3 kruga = 9 parova.",
+      izvor: "zadatak 152, str. 52"
+    },
+    {
+      id: 129,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Koliko se dvocifrenih brojeva može napisati pomoću cifara 1, 2 i 3 (cifre mogu da se ponavljaju, npr. 11, 22...)?",
+      opcije: ["3", "4", "5", "6", "9"],
+      odgovor: "9",
+      objasnjenje: "Za svaku od 3 cifre na mestu desetica, ide bilo koja od 3 cifre na mestu jedinica: 3×3=9.",
+      izvor: "zadatak 153, str. 53"
+    },
+    {
+      id: 130,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Koliko ima dvocifrenih brojeva koji se mogu napisati pomoću cifara 1, 2, 3 i 4 (cifre mogu da se ponavljaju)?",
+      opcije: ["9", "12", "14", "16", "18"],
+      odgovor: "16",
+      objasnjenje: "4 cifre na mestu desetica × 4 cifre na mestu jedinica = 16.",
+      izvor: "zadatak 154, str. 53"
+    },
+    {
+      id: 131,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "Koliko ima dvocifrenih brojeva koji se mogu napisati pomoću cifara 0, 1 i 3 (cifre mogu da se ponavljaju, ali broj ne sme počinjati cifrom 0)?",
+      opcije: ["3", "4", "5", "6", "8"],
+      odgovor: "6",
+      objasnjenje: "To su brojevi: 10, 11, 13, 30, 31, 33 - ima ih 6.",
+      izvor: "zadatak 155, str. 53"
+    },
+    {
+      id: 132,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Koliko ima dvocifrenih brojeva kojima zbir cifara iznosi 1?",
+      opcije: ["1", "2", "10", "11", "12"],
+      odgovor: "1",
+      objasnjenje: "Postoji samo jedan takav broj - to je broj 10 (1+0=1).",
+      izvor: "zadatak 156, str. 53"
+    },
+    {
+      id: 133,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Koliko ima dvocifrenih brojeva kojima zbir cifara iznosi 2?",
+      opcije: ["1", "2", "10", "11", "12"],
+      odgovor: "2",
+      objasnjenje: "Postoje dva takva broja: 11 (1+1=2) i 20 (2+0=2).",
+      izvor: "zadatak 157, str. 53"
+    },
+    {
+      id: 134,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "U jednoj porodici su dva brata i svaki od njih ima jednu (istu) sestru. Koliko ima dece u toj porodici?",
+      opcije: ["2", "3", "4", "5", "Ne može se izračunati"],
+      odgovor: "3",
+      objasnjenje: "Jedna devojčica je istovremeno sestra i jednom i drugom bratu - dakle 2 brata + 1 sestra = 3 dece.",
+      izvor: "zadatak 163, str. 55"
+    },
+    {
+      id: 135,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "U jednoj porodici su dve sestre i svaka od njih ima ista dva brata. Koliko ima dece u toj porodici?",
+      opcije: ["2", "3", "4", "5", "Ne može se izračunati"],
+      odgovor: "4",
+      objasnjenje: "Ta dva brata su istovremeno braća obema sestrama - dakle 2 sestre + 2 brata = 4 dece.",
+      izvor: "zadatak 164, str. 55"
+    },
+    {
+      id: 136,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "Svaki od petorice braće ima jednu (istu) sestru. Koliko dece ima u toj porodici?",
+      opcije: ["2", "3", "4", "5", "6"],
+      odgovor: "6",
+      objasnjenje: "Petorica braće + 1 zajednička sestra = 6 dece.",
+      izvor: "zadatak 165, str. 55"
+    },
+    {
+      id: 137,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "Marina ima 3 brata i 2 sestre. Koliko braće i sestara ima njen brat Marko (koji je jedan od te trojice braće)?",
+      opcije: ["2 brata i 2 sestre", "1 brata i 2 sestre", "2 brata i 1 sestru", "2 brata i 3 sestre"],
+      odgovor: "2 brata i 3 sestre",
+      objasnjenje: "Sa Markove tačke gledišta: njegova braća su preostala 2 brata (3−1), a njegove sestre su Marina i njene 2 sestre - ukupno 3 sestre.",
+      izvor: "zadatak 166, str. 56"
+    },
+    {
+      id: 138,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Joca je imao pet bombona. Sestrama je dao sve osim dve. Koliko mu je bombona ostalo?",
+      opcije: ["2", "3", "4", "5", "Ne može se izračunati"],
+      odgovor: "2",
+      objasnjenje: "\"Dao je sve osim dve\" znači da su mu ostale baš te dve bombone.",
+      izvor: "zadatak 167, str. 56"
+    },
+    {
+      id: 139,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 1,
+      tekst: "Tetka Mara pije čaj ujutru u pola sedam (6:30), a tetka Ljilja pije čaj ujutru u pola devet (8:30). Koliko sati bi tetka Mara trebalo da čeka tetka Ljilju da zajedno piju čaj?",
+      opcije: ["1 sat", "2 sata", "3 sata", "Pola sata", "Nemoguće izračunati"],
+      odgovor: "2 sata",
+      objasnjenje: "Od 6:30 do 8:30 prođu tačno 2 sata.",
+      izvor: "zadatak 169, str. 56"
+    },
+    {
+      id: 140,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Svaku kamilu možeš nacrtati sa jednom grbom ili sa dve grbe (2 izbora za svaku kamilu). Ako crtaš sliku sa 2 kamile, koliko različitih slika možeš napraviti?",
+      opcije: ["4", "3", "2", "1", "6"],
+      odgovor: "4",
+      objasnjenje: "2 izbora za prvu kamilu × 2 izbora za drugu kamilu = 4 slike.",
+      izvor: "zadatak 173, str. 59"
+    },
+    {
+      id: 141,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "Da li pažljivo čitaš? Dve jednogrbe kamile i tri dvogrbe kamile - koliko tu ima nogu?",
+      opcije: ["6", "8", "12", "16", "20"],
+      odgovor: "20",
+      objasnjenje: "Broj grba ne utiče na broj nogu! Svaka kamila (svejedno koliko grba ima) ima 4 noge. Ukupno 5 kamila × 4 noge = 20.",
+      izvor: "zadatak 174, str. 59"
+    },
+    {
+      id: 142,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Na cvetićima su napisani računi: 1+4, 4+3, 2+3, 5-5, 6-2, 6-1, 3+3, 0+5. Kad rešiš sve, oboj žutom bojom samo one cvetiće na kojima je rezultat 5. Koliko ima žutih cvetića?",
+      opcije: ["1", "2", "3", "4", "6"],
+      odgovor: "4",
+      objasnjenje: "Rezultat 5 imaju: 1+4=5, 2+3=5, 6-1=5, 0+5=5 - to je 4 cvetića.",
+      izvor: "zadatak 176, str. 60"
+    },
+    {
+      id: 143,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Snežana je donela Ljutku (jednom od 7 patuljaka) 3 bombone, a Uči je donela 3 bombone više nego Ljutku. Svim ostalim patuljcima (njih 5) donela je samo po jednu bombonu. Koliko je ukupno bombona donela Snežana?",
+      opcije: ["14", "12", "9", "6", "5"],
+      odgovor: "14",
+      objasnjenje: "Ljutko: 3, Uči: 3+3=6, ostalih 5 patuljaka: 5×1=5. Ukupno: 3+6+5=14.",
+      izvor: "zadatak 177, str. 61"
+    },
+    {
+      id: 144,
+      kategorija: "sabiranje-oduzimanje",
+      tezina: 2,
+      tekst: "Na tri gomile nalaze se klikeri. Na prvoj gomili ima 3 klikera, na drugoj gomili ima 2 klikera više nego na prvoj, a na trećoj gomili ima onoliko klikera koliko na prvoj i drugoj gomili zajedno. Koliko ima ukupno klikera na sve tri gomile?",
+      opcije: ["10", "14", "16", "18", "20"],
+      odgovor: "16",
+      objasnjenje: "Prva: 3, druga: 3+2=5, treća: 3+5=8. Ukupno: 3+5+8=16.",
+      izvor: "zadatak 178, str. 61"
+    },
+    {
+      id: 145,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "U kutiji se nalazi 20 kuglica - žute, zelene, plave i crvene. Zna se da 17 kuglica nisu zelene, da crvenih ima 5, a da 12 kuglica nisu žute. Koliko ima plavih kuglica u toj kutiji?",
+      opcije: ["2", "3", "4", "5", "6"],
+      odgovor: "4",
+      objasnjenje: "Zelenih: 20−17=3. Žutih: 20−12=8. Crvenih: 5. Plavih: 20−3−8−5=4.",
+      izvor: "zadatak 179, str. 61"
+    },
+    {
+      id: 146,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "U prazan kvadratić upiši bilo koji broj: □ + (7−5) − 2 = ? Šta primećuješ?",
+      opcije: ["Nema rešenja", "Zadatak ima više rešenja (svaki broj može biti rešenje)"],
+      odgovor: "Zadatak ima više rešenja (svaki broj može biti rešenje)",
+      objasnjenje: "(7−5)−2 = 0, pa je rezultat uvek jednak broju koji upišeš u kvadratić.",
+      izvor: "zadatak 183, str. 63"
+    },
+    {
+      id: 147,
+      kategorija: "logicke-zagonetke",
+      tezina: 2,
+      tekst: "U računu M + M = 6, jedno slovo krije jednu cifru (ista slova kriju iste cifre). Koju cifru krije slovo M?",
+      opcije: ["3", "4", "7", "8"],
+      odgovor: "3",
+      objasnjenje: "M + M = 6, znači 2×M=6, pa je M=3.",
+      izvor: "zadatak 185, str. 63"
+    },
+    {
+      id: 148,
+      kategorija: "logicke-zagonetke",
+      tezina: 3,
+      tekst: "U računu N + N = Б6 (gde Б6 predstavlja dvocifreni broj), istim ciframa odgovaraju ista slova, a različitim ciframa različita slova. Koja cifra se krije iza slova N?",
+      opcije: ["3", "4", "7", "8"],
+      odgovor: "8",
+      objasnjenje: "N+N mora dati dvocifren broj koji se završava na 6. Jedino 8+8=16 to zadovoljava (N=8, Б=1).",
+      izvor: "zadatak 186, str. 63"
     }
   ]
 };
