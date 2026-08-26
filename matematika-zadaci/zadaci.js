@@ -197,10 +197,10 @@ const ZADACI_DB = {
       id: 19,
       kategorija: "nizovi-i-obrasci",
       tezina: 2,
-      tekst: "Niz voća i pečurki se ponavlja: 🍐 🍎 🍄 🍄 🍐 🍎 🍄 🍄 🍐 🍎 ... Šta će se naći na desetom mestu?",
+      tekst: "Niz se ponavlja u grupama od po 4: kruška, jabuka, pečurka, pečurka, kruška, jabuka, pečurka, pečurka, kruška, jabuka... Šta će se naći na desetom mestu?",
       opcije: ["Jabuka", "Kruška", "Pečurka", "Nije jabuka"],
       odgovor: "Jabuka",
-      objasnjenje: "Šara se ponavlja na svaka 4 mesta: kruška, jabuka, pečurka, pečurka. Deseto mesto je isto kao šesto — jabuka 🍎.",
+      objasnjenje: "Šara se ponavlja na svaka 4 mesta: kruška, jabuka, pečurka, pečurka. Deseto mesto je isto kao šesto — jabuka.",
       izvor: "zadatak 73, str. 23"
     },
     {
@@ -210,7 +210,7 @@ const ZADACI_DB = {
       tekst: "Niz balona se ponavlja na svakih 5 balona: sivo srce, belo prazno, crno, belo srce, šareno... Kad nacrtaš još 5 balona na isti način, kako će izgledati deveti balon u celom nizu?",
       opcije: ["Imaće oblik srca sive boje", "Biće balon crne boje", "Biće šareni balon", "Biće srce bele boje"],
       odgovor: "Biće srce bele boje",
-      objasnjenje: "Šara se ponavlja na svakih 5 balona. Deveti balon je isti kao četvrti — belo srce 🤍.",
+      objasnjenje: "Šara se ponavlja na svakih 5 balona. Deveti balon je isti kao četvrti — srce bele boje.",
       izvor: "zadatak 74, str. 23"
     },
     {

@@ -166,7 +166,7 @@
   /* ---------- Summary screen ---------- */
   #screen-summary { align-items: center; justify-content: center; text-align: center; gap: 14px; }
   #screen-summary .big-emoji { font-size: 80px; }
-  .stars-row { font-size: 40px; letter-spacing: 6px; }
+  .stars-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; max-width: 360px; }
   .summary-stats { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 28px; font-size: 17px; font-weight: 700; }
   .btn-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
   .secondary-btn {
@@ -246,20 +246,20 @@
 
   <!-- ===================== START ===================== -->
   <div class="screen active" id="screen-start">
-    <div class="mascot-big">🐰</div>
-    <h1>Zdravo, <span class="child-name" id="child-name" title="Klikni da promeniš ime">Đina</span>! 👋</h1>
-    <p>Spremna za igru brojeva sa Zekom? Reši zadatke, skupljaj zvezdice i pokaži svoj šampionski duh! ⚽🤸‍♀️</p>
+    <div class="mascot-big" id="mascot-big"></div>
+    <h1>Zdravo, <span class="child-name" id="child-name" title="Klikni da promeniš ime">Đina</span>!</h1>
+    <p>Spremna za igru brojeva sa Zekom? Reši zadatke, skupljaj zvezdice i pokaži svoj šampionski duh!</p>
     <button class="big-btn" id="btn-start">Idemo! ▶</button>
   </div>
 
   <!-- ===================== CATEGORY SELECT ===================== -->
   <div class="screen" id="screen-categories">
     <div class="topbar">
-      <div class="brand"><span class="mascot">🐰</span> Izaberi igru</div>
-      <div class="star-pill">⭐ <span id="total-stars">0</span></div>
+      <div class="brand"><span class="mascot" id="mascot-small"></span> Izaberi igru</div>
+      <div class="star-pill"><span id="star-ico-total"></span> <span id="total-stars">0</span></div>
     </div>
     <button class="daily-card" id="btn-daily">
-      <span class="daily-icon">🌟</span>
+      <span class="daily-icon" id="daily-icon"></span>
       <span>
         <div class="daily-name">Izazov dana</div>
         <div class="daily-meta">12 pitanja izmešanih iz svih igara</div>
@@ -268,10 +268,10 @@
     <div class="cat-grid" id="cat-grid"></div>
     <div style="flex:1"></div>
     <div class="settings-row">
-      <button class="icon-btn small" id="btn-sound" title="Zvuk">🔊</button>
+      <button class="icon-btn small" id="btn-sound" title="Zvuk"></button>
       <button class="icon-btn small" id="btn-textsize" title="Veći tekst">Aa</button>
-      <button class="icon-btn small" id="btn-theme" title="Tamna tema">🌙</button>
-      <button class="icon-btn" id="btn-parent" title="Za roditelje">👪</button>
+      <button class="icon-btn small" id="btn-theme" title="Tamna tema"></button>
+      <button class="icon-btn" id="btn-parent" title="Za roditelje"></button>
     </div>
   </div>
 
@@ -282,7 +282,7 @@
     </div>
     <div class="quiz-top">
       <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
-      <div class="star-pill">⭐ <span id="quiz-stars">0</span></div>
+      <div class="star-pill"><span id="star-ico-quiz"></span> <span id="quiz-stars">0</span></div>
     </div>
     <div class="question-card">
       <div class="question-text" id="question-text"></div>
@@ -290,10 +290,10 @@
       <div class="options" id="options"></div>
       <div class="confirm-row" id="confirm-row">
         <p class="confirm-text">Jesi li sigurna? Da li je to tvoj konačan odgovor?</p>
-        <button class="confirm-btn" id="btn-confirm">Da, to je moj odgovor ✅</button>
+        <button class="confirm-btn" id="btn-confirm">Da, to je moj odgovor <span id="confirm-check"></span></button>
       </div>
       <div class="feedback-banner" id="feedback">
-        <span class="fb-emoji" id="fb-emoji">🎉</span>
+        <span class="fb-emoji" id="fb-emoji"></span>
         <span>
           <span id="fb-text"></span>
           <span class="fb-explain" id="fb-explain"></span>
@@ -305,12 +305,12 @@
 
   <!-- ===================== SUMMARY ===================== -->
   <div class="screen" id="screen-summary">
-    <div class="big-emoji" id="summary-emoji">🏆</div>
+    <div class="big-emoji" id="summary-emoji"></div>
     <h1 id="summary-title">Bravo!</h1>
     <div class="stars-row" id="summary-stars"></div>
     <div class="summary-stats" id="summary-stats"></div>
     <div class="btn-row">
-      <button class="big-btn" id="btn-replay">Igraj ponovo 🔁</button>
+      <button class="big-btn" id="btn-replay">Igraj ponovo <span id="replay-ico"></span></button>
       <button class="secondary-btn" id="btn-to-categories">Sve igre</button>
     </div>
   </div>
@@ -320,7 +320,7 @@
     <div class="back-row">
       <button class="icon-btn" id="btn-parent-back">←</button>
     </div>
-    <h2>👪 Pregled napretka</h2>
+    <h2><span id="parent-heading-ico"></span> Pregled napretka</h2>
     <div class="parent-table-wrap"><table class="parent-table" id="parent-table"></table></div>
     <p class="parent-note">Podaci se čuvaju samo na ovom uređaju (u ovom browseru), nema interneta ni servera.</p>
     <button class="danger-btn" id="btn-reset">Resetuj sav napredak</button>
@@ -336,7 +336,7 @@
   if (typeof ZADACI_DB === "undefined") {
     document.getElementById("app").innerHTML =
       '<div style="margin-top:60px;text-align:center;padding:0 10px;">' +
-      '<div style="font-size:60px;">⚠️</div>' +
+      '<div style="font-size:60px;line-height:1;color:#FFA93D;">&#9888;</div>' +
       '<h2>Fajl zadaci.js nije pronađen</h2>' +
       '<p style="color:#8A8AA3;font-size:16px;line-height:1.5;">' +
       'Fajlovi <b>index.html</b> i <b>zadaci.js</b> moraju biti sačuvani ' +
@@ -358,6 +358,57 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
 
+  // ---------------- Ikonice (sopstveni SVG crteži, ne zavise od emoji fonta) ----------------
+  // Stariji sistemi (npr. Windows 7) često nemaju font za emoji, pa bi se umesto
+  // slicica videli prazni kvadratici. Zato su svi vazni simboli nacrtani rucno.
+  const ICON_PATHS = {
+    rabbit: '<circle cx="9" cy="7.3" r="3.6" fill="#F6C9D9"/><circle cx="9" cy="7.3" r="2.3" fill="#fff"/>' +
+      '<circle cx="15" cy="7.3" r="3.6" fill="#F6C9D9"/><circle cx="15" cy="7.3" r="2.3" fill="#fff"/>' +
+      '<circle cx="12" cy="15" r="8" fill="#fff"/>' +
+      '<circle cx="8.6" cy="14" r="1.1"/><circle cx="15.4" cy="14" r="1.1"/>' +
+      '<path d="M12 16.3l-1.3 2h2.6z" fill="#F4A6C6"/>' +
+      '<path d="M9.5 18.3q2.5 1.6 5 0" fill="none" stroke="#33324A" stroke-width="0.9" stroke-linecap="round"/>',
+    star: '<path d="M12 2.5l2.7 5.9 6.4.8-4.7 4.5 1.2 6.4L12 16.9 6.4 20.1l1.2-6.4-4.7-4.5 6.4-.8z"/>',
+    starOutline: '<path d="M12 2.5l2.7 5.9 6.4.8-4.7 4.5 1.2 6.4L12 16.9 6.4 20.1l1.2-6.4-4.7-4.5 6.4-.8z" fill="none" stroke="currentColor" stroke-width="1.4"/>',
+    plus: '<rect x="10" y="3" width="4" height="18" rx="1.3"/><rect x="3" y="10" width="18" height="4" rx="1.3"/>',
+    bars: '<rect x="3" y="14" width="4.3" height="7" rx="1"/><rect x="9.9" y="9" width="4.3" height="12" rx="1"/><rect x="16.8" y="4" width="4.3" height="17" rx="1"/>',
+    bulb: '<path d="M12 2.3a6.7 6.7 0 0 0-3.8 12.2c.6.4.9 1 .9 1.7v.3h5.8v-.3c0-.7.3-1.3.9-1.7A6.7 6.7 0 0 0 12 2.3z"/>' +
+      '<rect x="9.3" y="18" width="5.4" height="1.6" rx="0.6"/><rect x="9.8" y="20.1" width="4.4" height="1.5" rx="0.6"/>',
+    family: '<circle cx="8.6" cy="7.2" r="3"/><ellipse cx="8.6" cy="18.3" rx="6" ry="5"/>' +
+      '<circle cx="17.4" cy="9" r="2.3"/><ellipse cx="17.4" cy="19" rx="4.6" ry="4"/>',
+    speakerOn: '<path d="M3.5 9v6h3.7l4.8 4V5l-4.8 4H3.5z"/>' +
+      '<path d="M16.2 8.3a5.4 5.4 0 0 1 0 7.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
+      '<path d="M18.7 5.8a9 9 0 0 1 0 12.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+    speakerOff: '<path d="M3.5 9v6h3.7l4.8 4V5l-4.8 4H3.5z"/>' +
+      '<path d="M16.5 9.5l5 5M21.5 9.5l-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+    moon: '<path d="M20.2 15.3A8.5 8.5 0 0 1 9.7 4.8a8.5 8.5 0 1 0 10.5 10.5z"/>',
+    sun: '<circle cx="12" cy="12" r="4.3"/><g stroke="currentColor" stroke-width="1.8" stroke-linecap="round">' +
+      '<line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/>' +
+      '<line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/>' +
+      '<line x1="4.4" y1="4.4" x2="6.1" y2="6.1"/><line x1="17.9" y1="17.9" x2="19.6" y2="19.6"/>' +
+      '<line x1="4.4" y1="19.6" x2="6.1" y2="17.9"/><line x1="17.9" y1="6.1" x2="19.6" y2="4.4"/></g>',
+    trophy: '<path d="M6 3.5h12v2.3h2.8c.4 0 .7.3.7.7v1.3a4.2 4.2 0 0 1-4.2 4.2h-.3a5.2 5.2 0 0 1-3.5 3.8v2.3h2.8v2h-7.6v-2h2.8v-2.3A5.2 5.2 0 0 1 7.2 12h-.3A4.2 4.2 0 0 1 2.7 7.8V6.5c0-.4.3-.7.7-.7H6V3.5zM4.2 6.5v1.3a2.2 2.2 0 0 0 2.2 2.2V6.5H4.2zm15.6 0h-2.2v3.5a2.2 2.2 0 0 0 2.2-2.2V6.5z"/>',
+    thumbsUp: '<path d="M2.3 21h3.1V10.3H2.3V21zM21.7 11.6a2 2 0 0 0-2-2h-5.9l.8-3.9a2 2 0 0 0-2-2.4c-.4 0-.8.2-1.1.5L7 8.4V21h10.2a2 2 0 0 0 1.9-1.4l2.5-6a2 2 0 0 0 .1-.6v-1.4z"/>',
+    check: '<path d="M4.5 12.7l4.8 4.8L19.5 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>',
+    refresh: '<path d="M18.4 6.6A8 8 0 1 0 20 12h-2.1a6 6 0 1 1-1.8-4.9L13 10h7V3l-1.6 3.6z"/>',
+    sad: '<circle cx="9.3" cy="10.3" r="1.3"/><circle cx="14.7" cy="10.3" r="1.3"/>' +
+      '<path d="M8.5 16c1.1-1.3 2.3-2 3.5-2s2.4.7 3.5 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'
+  };
+  function ico(name, px, extraStyle) {
+    const inner = ICON_PATHS[name] || "";
+    return `<svg viewBox="0 0 24 24" width="${px}" height="${px}" fill="currentColor" ` +
+      `style="vertical-align:middle;flex-shrink:0;${extraStyle || ""}">${inner}</svg>`;
+  }
+  const CAT_ICONS = {
+    "sabiranje-oduzimanje": "plus",
+    "nizovi-i-obrasci": "bars",
+    "logicke-zagonetke": "bulb"
+  };
+  function catIconHtml(catId, px) {
+    if (CAT_ICONS[catId]) return ico(CAT_ICONS[catId], px);
+    return `<span style="font-weight:900;font-size:${Math.round(px * 0.45)}px;letter-spacing:1px;">ABC</span>`;
+  }
+
   const state = loadState();
   if (!state.ime) state.ime = "Đina";
   if (!state.mastery) state.mastery = {};
@@ -369,9 +420,20 @@
   function applySettingsUI() {
     document.documentElement.classList.toggle("dark-theme", state.tama);
     document.documentElement.classList.toggle("large-text", state.velikTekst);
-    document.getElementById("btn-sound").textContent = state.zvuk ? "🔊" : "🔇";
-    document.getElementById("btn-theme").textContent = state.tama ? "☀️" : "🌙";
+    document.getElementById("btn-sound").innerHTML = ico(state.zvuk ? "speakerOn" : "speakerOff", 20);
+    document.getElementById("btn-theme").innerHTML = ico(state.tama ? "sun" : "moon", 20);
   }
+
+  // Popuni sve staticke ikonice (mastod, zvezdice, dugmad...) SVG crtezima.
+  document.getElementById("mascot-big").innerHTML = ico("rabbit", 90);
+  document.getElementById("mascot-small").innerHTML = ico("rabbit", 30);
+  document.getElementById("star-ico-total").innerHTML = ico("star", 18, "color:#FFC53D;");
+  document.getElementById("star-ico-quiz").innerHTML = ico("star", 18, "color:#FFC53D;");
+  document.getElementById("daily-icon").innerHTML = ico("star", 30, "color:#fff;");
+  document.getElementById("btn-parent").innerHTML = ico("family", 20);
+  document.getElementById("parent-heading-ico").innerHTML = ico("family", 22, "color:#FFA93D;");
+  document.getElementById("confirm-check").innerHTML = ico("check", 16);
+  document.getElementById("replay-ico").innerHTML = ico("refresh", 16);
   applySettingsUI();
   document.getElementById("btn-sound").addEventListener("click", () => {
     state.zvuk = !state.zvuk;
@@ -486,11 +548,11 @@
       btn.style.background = cat.boja;
       const pct = stats.ukupno ? Math.round((stats.tacno / stats.ukupno) * 100) : null;
       btn.innerHTML = `
-        <div class="cat-icon">${cat.ikonica}</div>
+        <div class="cat-icon">${catIconHtml(cat.id, 40)}</div>
         <div>
           <div class="cat-name">${cat.naziv}</div>
           <div class="cat-meta">${zad.length} zadataka ${pct !== null ? "· " + pct + "% tačno" : ""}</div>
-          <div class="cat-meta">⭐ ${state.stars[cat.id] || 0}</div>
+          <div class="cat-meta">${ico("star", 14, "color:#fff;")} ${state.stars[cat.id] || 0}</div>
         </div>`;
       btn.addEventListener("click", () => startQuiz(cat.id));
       grid.appendChild(btn);
@@ -651,14 +713,13 @@
       btn.classList.add("correct");
       fb.classList.add("show", "good");
       const ime = state.ime;
-      const cheerEmoji = ["🎉", "⚽", "🤸‍♀️", "🥇", "🏆", "✨"];
       const cheer = [
         `Bravo, ${ime}!`, "Odlično!", "Tako je!", "Super posao!",
         "Zeka je ponosan na tebe!", "GOOOL!", "Savršen skok, kao na gimnastici!",
         "To je bilo kao pogodak u gornji ugao!", "Zlatna medalja za ovo!",
         `Šampionko, ${ime}!`, "Sjajan refleks, kao pravi golman!", "Savršen doskok!"
       ];
-      fbEmoji.textContent = cheerEmoji[Math.floor(Math.random() * cheerEmoji.length)];
+      fbEmoji.innerHTML = ico("star", 28, "color:#FFC53D;");
       fbText.textContent = cheer[Math.floor(Math.random() * cheer.length)];
       quiz.correctCount++;
       state.stats[z.kategorija].tacno += 1;
@@ -675,7 +736,7 @@
         "Nije baš, ali nema veze!", "Nije bilo gola, ali napad je bio dobar - probaj opet!",
         "Mala greška u vežbi, hajde još jednom!", "Blizu si bila, pokušaj ponovo!"
       ];
-      fbEmoji.textContent = "🙈";
+      fbEmoji.innerHTML = ico("sad", 28, "color:#B31E3D;");
       fbText.textContent = gentle[Math.floor(Math.random() * gentle.length)];
       state.mastery[z.id] = 0;
       playWrong();
@@ -698,14 +759,21 @@
   function finishQuiz() {
     const cat = ZADACI_DB.kategorije.find(c => c.id === quiz.catId);
     const naziv = cat ? cat.naziv : "Izazov dana";
-    const ikonica = cat ? cat.ikonica : "🌟";
+    const ikonica = cat ? catIconHtml(cat.id, 22) : ico("star", 22, "color:#FFA93D;");
     const pct = Math.round((quiz.correctCount / quiz.items.length) * 100);
     document.getElementById("summary-title").textContent =
       pct === 100 ? "Savršeno!" : pct >= 70 ? "Bravo!" : "Dobar pokušaj!";
-    document.getElementById("summary-emoji").textContent =
-      pct === 100 ? "🏆" : pct >= 70 ? "🌟" : "💪";
-    document.getElementById("summary-stars").textContent =
-      "⭐".repeat(quiz.correctCount) + "☆".repeat(quiz.items.length - quiz.correctCount);
+    document.getElementById("summary-emoji").innerHTML =
+      pct === 100 ? ico("trophy", 80, "color:#FFC53D;")
+      : pct >= 70 ? ico("star", 80, "color:#FFC53D;")
+      : ico("thumbsUp", 80, "color:#FF9F1C;");
+    let starsHtml = "";
+    for (let i = 0; i < quiz.items.length; i++) {
+      starsHtml += i < quiz.correctCount
+        ? ico("star", 30, "color:#FFC53D;")
+        : ico("starOutline", 30, "color:#D8CFC0;");
+    }
+    document.getElementById("summary-stars").innerHTML = starsHtml;
     document.getElementById("summary-stats").innerHTML =
       `${ikonica} ${naziv}<br>Tačno: ${quiz.correctCount} / ${quiz.items.length} (${pct}%)`;
     show("screen-summary");
@@ -722,7 +790,7 @@
     ZADACI_DB.kategorije.forEach(cat => {
       const s = state.stats[cat.id];
       const pct = s.ukupno ? Math.round((s.tacno / s.ukupno) * 100) + "%" : "—";
-      html += `<tr><td>${cat.ikonica} ${cat.naziv}</td><td>${s.ukupno}</td><td>${s.tacno}</td><td>${pct}</td><td>⭐ ${state.stars[cat.id] || 0}</td></tr>`;
+      html += `<tr><td>${catIconHtml(cat.id, 18)} ${cat.naziv}</td><td>${s.ukupno}</td><td>${s.tacno}</td><td>${pct}</td><td>${ico("star", 14, "color:#FFA93D;")} ${state.stars[cat.id] || 0}</td></tr>`;
     });
     tbl.innerHTML = html;
   }
