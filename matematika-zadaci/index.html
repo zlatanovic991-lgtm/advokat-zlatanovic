@@ -225,6 +225,12 @@
   }
   .kupon-row .kupon-naziv { font-weight: 800; font-size: 17px; }
   .kupon-row .kupon-datum { font-size: 13px; color: var(--muted); }
+  .kupon-row-veliki { border: 2px solid #FFC53D; }
+  .kupon-znacka {
+    display: inline-block; background: #FFC53D; color: #4A3200; font-weight: 800;
+    font-size: 10px; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 999px; margin-bottom: 3px;
+  }
+  .kupon-modal-card.velika-nagrada { border: 3px solid #FFC53D; }
   .kupon-status-btn {
     margin-left: auto; border: none; font-family: inherit; font-weight: 700; font-size: 13px;
     padding: 8px 12px; border-radius: 999px; cursor: pointer; white-space: nowrap;
@@ -399,7 +405,7 @@
       <button class="icon-btn" id="btn-kuponi-back">←</button>
     </div>
     <h2><span id="kuponi-heading-ico"></span> Moji kuponi</h2>
-    <p class="parent-note">Za svakih <span id="kupon-prag-tekst">15</span> zvezdica osvaja se novi kupon za poslasticu!</p>
+    <p class="parent-note">Za svakih <span id="kupon-prag-tekst">15</span> zvezdica osvaja se kupon za poslasticu, a za svakih <span id="veliki-kupon-prag-tekst">100</span> zvezdica jedna velika nagrada!</p>
     <div class="kupon-list" id="kupon-list"></div>
   </div>
 
@@ -500,7 +506,20 @@
       '<circle cx="9" cy="9" r="1.7" fill="#fff"/><circle cx="12" cy="7.3" r="1.9" fill="#fff"/><circle cx="15" cy="9" r="1.7" fill="#fff"/>',
     snackBag: '<path d="M8.3 6.3h7.4l1.6 13.6a1.1 1.1 0 0 1-1.1 1.2H7.8a1.1 1.1 0 0 1-1.1-1.2z" fill="#FFA93D"/>' +
       '<path d="M9.3 6.3a2.7 2.7 0 0 1 5.4 0" fill="none" stroke="#E08A00" stroke-width="1.4"/>' +
-      '<line x1="7.4" y1="12" x2="16.6" y2="12" stroke="#E08A00" stroke-width="1"/>'
+      '<line x1="7.4" y1="12" x2="16.6" y2="12" stroke="#E08A00" stroke-width="1"/>',
+    tree: '<circle cx="12" cy="9.5" r="6.2" fill="#4CAF6D"/><rect x="10.6" y="14.5" width="2.8" height="6.5" rx="1" fill="#8B5E3C"/>',
+    tv: '<rect x="3" y="5" width="18" height="12" rx="1.6" fill="#5C6BC0"/>' +
+      '<path d="M10 9.2l5 2.8-5 2.8z" fill="#fff"/>' +
+      '<rect x="7" y="19.2" width="10" height="1.6" rx="0.8" fill="#3949AB"/>',
+    cinemaTicket: '<path d="M4 8.2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v.9a1.3 1.3 0 0 0 0 2.6v.9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-.9a1.3 1.3 0 0 0 0-2.6z" fill="#E53935"/>' +
+      '<line x1="14" y1="6.5" x2="14" y2="15.5" stroke="#fff" stroke-width="1.2" stroke-dasharray="1.6 1.6"/>' +
+      '<circle cx="9" cy="10" r="1" fill="#fff"/><circle cx="9" cy="13" r="1" fill="#fff"/>',
+    moonStar: '<path d="M18.7 14.6A7.6 7.6 0 0 1 9.4 5.3a7.6 7.6 0 1 0 9.3 9.3z" fill="#5C6BC0"/>' +
+      '<path d="M17.3 4.3l0.7 1.6 1.6 0.7-1.6 0.7-0.7 1.6-0.7-1.6-1.6-0.7 1.6-0.7z" fill="#FFC53D"/>',
+    giftBox: '<rect x="4.5" y="10.5" width="15" height="9.6" rx="1.3" fill="#FF6F91"/>' +
+      '<rect x="4.5" y="10.5" width="15" height="3" fill="#FFD1DC"/>' +
+      '<rect x="10.9" y="4.6" width="2.2" height="15.5" fill="#FFD1DC"/>' +
+      '<path d="M12 10.5c-1.8-3.2-6-2.6-6-0.6 0 1.3 2.6 0.9 6 0.6zM12 10.5c1.8-3.2 6-2.6 6-0.6 0 1.3-2.6 0.9-6 0.6z" fill="#FFD1DC"/>'
   };
   function ico(name, px, extraStyle) {
     const inner = ICON_PATHS[name] || "";
@@ -517,7 +536,8 @@
     return `<span style="font-weight:900;font-size:${Math.round(px * 0.45)}px;letter-spacing:1px;">ABC</span>`;
   }
 
-  // ---------------- Kuponi za nagradu (svakih KUPON_PRAG zvezdica) ----------------
+  // ---------------- Kuponi za nagradu ----------------
+  // Male nagrade (poslastice) - cesto, svakih KUPON_PRAG zvezdica.
   const KUPON_PRAG = 15;
   const REWARD_TYPES = [
     { naziv: "Sladoled", ikona: "iceCream", boja: "#FF9AC1" },
@@ -526,6 +546,15 @@
     { naziv: "Bombone", ikona: "candy", boja: "#FF6F91" },
     { naziv: "Kokice", ikona: "popcorn", boja: "#F4A825" },
     { naziv: "Smoki", ikona: "snackBag", boja: "#FFA93D" }
+  ];
+  // Velike nagrade - retko, svakih BIG_KUPON_PRAG zvezdica (mnogo redje od malih).
+  const BIG_KUPON_PRAG = 100;
+  const BIG_REWARD_TYPES = [
+    { naziv: "Odlazak u park po izboru", ikona: "tree", boja: "#4CAF6D" },
+    { naziv: "Biranje crtanog filma za porodično veče", ikona: "tv", boja: "#5C6BC0" },
+    { naziv: "30 minuta duže budna za vikend", ikona: "moonStar", boja: "#5C6BC0" },
+    { naziv: "Odlazak u bioskop", ikona: "cinemaTicket", boja: "#E53935" },
+    { naziv: "Nova igračka", ikona: "giftBox", boja: "#FF6F91" }
   ];
 
   const state = loadState();
@@ -536,6 +565,7 @@
   if (!Array.isArray(state.pogresni)) state.pogresni = [];
   if (!Array.isArray(state.kuponi)) state.kuponi = [];
   if (typeof state.sledeciKuponPrag !== "number") state.sledeciKuponPrag = KUPON_PRAG;
+  if (typeof state.sledeciVelikiKuponPrag !== "number") state.sledeciVelikiKuponPrag = BIG_KUPON_PRAG;
   if (typeof state.zvuk !== "boolean") state.zvuk = true;
   if (typeof state.tama !== "boolean") state.tama = false;
   if (typeof state.velikTekst !== "boolean") state.velikTekst = false;
@@ -581,6 +611,7 @@
   document.getElementById("practice-icon").innerHTML = ico("pencil", 30, "color:#fff;");
   document.getElementById("kuponi-heading-ico").innerHTML = ico("ticket", 22, "color:#FFA93D;");
   document.getElementById("kupon-prag-tekst").textContent = KUPON_PRAG;
+  document.getElementById("veliki-kupon-prag-tekst").textContent = BIG_KUPON_PRAG;
   applySettingsUI();
 
   // Dekorativne zvezdice oko maskote na pocetnom ekranu (samo ukras).
@@ -948,26 +979,60 @@
   }
 
   // ---------------- Kuponi ----------------
-  function proveriKupon() {
-    if (totalStars() < state.sledeciKuponPrag) return;
-    const izbor = REWARD_TYPES[Math.floor(Math.random() * REWARD_TYPES.length)];
-    const kupon = {
-      id: Date.now(),
+  let kuponRed = []; // red cekanja - ako se dva kupona osvoje istovremeno, prikazuju se jedan po jedan
+
+  function napraviKupon(izbor, veliki) {
+    return {
+      id: Date.now() + Math.floor(Math.random() * 1000),
       naziv: izbor.naziv,
       ikona: izbor.ikona,
       boja: izbor.boja,
+      veliki: veliki,
       datum: new Date().toISOString(),
       iskorisceno: false
     };
-    state.kuponi.push(kupon);
-    state.sledeciKuponPrag += KUPON_PRAG;
+  }
+
+  function proveriKupon() {
+    const novi = [];
+    if (totalStars() >= state.sledeciKuponPrag) {
+      const izbor = REWARD_TYPES[Math.floor(Math.random() * REWARD_TYPES.length)];
+      const kupon = napraviKupon(izbor, false);
+      state.kuponi.push(kupon);
+      state.sledeciKuponPrag += KUPON_PRAG;
+      novi.push(kupon);
+    }
+    if (totalStars() >= state.sledeciVelikiKuponPrag) {
+      const izborV = BIG_REWARD_TYPES[Math.floor(Math.random() * BIG_REWARD_TYPES.length)];
+      const kuponV = napraviKupon(izborV, true);
+      state.kuponi.push(kuponV);
+      state.sledeciVelikiKuponPrag += BIG_KUPON_PRAG;
+      novi.push(kuponV);
+    }
+    if (!novi.length) return;
     saveState();
-    document.getElementById("kupon-modal-ikonica").innerHTML = ico(izbor.ikona, 44);
-    document.getElementById("kupon-modal-naziv").textContent = izbor.naziv;
+    kuponRed = kuponRed.concat(novi);
+    prikaziSledeciKupon();
+  }
+
+  function prikaziSledeciKupon() {
+    if (!kuponRed.length) return;
+    const k = kuponRed[0];
+    const modalCard = document.querySelector("#kupon-modal .kupon-modal-card");
+    modalCard.classList.toggle("velika-nagrada", k.veliki);
+    document.querySelector("#kupon-modal h2").textContent =
+      k.veliki ? "Osvojila si VELIKU nagradu!" : "Osvojila si kupon!";
+    document.getElementById("kupon-modal-ikonica").innerHTML = ico(k.ikona, 44);
+    document.getElementById("kupon-modal-naziv").textContent = k.naziv;
     document.getElementById("kupon-modal").classList.add("show");
   }
   document.getElementById("btn-kupon-modal-ok").addEventListener("click", () => {
-    document.getElementById("kupon-modal").classList.remove("show");
+    kuponRed.shift();
+    if (kuponRed.length) {
+      prikaziSledeciKupon();
+    } else {
+      document.getElementById("kupon-modal").classList.remove("show");
+    }
   });
 
   function renderKuponi() {
@@ -981,9 +1046,10 @@
       const datum = new Date(k.datum);
       const datumTekst = datum.toLocaleDateString("sr-RS");
       return `
-        <div class="kupon-row">
+        <div class="kupon-row ${k.veliki ? "kupon-row-veliki" : ""}">
           <div class="kupon-ikonica">${ico(k.ikona, 26)}</div>
           <div>
+            ${k.veliki ? '<div class="kupon-znacka">VELIKA NAGRADA</div>' : ""}
             <div class="kupon-naziv">${k.naziv}</div>
             <div class="kupon-datum">${datumTekst}</div>
           </div>
