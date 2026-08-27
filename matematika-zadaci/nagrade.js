@@ -13,8 +13,8 @@
 //    ne najavljuje se unapred i ne zavisi od ovog fajla.
 
 const NAGRADE_CONFIG = {
-  // Koliko zadataka dnevno čini "dnevni cilj" (otprilike 15-ak minuta rada).
-  dnevniCiljZadataka: 15,
+  // Koliko zadataka dnevno čini "dnevni cilj" (otprilike 5-10 minuta rada).
+  dnevniCiljZadataka: 5,
 
   // Koliko novčića dete dobija kad ostvari dnevni cilj.
   novciciZaDnevniCilj: 2,
