@@ -183,8 +183,13 @@
   .parent-table tr:nth-child(even) td { background: #FBF7EE; }
   .parent-note { color: var(--muted); font-size: 13px; margin-top: 14px; }
   .danger-btn {
-    margin-top: 18px; border: none; background: #FFE9ED; color: #B31E3D; font-weight: 800;
+    margin-top: 10px; border: none; background: #FFE9ED; color: #B31E3D; font-weight: 800;
     font-family: inherit; padding: 12px 20px; border-radius: 14px; cursor: pointer; font-size: 14px;
+  }
+  .restart-btn {
+    margin-top: 18px; border: none; background: #E4FBF8; color: #147D73; font-weight: 800;
+    font-family: inherit; padding: 12px 20px; border-radius: 14px; cursor: pointer; font-size: 14px;
+    display: flex; align-items: center; gap: 8px;
   }
   .back-row { margin-bottom: 14px; }
 
@@ -323,6 +328,8 @@
     <h2><span id="parent-heading-ico"></span> Pregled napretka</h2>
     <div class="parent-table-wrap"><table class="parent-table" id="parent-table"></table></div>
     <p class="parent-note">Podaci se čuvaju samo na ovom uređaju (u ovom browseru), nema interneta ni servera.</p>
+    <button class="restart-btn" id="btn-restart-igru"><span id="restart-ico"></span> Restartuj igru (otključaj sve zadatke)</button>
+    <p class="parent-note">Zvezdice i uspešnost ostaju sačuvani - samo se ponovo otključavaju zadaci koje je dete već rešilo, da mogu opet da se pojave.</p>
     <button class="danger-btn" id="btn-reset">Resetuj sav napredak</button>
   </div>
 
@@ -352,7 +359,7 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) return JSON.parse(raw);
     } catch (e) {}
-    return { stars: {}, stats: {}, ime: "Đina", mastery: {}, zvuk: true, tama: false, velikTekst: false };
+    return { stars: {}, stats: {}, ime: "Đina", reseni: [], zvuk: true, tama: false, velikTekst: false };
   }
   function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -410,11 +417,21 @@
   }
 
   const state = loadState();
+  if (!state.stars) state.stars = {};
+  if (!state.stats) state.stats = {};
   if (!state.ime) state.ime = "Đina";
-  if (!state.mastery) state.mastery = {};
+  if (!Array.isArray(state.reseni)) state.reseni = [];
   if (typeof state.zvuk !== "boolean") state.zvuk = true;
   if (typeof state.tama !== "boolean") state.tama = false;
   if (typeof state.velikTekst !== "boolean") state.velikTekst = false;
+
+  // Zadaci koje je dete vec tacno resilo - pamti se trajno (localStorage),
+  // ne ponavljaju se dok se ne klikne "Restartuj igru" u roditeljskom panelu.
+  let reseniSet = new Set(state.reseni);
+  function oznaciResen(id) {
+    reseniSet.add(id);
+    state.reseni = Array.from(reseniSet);
+  }
 
   // ---------------- Podešavanja (zvuk / veći tekst / tamna tema) ----------------
   function applySettingsUI() {
@@ -542,6 +559,7 @@
     grid.innerHTML = "";
     ZADACI_DB.kategorije.forEach(cat => {
       const zad = ZADACI_DB.zadaci.filter(z => z.kategorija === cat.id);
+      const resenoUKat = zad.filter(z => reseniSet.has(z.id)).length;
       const stats = state.stats[cat.id];
       const btn = document.createElement("button");
       btn.className = "cat-card";
@@ -552,6 +570,7 @@
         <div>
           <div class="cat-name">${cat.naziv}</div>
           <div class="cat-meta">${zad.length} zadataka ${pct !== null ? "· " + pct + "% tačno" : ""}</div>
+          <div class="cat-meta">rešeno ${resenoUKat}/${zad.length}</div>
           <div class="cat-meta">${ico("star", 14, "color:#fff;")} ${state.stars[cat.id] || 0}</div>
         </div>`;
       btn.addEventListener("click", () => startQuiz(cat.id));
@@ -571,17 +590,12 @@
     return a;
   }
 
-  // Zadaci koje je dete već dobro savladalo (2+ tačna odgovora zaredom) se ređe
-  // ponavljaju, a preostali se poređaju od lakših ka težim.
+  // Zadaci koje je dete već tačno rešilo se izostavljaju (trajno, dok se ne
+  // klikne "Restartuj igru"), a preostali se poređaju od lakših ka težim.
   function odaberiIPoreajZadatke(spisak) {
-    const izabrani = spisak.filter(z => {
-      const m = state.mastery[z.id] || 0;
-      if (m < 2) return true;
-      return Math.random() < 0.35;
-    });
-    const bazen = izabrani.length ? izabrani : spisak;
+    const nereseni = spisak.filter(z => !reseniSet.has(z.id));
     const poTezini = {};
-    bazen.forEach(z => { (poTezini[z.tezina] = poTezini[z.tezina] || []).push(z); });
+    nereseni.forEach(z => { (poTezini[z.tezina] = poTezini[z.tezina] || []).push(z); });
     let poredjano = [];
     Object.keys(poTezini).map(Number).sort((a, b) => a - b).forEach(t => {
       poredjano = poredjano.concat(shuffle(poTezini[t]));
@@ -596,6 +610,10 @@
 
   function startQuiz(catId) {
     const items = odaberiIPoreajZadatke(ZADACI_DB.zadaci.filter(z => z.kategorija === catId));
+    if (!items.length) {
+      alert("Bravo! Već si rešila baš sve zadatke u ovoj igri.\n\nAko želiš da ih rešavaš ponovo, zamoli roditelja da u odeljku 'Za roditelje' klikne 'Restartuj igru'.");
+      return;
+    }
     quiz = { catId, items, index: 0, correctCount: 0, starsEarned: 0 };
     updateQuizStars();
     renderQuestion();
@@ -604,6 +622,10 @@
 
   function startDailyChallenge() {
     const izabrani = odaberiIPoreajZadatke(ZADACI_DB.zadaci);
+    if (!izabrani.length) {
+      alert("Bravo! Već si rešila baš sve zadatke iz svih igara.\n\nAko želiš da ih rešavaš ponovo, zamoli roditelja da u odeljku 'Za roditelje' klikne 'Restartuj igru'.");
+      return;
+    }
     const items = shuffle(izabrani).slice(0, 12).sort((a, b) => a.tezina - b.tezina);
     quiz = { catId: "izazov-dana", items, index: 0, correctCount: 0, starsEarned: 0 };
     updateQuizStars();
@@ -724,7 +746,7 @@
       quiz.correctCount++;
       state.stats[z.kategorija].tacno += 1;
       state.stars[z.kategorija] = (state.stars[z.kategorija] || 0) + 1;
-      state.mastery[z.id] = (state.mastery[z.id] || 0) + 1;
+      oznaciResen(z.id);
       quiz.starsEarned++;
       updateQuizStars();
       playCorrect();
@@ -738,7 +760,6 @@
       ];
       fbEmoji.innerHTML = ico("sad", 28, "color:#B31E3D;");
       fbText.textContent = gentle[Math.floor(Math.random() * gentle.length)];
-      state.mastery[z.id] = 0;
       playWrong();
     }
     fbExplain.textContent = z.objasnjenje || "";
@@ -796,9 +817,20 @@
   }
 
   document.getElementById("btn-reset").addEventListener("click", () => {
-    if (confirm("Sigurno želiš da obrišeš sav sačuvani napredak?")) {
+    if (confirm("Sigurno želiš da obrišeš sav sačuvani napredak (i zvezdice)?")) {
       localStorage.removeItem(STORAGE_KEY);
       location.reload();
+    }
+  });
+
+  document.getElementById("restart-ico").innerHTML = ico("refresh", 16);
+  document.getElementById("btn-restart-igru").addEventListener("click", () => {
+    if (confirm("Svi zadaci će ponovo postati dostupni za igranje (zvezdice i uspešnost ostaju sačuvani). Nastaviti?")) {
+      reseniSet = new Set();
+      state.reseni = [];
+      saveState();
+      renderParent();
+      alert("Gotovo! Svi zadaci su ponovo dostupni za igranje.");
     }
   });
 
