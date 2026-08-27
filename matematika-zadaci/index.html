@@ -515,6 +515,8 @@
   }
 
   const STORAGE_KEY = "zekina_igraonica_v1";
+  // PIN da dete slučajno ne uđe u roditeljski panel (restart/reset dugmad su tamo).
+  const RODITELJ_PIN = "0909";
 
   function loadState() {
     try {
@@ -824,6 +826,12 @@
     show("screen-categories");
   });
   document.getElementById("btn-parent").addEventListener("click", () => {
+    const unos = prompt("Unesi PIN za roditeljski panel:");
+    if (unos === null) return;
+    if (unos.trim() !== RODITELJ_PIN) {
+      alert("Pogrešan PIN.");
+      return;
+    }
     renderParent();
     show("screen-parent");
   });

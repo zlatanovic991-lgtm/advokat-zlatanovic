@@ -34,6 +34,7 @@ const NAGRADE_CONFIG = {
     { id: "prica-spavanje", naziv: "Biranje večernje priče pred spavanje", cena: 5, nivo: "mala", ikona: "book" },
     { id: "drustvena-igra", naziv: "Biranje društvene igre za porodično veče", cena: 10, nivo: "srednja", ikona: "dice" },
     { id: "glavni-kuvar", naziv: "Uloga glavnog kuvara u kuhinji", cena: 10, nivo: "srednja", ikona: "chefHat" },
+    { id: "biblioteka-knjizara", naziv: "Odlazak u biblioteku ili knjižaru", cena: 10, nivo: "srednja", ikona: "book" },
     { id: "porodicni-izlet", naziv: "Poseban porodični izlet / park po izboru", cena: 20, nivo: "velika", ikona: "tree" }
   ]
 };
